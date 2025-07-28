@@ -3,29 +3,37 @@ import type {
   CategoryResponse,
   GetCategoriesParams,
   GetCategoryByIdResponse,
+  ProductPageParam,
 } from "./categoryApi.type";
 import axiosBaseQuery from "@/api/baseQuery";
 
-export const categoryAPI = createApi({
+export const categoryApi = createApi({
   reducerPath: "categoryAPI",
   baseQuery: axiosBaseQuery(),
   endpoints: (builder) => ({
-    getCategories: builder.query<CategoryResponse, GetCategoriesParams>({
-      query: ({
-        page = 1,
-        limit = 30,
-        q,
-        sort_by,
-        sort_order,
-      }: GetCategoriesParams) => ({
+    getCategories: builder.infiniteQuery<
+      CategoryResponse,
+      GetCategoriesParams,
+      ProductPageParam
+    >({
+      infiniteQueryOptions: {
+        initialPageParam: 1,
+        getNextPageParam: (lastPage, _allPages, lastPageParam) => {
+          if (lastPage.meta.currentPage >= lastPage.meta.totalPages) {
+            return undefined;
+          }
+          return lastPageParam + 1;
+        },
+      },
+      query: ({ queryArg, pageParam }) => ({
         url: "/api/categories",
         method: "GET",
         params: {
-          page,
-          limit,
-          ...(q ? { q } : {}),
-          ...(sort_by ? { sort_by } : {}),
-          ...(sort_order ? { sort_order } : {}),
+          page: pageParam,
+          limit: queryArg.limit || 30,
+          ...(queryArg.q ? { q: queryArg.q } : {}),
+          ...(queryArg.sort_by ? { sort_by: queryArg.sort_by } : {}),
+          ...(queryArg.sort_order ? { sort_order: queryArg.sort_order } : {}),
         },
       }),
     }),
@@ -39,4 +47,4 @@ export const categoryAPI = createApi({
   }),
 });
 
-export const { useGetCategoriesQuery, useGetCategoryByIdQuery } = categoryAPI;
+export const { useGetCategoriesInfiniteQuery, useGetCategoryByIdQuery } = categoryApi;

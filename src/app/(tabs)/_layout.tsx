@@ -6,7 +6,6 @@ import { HapticTab } from "@/components/HapticTab";
 import TabBarBackground from "@/components/ui/TabBarBackground";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import { Colors } from "@/constants/Colors";
-import { IconSymbol } from "@/components/ui/IconSymbol";
 import { Heart, House, Package, User } from "lucide-react-native";
 
 export default function TabLayout() {

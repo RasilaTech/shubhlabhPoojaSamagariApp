@@ -20,38 +20,39 @@ const NavBar = () => {
 
   return (
     <View style={styles.container}>
-      {isFocused ? null : (
-        <TouchableOpacity onPress={handleLogoPress}>
-          <Image
-            source={require("../../../assets/images/navbar-logo.png")}
-            style={styles.image}
-          />
-        </TouchableOpacity>
-      )}
-      <View style={styles.inputContainer}>
-        <Search size={18} strokeWidth={2.5} />
-        {!isFocused && !query && (
-          <View style={styles.placeholderContainer}>
-            <Text style={styles.placeholderText}>Search </Text>
-            <RotatingText
-              texts={['"Coconut"', '"Oil"', '"Agarbatti"', '"Diyas"']}
-              staggerFrom={"last"}
-              staggerDuration={0.025}
-              rotationInterval={2000}
-              textStyle={styles.rotatingTextStyle}
-              initial={{ translateY: "100%" }}
-              animate={{ translateY: 0 }}
-              exit={{ translateY: "-120%" }}
-              transition={{ type: "spring", damping: 30, stiffness: 400 }}
-            />
-          </View>
-        )}
-        <TextInput
-          style={styles.input}
-          onChangeText={setQuery}
-          onFocus={() => setIsFocused(true)}
-          onBlur={() => setIsFocused(false)}
+      <TouchableOpacity onPress={handleLogoPress}>
+        <Image
+          source={require("../../../assets/images/navbar-logo.png")}
+          style={[styles.image, isFocused ? { height: 0 } : { height: 45 }]}
         />
+      </TouchableOpacity>
+
+      <View style={{ width: "100%", paddingHorizontal: 16 }}>
+        <View style={styles.inputContainer}>
+          <Search size={18} strokeWidth={2.5} />
+          {!isFocused && !query && (
+            <View style={styles.placeholderContainer}>
+              <Text style={styles.placeholderText}>Search </Text>
+              <RotatingText
+                texts={['"Coconut"', '"Oil"', '"Agarbatti"', '"Diyas"']}
+                staggerFrom={"last"}
+                staggerDuration={0.025}
+                rotationInterval={2000}
+                textStyle={styles.rotatingTextStyle}
+                initial={{ translateY: "100%" }}
+                animate={{ translateY: 0 }}
+                exit={{ translateY: "-120%" }}
+                transition={{ type: "spring", damping: 30, stiffness: 400 }}
+              />
+            </View>
+          )}
+          <TextInput
+            style={styles.input}
+            onChangeText={setQuery}
+            onFocus={() => setIsFocused(true)}
+            onBlur={() => setIsFocused(false)}
+          />
+        </View>
       </View>
     </View>
   );
@@ -66,12 +67,11 @@ const styles = StyleSheet.create({
     backgroundColor: "white",
     borderBottomColor: "#eeeeee",
     borderBottomWidth: 1,
-    paddingBottom: 12,
+    paddingVertical: 8,
     gap: 8,
   },
   image: {
     resizeMode: "contain",
-    height: 45,
   },
   inputContainer: {
     borderColor: "#0000000a",
@@ -80,7 +80,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     alignItems: "center",
     flexDirection: "row",
-    width: "90%",
+    width: "100%",
     height: 40,
     gap: 8,
     borderRadius: 12,
