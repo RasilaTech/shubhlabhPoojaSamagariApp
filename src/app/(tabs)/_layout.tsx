@@ -4,9 +4,15 @@ import { Platform } from "react-native";
 
 import { HapticTab } from "@/components/HapticTab";
 import TabBarBackground from "@/components/ui/TabBarBackground";
-import { useColorScheme } from "@/hooks/useColorScheme";
 import { Colors } from "@/constants/Colors";
-import { Heart, House, Package, User } from "lucide-react-native";
+import { useColorScheme } from "@/hooks/useColorScheme";
+import {
+  House,
+  LayoutDashboard,
+  Package,
+  ShoppingCart,
+  User,
+} from "lucide-react-native";
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
@@ -36,11 +42,23 @@ export default function TabLayout() {
           tabBarIcon: ({ color }) => <House color={color} stroke={color} />,
         }}
       />
+
       <Tabs.Screen
-        name="wishlist"
+        name="categories"
         options={{
-          title: "Wishlist",
-          tabBarIcon: ({ color }) => <Heart color={color} stroke={color} />,
+          title: "categories",
+          tabBarIcon: ({ color }) => (
+            <LayoutDashboard color={color} stroke={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="cart"
+        options={{
+          title: "cart",
+          tabBarIcon: ({ color }) => (
+            <ShoppingCart color={color} stroke={color} />
+          ),
         }}
       />
       <Tabs.Screen

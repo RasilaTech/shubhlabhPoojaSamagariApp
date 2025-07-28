@@ -1,9 +1,9 @@
-import { Mutex } from "async-mutex";
-import type { BaseQueryFn } from "@reduxjs/toolkit/query";
-import type { AxiosRequestConfig, AxiosError } from "axios";
-import { setCredentials, logout } from "@/store/features/auth/authSlice";
-import axiosInstance from "./axiosInstance";
+import { logout, setCredentials } from "@/store/features/auth/authSlice";
 import type { RootState } from "@/store/store";
+import type { BaseQueryFn } from "@reduxjs/toolkit/query";
+import { Mutex } from "async-mutex";
+import type { AxiosError, AxiosRequestConfig } from "axios";
+import axiosInstance from "./axiosInstance";
 
 const mutex = new Mutex();
 
@@ -21,7 +21,9 @@ const baseQueryWithReauth: BaseQueryFn<
   await mutex.waitForUnlock();
 
   const getAuthState = () => api.getState() as RootState;
-  let accessToken = getAuthState().auth.accessToken;
+  // let accessToken = getAuthState().auth.accessToken;
+  let accessToken =
+    "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJjZjU4MzYzMC04OWE0LTRiNGYtOGI4Ny01NDc3OWMxNmQ0M2QiLCJwaG9uZV9udW1iZXIiOiIrOTE5OTE0NDU0MTQ3Iiwicm9sZSI6ImFkbWluIiwiaWF0IjoxNzUzNzIzMTQxLCJleHAiOjE3NTM3MjQwNDF9.DTPZlu14eve5RgVEo-4MNCN33VjV5bSqBs0-zY-e2fRx4HKto2q7z3jwuKlZ4uJ9Ajx66vV-yppx0HTjmILJV4BKKcQ91-IMNa-b86VFvOB65v_pQk7NKTCEwDR3EJ1A8AwGKd0lHzdvROByMgSTLPOk8OeBgygJFsftZpeBzKpzP7hfUQbKQk0uSKhX431PPR4ZnuwBepm9IKWgub1KMQccdN0r1oJWZfBESLnUN2JjrqS6Sg3AfzNfajPDckeJFQ_DCX9STXWsXC_cZx3nvnBQYyLQynQr6OrW4z_eEzU8hJyuzaDuBRWzUuUMEpke1ZpkTVUxrOuePnrl-Ud54A";
 
   let headers = {
     ...args.headers,
@@ -84,7 +86,9 @@ const baseQueryWithReauth: BaseQueryFn<
       }
     } else {
       await mutex.waitForUnlock();
-      accessToken = getAuthState().auth.accessToken;
+      // accessToken = getAuthState().auth.accessToken;
+      accessToken =
+        "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJjZjU4MzYzMC04OWE0LTRiNGYtOGI4Ny01NDc3OWMxNmQ0M2QiLCJwaG9uZV9udW1iZXIiOiIrOTE5OTE0NDU0MTQ3Iiwicm9sZSI6ImFkbWluIiwiaWF0IjoxNzUzNzIzMTQxLCJleHAiOjE3NTM3MjQwNDF9.DTPZlu14eve5RgVEo-4MNCN33VjV5bSqBs0-zY-e2fRx4HKto2q7z3jwuKlZ4uJ9Ajx66vV-yppx0HTjmILJV4BKKcQ91-IMNa-b86VFvOB65v_pQk7NKTCEwDR3EJ1A8AwGKd0lHzdvROByMgSTLPOk8OeBgygJFsftZpeBzKpzP7hfUQbKQk0uSKhX431PPR4ZnuwBepm9IKWgub1KMQccdN0r1oJWZfBESLnUN2JjrqS6Sg3AfzNfajPDckeJFQ_DCX9STXWsXC_cZx3nvnBQYyLQynQr6OrW4z_eEzU8hJyuzaDuBRWzUuUMEpke1ZpkTVUxrOuePnrl-Ud54A";
       if (accessToken) {
         headers["Authorization"] = `Bearer ${accessToken}`;
         const retryResult = await axiosInstance({ ...args, headers });

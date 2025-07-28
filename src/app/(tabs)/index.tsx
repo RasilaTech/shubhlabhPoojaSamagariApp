@@ -15,7 +15,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { LinearGradient } from "expo-linear-gradient";
 import { ChevronRight } from "lucide-react-native";
 import CategoryHomeScreenCard from "@/components/card/CategoryHomeScreenCard";
-import ImageCarousel from "@/components/carousel/ImageCarousel";
+import ImageCarousel, { CarouselItemData } from "@/components/carousel/ImageCarousel";
 import TopCategoriesWithProduct from "@/components/TopCategoriesWithProduct";
 
 export default function HomeScreen() {

@@ -30,7 +30,7 @@ export const categoryApi = createApi({
         method: "GET",
         params: {
           page: pageParam,
-          limit: queryArg.limit || 30,
+          limit: queryArg.limit || 10,
           ...(queryArg.q ? { q: queryArg.q } : {}),
           ...(queryArg.sort_by ? { sort_by: queryArg.sort_by } : {}),
           ...(queryArg.sort_order ? { sort_order: queryArg.sort_order } : {}),
