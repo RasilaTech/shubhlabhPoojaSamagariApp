@@ -9,9 +9,8 @@ import {
   Text,
   TouchableOpacity,
   View,
-} from "react-native"; // Add FlatList
+} from "react-native";
 
-// You'll need to create or use a placeholder for AddToCartCounter
 import { CartItem } from "@/services/cart/cartApi.type";
 import AddToCartCounter from "../button/AddToCartCounter";
 import CurrentlyUnavailable from "./CurrentlyUnavailable"; // Adjust path
@@ -35,6 +34,7 @@ const ReviewOrder = ({ cartData }: ReviewOrderProps) => {
   );
 
   const handleProductPress = (productId: string) => {
+    // Assuming product details screen is /products/[id]
     router.push({ pathname: "/product/[id]", params: { id: productId } });
   };
 
@@ -67,9 +67,13 @@ const ReviewOrder = ({ cartData }: ReviewOrderProps) => {
           </Text>
         </View>
       </TouchableOpacity>
+
       <View style={styles.availableItemRightContent}>
-        {/* AddToCartCounter needs to be converted to RN */}
-        <AddToCartCounter productVariant={item.variant} />
+        <View style={styles.counterWrapper}>
+          <View style={styles.counterOverride}>
+            <AddToCartCounter productVariant={item.variant} />
+          </View>
+        </View>
         <View style={styles.availablePriceDetails}>
           <Text style={styles.availableMrpPrice}>
             ₹
@@ -94,12 +98,13 @@ const ReviewOrder = ({ cartData }: ReviewOrderProps) => {
     <View style={styles.container}>
       {availableItems.length > 0 && (
         <View style={styles.availableItemsCard}>
-          <FlatList // Use FlatList for available items
+          <FlatList
             data={availableItems}
             renderItem={renderAvailableItem}
             keyExtractor={(item) => item.product_variant_id}
-            scrollEnabled={false} // Disable FlatList scroll, parent ScrollView handles it
-            ItemSeparatorComponent={() => <View style={styles.itemSeparator} />} // Add separator between items
+            scrollEnabled={false}
+            ItemSeparatorComponent={() => <View style={styles.itemSeparator} />}
+            contentContainerStyle={styles.flatListContentPadding}
           />
         </View>
       )}
@@ -115,94 +120,104 @@ const ReviewOrder = ({ cartData }: ReviewOrderProps) => {
 
 const styles = StyleSheet.create({
   container: {
-    flexDirection: "column", // flex flex-col
-    gap: 12, // gap-3
+    flexDirection: "column",
+    gap: 12,
   },
   availableItemsCard: {
-    // shadow-cart-card conversion
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
     shadowRadius: 2,
     elevation: 3,
-    marginBottom: 4, // mb-1
-    flexDirection: "column", // flex w-full flex-col
-    gap: 16, // gap-4 (This gap is now handled by FlatList ItemSeparator)
-    borderRadius: 8, // rounded-lg
-    backgroundColor: "white", // bg-white
-    padding: 12, // p-3
+    marginBottom: 4,
+    borderRadius: 8,
+    backgroundColor: "white",
+  },
+  flatListContentPadding: {
+    padding: 12,
   },
   itemSeparator: {
     height: 1,
-    backgroundColor: "#e2e8f0", // Light gray separator
-    marginVertical: 8, // Adjust spacing of separator
+    backgroundColor: "#e2e8f0",
+    marginVertical: 8,
   },
   availableItemRow: {
-    flexDirection: "row", // flex
-    // cursor-pointer - not applicable
-    alignItems: "center", // items-center
-    justifyContent: "space-between", // justify-between
-    gap: 12, // gap-3
-    paddingVertical: 5, // Small vertical padding for items within the row
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 8,
+    paddingVertical: 8, // Increased padding for better spacing
+    minHeight: 65, // Increased minimum height
   },
   availableItemLeftContent: {
-    flexDirection: "row", // flex
-    minWidth: 0, // min-w-0
-    gap: 12, // gap-3
+    flexDirection: "row",
+    flex: 1, // Take available space
+    minWidth: 0, // Allow shrinking
+    maxWidth: "60%", // Reduced max width to give more space to right content
+    gap: 12,
     alignItems: "center",
-    flex: 1, // Allow content to take space
   },
   availableProductImage: {
-    aspectRatio: 1, // aspect-square
-    width: 50, // w-[50px]
-    borderRadius: 8, // rounded-lg
+    aspectRatio: 1,
+    width: 50,
+    borderRadius: 8,
     resizeMode: "cover",
   },
   availableProductInfo: {
-    flexDirection: "column", // flex flex-col
-    flex: 1, // w-full min-w-0 - allows text to wrap
+    flexDirection: "column",
+    flex: 1, // Take remaining space after image
+    minWidth: 0, // Essential for text truncation
   },
   availableProductName: {
-    // line-clamp-2 max-w-fit - handled by numberOfLines
-    fontSize: 13, // text-[13px]
-    lineHeight: 17, // leading-[17px]
-    fontWeight: "500", // font-medium
-    letterSpacing: -0.33, // -tracking-[0.33px]
-    // break-words text-ellipsis - handled by ellipsizeMode/numberOfLines
-    color: "rgba(2, 6, 12, 0.75)", // text-[#02060cbf]
+    fontSize: 13,
+    lineHeight: 17,
+    fontWeight: "500",
+    letterSpacing: -0.33,
+    color: "rgba(2, 6, 12, 0.75)",
   },
   availableProductLabel: {
-    // line-clamp-1 max-w-fit - handled by numberOfLines
-    fontSize: 12, // text-[12px]
-    lineHeight: 16, // leading-[16px]
-    fontWeight: "400", // font-normal
-    // text-ellipsis whitespace-nowrap - handled by ellipsizeMode/numberOfLines
-    color: "rgba(2, 6, 12, 0.45)", // text-[#02060c73]
+    fontSize: 12,
+    lineHeight: 16,
+    fontWeight: "400",
+    color: "rgba(2, 6, 12, 0.45)",
   },
   availableItemRightContent: {
-    flexDirection: "row", // flex
-    alignItems: "center", // items-center
-    gap: 8, // gap-2
+    flexDirection: "row", // Counter and price side by side
+    alignItems: "center", // Align vertically in center
+    justifyContent: "flex-end", // Push to right
+    gap: 10, // Reduced gap slightly
+    flexShrink: 0, // Don't shrink
+    minWidth: 135, // Increased minimum width to accommodate larger counter
+  },
+  counterWrapper: {
+    width: 85, // Fixed width for counter
+    flexShrink: 0,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  counterOverride: {
+    width: 85, // Force the counter to respect this width
+    height: 32, // Fixed height to match counter design
   },
   availablePriceDetails: {
-    flexDirection: "column", // flex flex-col
-    // min-w-16 - rely on content width
-    alignItems: "flex-end", // items-end
+    flexDirection: "column",
+    alignItems: "flex-end",
+    minWidth: 45, // Ensure price section has minimum width
   },
   availableMrpPrice: {
-    fontSize: 10, // text-[10px]
-    lineHeight: 13, // leading-[13px]
-    fontWeight: "600", // font-semibold
-    letterSpacing: -0.25, // -tracking-[0.25px]
-    color: "rgba(2, 6, 12, 0.45)", // text-[#02060c73]
+    fontSize: 10,
+    lineHeight: 13,
+    fontWeight: "600",
+    letterSpacing: -0.25,
+    color: "rgba(2, 6, 12, 0.45)",
     textDecorationLine: "line-through",
   },
   availableSalePrice: {
-    fontSize: 14, // text-[14px]
-    lineHeight: 18, // leading-[18px]
-    fontWeight: "400", // font-normal
-    letterSpacing: -0.25, // -tracking-[0.25px]
-    color: "rgba(2, 6, 12, 0.74)", // text-[#02060cbd]
+    fontSize: 14,
+    lineHeight: 18,
+    fontWeight: "400",
+    letterSpacing: -0.25,
+    color: "rgba(2, 6, 12, 0.74)",
   },
 });
 

@@ -20,9 +20,9 @@ import {
 
 // Assuming LoginDialog is a React Native component that uses Modal
 // import LoginDialog from "@/components/dialog/LoginDialog"; // Adjust path
+import { CartItem } from "@/services/cart/cartApi.type";
 import { ProductVariant } from "@/services/product/productApi.type";
 import { useAppSelector } from "@/store/hook";
-import { CartItem } from "@/services/cart/cartApi.type";
 
 export interface AddToCartCounterProps {
   productVariant: ProductVariant;
@@ -33,10 +33,7 @@ const AddToCartCounter = ({ productVariant }: AddToCartCounterProps) => {
   const [showLoginDialog, setShowLoginDialog] = useState(false); // State for LoginDialog visibility
 
   const { data: cartData = { data: [] }, isFetching: isFetchingCart } =
-    useGetCartItemsQuery(undefined, {
-      skip: !isAuthenticated,
-      // Add refetchOnMountOrArgChange: true if you want to ensure cart data is fresh
-    });
+    useGetCartItemsQuery();
 
   const [updateCartItem, { isLoading: isUpdatingCart }] =
     useUpdateCartItemMutation();
@@ -121,27 +118,27 @@ const AddToCartCounter = ({ productVariant }: AddToCartCounterProps) => {
   // Render loading state for buttons if any cart operation is pending
   const showLoading = isAddingToCart || isUpdatingCart || isFetchingCart;
 
-  if (!isAuthenticated) {
-    return (
-      <TouchableOpacity
-        style={[styles.baseButton, styles.addOutlineButton]}
-        onPress={() => setShowLoginDialog(true)} // Open LoginDialog
-        disabled={showLoading}
-      >
-        {showLoading ? (
-          <ActivityIndicator size="small" color="#ff5200" />
-        ) : (
-          <Text style={styles.addOutlineButtonText}>Add</Text>
-        )}
+  // if (!isAuthenticated) {
+  //   return (
+  //     <TouchableOpacity
+  //       style={[styles.baseButton, styles.addOutlineButton]}
+  //       onPress={() => setShowLoginDialog(true)} // Open LoginDialog
+  //       disabled={showLoading}
+  //     >
+  //       {showLoading ? (
+  //         <ActivityIndicator size="small" color="#ff5200" />
+  //       ) : (
+  //         <Text style={styles.addOutlineButtonText}>Add</Text>
+  //       )}
 
-        {/* Login Dialog (Modal) */}
-        <LoginDialog
-          isVisible={showLoginDialog}
-          onClose={() => setShowLoginDialog(false)}
-        />
-      </TouchableOpacity>
-    );
-  }
+  //       {/* Login Dialog (Modal) */}
+  //       {/* <LoginDialog
+  //         isVisible={showLoginDialog}
+  //         onClose={() => setShowLoginDialog(false)}
+  //       /> */}
+  //     </TouchableOpacity>
+  //   );
+  // }
 
   return quantity === 0 ? (
     <TouchableOpacity
@@ -162,11 +159,7 @@ const AddToCartCounter = ({ productVariant }: AddToCartCounterProps) => {
         onPress={() => handleDecreaseProductQuantity(productVariant.id)}
         disabled={showLoading}
       >
-        {showLoading ? (
-          <ActivityIndicator size="small" color="#1ba672" />
-        ) : (
-          <Minus size={16} color="#1ba672" />
-        )}
+        <Minus size={16} color="#1ba672" />
       </TouchableOpacity>
 
       <View style={styles.quantityDisplay}>
@@ -182,11 +175,7 @@ const AddToCartCounter = ({ productVariant }: AddToCartCounterProps) => {
         onPress={() => handleIncreaseProductQuantity(productVariant.id)}
         disabled={showLoading}
       >
-        {showLoading ? (
-          <ActivityIndicator size="small" color="#1ba672" />
-        ) : (
-          <Plus size={16} color="#1ba672" />
-        )}
+        <Plus size={16} color="#1ba672" />
       </TouchableOpacity>
     </View>
   );
@@ -253,8 +242,8 @@ const styles = StyleSheet.create({
   },
   quantityText: {
     // cursor-default - not applicable
-    paddingHorizontal: 8, // px-2 (approx)
-    paddingVertical: 6, // py-1.5 (approx)
+    paddingHorizontal: 2, // px-2 (approx)
+    paddingVertical: 2, // py-1.5 (approx)
     fontSize: 14, // text-sm
     lineHeight: 18, // leading-[1.125rem] (1.125 * 16px = 18px)
     fontWeight: "600", // font-semibold

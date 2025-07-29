@@ -5,7 +5,6 @@ import BillDetails from "@/components/card/BillDetails";
 import Coupons from "@/components/card/Coupons";
 import EmptyCart from "@/components/card/EmptyCart";
 import ReviewOrder from "@/components/card/ReviewOrder";
-import CancelOrderDialog from "@/components/dialog/CancelOrderDialog";
 import OrderErrorScreen from "@/components/error/OrderErrorScree";
 import OrderDetailSkeleton from "@/components/skeletons/OrderSkeleton";
 import { UserAddressPayload } from "@/services/address/addressApi.type";
@@ -53,7 +52,7 @@ export default function Cart() {
     isLoading,
     isError,
   } = useGetCartItemsQuery(undefined, {
-    skip: !isAuthenticated,
+    // skip: !isAuthenticated,
   });
 
   const [createOrder, { isLoading: orderPlacingLoading }] =
@@ -62,13 +61,13 @@ export default function Cart() {
   const { data: addressData = { data: [] } } = useGetUserAddressListQuery(
     undefined,
     {
-      skip: !isAuthenticated,
+      // skip: !isAuthenticated,
     }
   );
   const defaultAddress = addressData.data.find((address) => address.is_default);
 
   const { data: couponsData = { data: [] } } = useGetCouponsQuery(undefined, {
-    skip: !isAuthenticated,
+    // skip: !isAuthenticated,
   });
 
   const [clearCart, { isLoading: clearCartLoading }] = useClearCartMutation();
@@ -354,7 +353,7 @@ export default function Cart() {
           </TouchableOpacity>
         )}
       </View>
-{/* 
+      {/* 
       <CancelOrderDialog
         isVisible={showClearCartDialog} // 'open' prop should be 'isVisible'
         onOpenChange={setShowClearCartDialog} // 'onOpenChange' should be 'onClose'
@@ -386,7 +385,7 @@ export default function Cart() {
       /> */}
     </View>
   );
-};
+}
 
 const styles = StyleSheet.create({
   container: {
@@ -463,14 +462,15 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 8, // rounded-tr-lg
     backgroundColor: "white", // bg-white
     paddingHorizontal: 16, // px-4
-    paddingVertical: 16, // py-4
+    paddingTop: 16, // py-4
+    paddingBottom: 50,
     // bottom-0 z-10 - implicit due to position outside ScrollView
   },
   payButton: {
     width: "100%", // w-full
     borderRadius: 8, // rounded-lg
     backgroundColor: "#ff5200", // bg-[#ff5200]
-    paddingVertical: 14, // py-2.5 (adjusted for better touch target)
+    paddingVertical: 12, // py-2.5 (adjusted for better touch target)
     alignItems: "center",
     justifyContent: "center",
     // cursor-pointer - not applicable

@@ -6,7 +6,7 @@ import { Image, StyleSheet, Text, View } from "react-native";
 
 // Assuming guardIcon.svg is placed in assets/images/guardIcon.png or .jpg after conversion
 // For SVG directly, you'd need react-native-svg-transformer
-// const guartIcon = require("../../../assets/images/guardIcon.png"); // Adjust path and extension
+const guartIcon = require("../../../assets/images/guardIcon.png"); // Adjust path and extension
 
 export interface BillDetailProps {
   itemsTotal: number;
@@ -23,7 +23,7 @@ const BillDetails = ({
   let promoCodeDiscount = 0;
 
   // const configState = useAppSelector(selectConfiguration);
-  const deliveryCharges: number =  0;
+  const deliveryCharges: number = 0;
 
   // Recalculate promoCodeDiscount as per the original logic
   if (selectedCoupon) {
@@ -122,14 +122,13 @@ const BillDetails = ({
           <Text style={styles.totalValue}>₹{formatCurrency(totalAmount)}</Text>
         </View>
         <View style={styles.guardInfoContainer}>
-          {/* <View style={styles.guardIconWrapper}>
+          <View style={styles.guardIconWrapper}>
             <Image
-              loading="lazy"
               source={guartIcon}
               alt="Guard Icon"
               style={styles.guardIcon}
             />
-          </View> */}
+          </View>
           <Text style={styles.guardText}>
             Trusted, authentic, safe, easy returns
           </Text>

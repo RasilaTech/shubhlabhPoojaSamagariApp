@@ -9,6 +9,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import AddToCartCounter from "../button/AddToCartCounter";
 
 interface ProductItemProps {
   product: Product;
@@ -80,6 +81,9 @@ const ProductItem = ({ product }: ProductItemProps) => {
           </View>
         </View>
       </View>
+      <View style={styles.counterOverride}>
+        <AddToCartCounter productVariant={defaultProductVariant} />
+      </View>
     </TouchableOpacity>
   );
 };
@@ -109,6 +113,10 @@ const styles = StyleSheet.create({
     height: 32,
     justifyContent: "center",
     alignItems: "center",
+  },
+  counterOverride: {
+    width: 120, // Force the counter to respect this width
+    height: 32, // Fixed height to match counter design
   },
   imageOverlay_image: {
     width: 30,
