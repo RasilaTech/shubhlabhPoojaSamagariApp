@@ -118,16 +118,18 @@ export default Orders;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#f0f0f5",
-    paddingHorizontal: 14, // Changed from paddingLeft to paddingHorizontal for overall padding
+    backgroundColor: "white",
   },
   headingText: {
-    fontSize: 24,
-    fontFamily: "outfit-medium", // Ensure you have this font loaded if using Expo Font
-    color: "#02060C",
-    marginBottom: 16, // Added space below heading
+    fontSize: 26,
+    fontWeight: "bold",
+    color: "#1a202c", // Darker text for heading
+    paddingHorizontal: 20,
+    marginTop: 20,
+    marginBottom: 20,
   },
   flatListContent: {
+    paddingHorizontal: 15,
     paddingBottom: 20, // Add some padding at the bottom of the list
   },
   loadingFooter: {

@@ -1,6 +1,13 @@
+import CategoryHomeScreenCard from "@/components/card/CategoryHomeScreenCard";
+import ImageCarousel, {
+  CarouselItemData,
+} from "@/components/carousel/ImageCarousel";
 import NavBar from "@/components/nav/NavBar";
+import TopCategoriesWithProduct from "@/components/TopCategoriesWithProduct";
 import { useGetCategoriesInfiniteQuery } from "@/services/category/categoryApi";
 import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
+import { LinearGradient } from "expo-linear-gradient";
+import { ChevronRight } from "lucide-react-native";
 import {
   Alert,
   Keyboard,
@@ -12,11 +19,6 @@ import {
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { LinearGradient } from "expo-linear-gradient";
-import { ChevronRight } from "lucide-react-native";
-import CategoryHomeScreenCard from "@/components/card/CategoryHomeScreenCard";
-import ImageCarousel, { CarouselItemData } from "@/components/carousel/ImageCarousel";
-import TopCategoriesWithProduct from "@/components/TopCategoriesWithProduct";
 
 export default function HomeScreen() {
   const {
@@ -118,7 +120,7 @@ export default function HomeScreen() {
               />
               <TouchableOpacity style={styles.seeAllButton}>
                 <Text style={styles.seeAllButtonText}>See All</Text>
-                <ChevronRight size={13} color="#1976D2" strokeWidth={3} />
+                <ChevronRight size={13} color="#f97316" strokeWidth={3} />
               </TouchableOpacity>
             </View>
             <ScrollView horizontal showsHorizontalScrollIndicator={false}>
@@ -149,7 +151,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#f0f0f5",
   },
   categoryListContainer: {
-    paddingTop: 8,
+    paddingTop: 16,
     paddingBottom: 8,
     gap: 12,
     backgroundColor: "white",
@@ -171,7 +173,7 @@ const styles = StyleSheet.create({
   },
   seeAllButtonText: {
     fontSize: 13,
-    color: "#1976D2",
+    color: "#f97316",
     fontFamily: "outfit-semibold",
   },
   seeAllButton: {
@@ -184,5 +186,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     gap: 16,
     paddingHorizontal: 16,
+    paddingTop: 4,
+    paddingBottom: 10,
   },
 });

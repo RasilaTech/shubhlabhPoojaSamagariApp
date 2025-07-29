@@ -9,10 +9,9 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-// Import your CategoryCard component and Category interface
-import { useGetCategoriesInfiniteQuery } from "@/services/category/categoryApi"; // Adjust this path if needed
-import CategoryCard from "@/components/card/CategoryCard"; // Adjust this path if needed
-import { Category } from "@/services/category/categoryApi.type";
+import CategoryCard from "@/components/card/CategoryCard";
+import { useGetCategoriesInfiniteQuery } from "@/services/category/categoryApi";
+import { Category } from "@/services/category/categoryApi.type"; // Ensure Category type is correctly imported
 
 const Categories = () => {
   const {
@@ -34,34 +33,55 @@ const Categories = () => {
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
-    isFetching,
+    // isFetching, // Not directly used in rendering logic here
   } = useGetCategoriesInfiniteQuery({
-    limit: 10, // Adjusted limit for better testing/demonstration of pagination
+    limit: 10,
   });
 
   const insets = useSafeAreaInsets();
   const tabBarHeight = useBottomTabBarHeight();
 
-  // Combine all categories from all pages into a single flat array
   const allCategories: Category[] = categoriesData.pages.flatMap(
     (page) => page.data
   );
 
-  // Function to load more data when the end of the list is reached
+  // --- Start of the fix for odd numbers ---
+  const numColumns = 2; // Define your number of columns here
+
+  // Calculate if we need to add a dummy item
+  const needsDummyItem = allCategories.length % numColumns !== 0;
+
+  const dataForGrid = needsDummyItem
+    ? [
+        ...allCategories,
+        {
+          id: "dummy",
+          name: "",
+          image: "",
+          priority: 0,
+          parent_id: null,
+          createdAt: "",
+          updatedAt: "",
+        },
+      ] // Add a dummy item
+    : allCategories;
+  // --- End of the fix ---
+
   const loadMoreCategories = useCallback(() => {
-    // Only fetch next page if not already fetching and there is a next page
     if (!isFetchingNextPage && hasNextPage) {
       fetchNextPage();
     }
   }, [fetchNextPage, isFetchingNextPage, hasNextPage]);
 
-  // Render item for FlatList - using CategoryCard
-  const renderCategoryItem = useCallback(
-    ({ item }: { item: Category }) => <CategoryCard category={item} />,
-    []
-  );
+  const renderCategoryItem = useCallback(({ item }: { item: Category }) => {
+    // If it's the dummy item, render an empty, invisible view
+    if (item.id === "dummy") {
+      return <View style={styles.hiddenDummyItem} />;
+    }
+    // Otherwise, render the actual CategoryCard
+    return <CategoryCard category={item} />;
+  }, []);
 
-  // Render footer for loading indicator during pagination
   const renderFooter = () => {
     if (!isFetchingNextPage) return null;
     return (
@@ -72,7 +92,6 @@ const Categories = () => {
     );
   };
 
-  // --- Conditional Rendering for initial states ---
   if (isLoading && allCategories.length === 0) {
     return (
       <View
@@ -83,7 +102,7 @@ const Categories = () => {
         ]}
       >
         <ActivityIndicator size="large" color="#0000ff" />
-        <Text style={styles.loadingText}>Loading categories...</Text>
+        <Text style={styles.messageText}>Loading categories...</Text>
       </View>
     );
   }
@@ -113,7 +132,7 @@ const Categories = () => {
           { paddingTop: insets.top },
         ]}
       >
-        <Text style={styles.noCategoriesText}>No categories found.</Text>
+        <Text style={styles.messageText}>No categories found.</Text>
       </View>
     );
   }
@@ -127,16 +146,16 @@ const Categories = () => {
     >
       <Text style={styles.headingText}>Categories</Text>
       <FlatList
-        data={allCategories} // Corrected: use allCategories
-        renderItem={renderCategoryItem} // Corrected: use renderCategoryItem
+        data={dataForGrid} // Use the modified data array
+        renderItem={renderCategoryItem}
         keyExtractor={(item) => item.id}
-        onEndReached={loadMoreCategories} // Corrected: use loadMoreCategories
+        onEndReached={loadMoreCategories}
         onEndReachedThreshold={0.5}
         ListFooterComponent={renderFooter}
         contentContainerStyle={styles.flatListContent}
         showsVerticalScrollIndicator={false}
-        numColumns={2} // Added for a grid layout with 2 columns
-        columnWrapperStyle={styles.row} // For styling rows in a grid
+        numColumns={numColumns} // Use the defined numColumns
+        columnWrapperStyle={styles.row}
       />
     </View>
   );
@@ -147,14 +166,16 @@ export default Categories;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#f0f0f5",
+    backgroundColor: "white",
     paddingHorizontal: 14,
   },
   headingText: {
-    fontSize: 24,
-    fontFamily: "outfit-medium",
-    color: "#02060C",
-    marginBottom: 16,
+    fontSize: 26,
+    fontWeight: "bold",
+    color: "#1a202c", // Darker text for heading
+    paddingHorizontal: 10,
+    marginTop: 20,
+    marginBottom: 20,
   },
   flatListContent: {
     paddingBottom: 20,
@@ -171,9 +192,16 @@ const styles = StyleSheet.create({
     color: "#555",
   },
   centerContent: {
+    flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    flex: 1, // Ensure it takes full height for centering
+    paddingHorizontal: 20,
+  },
+  messageText: {
+    fontSize: 16,
+    color: "#555",
+    textAlign: "center",
+    marginTop: 10,
   },
   errorText: {
     fontSize: 16,
@@ -187,8 +215,13 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   row: {
-    // Styles for the wrapper of each row in a multi-column FlatList
     justifyContent: "space-between",
-    marginBottom: 8, // Add space between rows
+    marginBottom: 8,
+  },
+  hiddenDummyItem: {
+    flex: 1, // Crucial for it to take up space like a real item
+    marginHorizontal: 4, // Match the margin of your CategoryCard if any
+    height: 0, // Make it invisible
+    width: 0, // Make it invisible
   },
 });

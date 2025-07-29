@@ -1,6 +1,14 @@
-import { Image, ImageBackground, StyleSheet, Text, View } from "react-native";
-import React from "react";
 import { Product } from "@/services/product/productApi.type";
+import { router } from "expo-router";
+import React from "react";
+import {
+  Image,
+  ImageBackground,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
 interface ProductItemProps {
   product: Product;
@@ -20,9 +28,15 @@ const ProductItem = ({ product }: ProductItemProps) => {
   const isOutOfStock = product.product_variants.every(
     (variant) => variant.out_of_stock
   );
+  const handlePressProduct = () => {
+    router.push({
+      pathname: "/product/[id]",
+      params: { id: product.id },
+    });
+  };
 
   return (
-    <View style={styles.container}>
+    <TouchableOpacity onPress={handlePressProduct} style={styles.container}>
       <View style={styles.imageContainer}>
         {discountPercentage > 0 && (
           <ImageBackground
@@ -66,7 +80,7 @@ const ProductItem = ({ product }: ProductItemProps) => {
           </View>
         </View>
       </View>
-    </View>
+    </TouchableOpacity>
   );
 };
 

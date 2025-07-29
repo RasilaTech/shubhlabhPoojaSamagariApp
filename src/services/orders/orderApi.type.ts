@@ -1,4 +1,5 @@
 import type { Meta } from "../product/productApi.type";
+// src/types/order-page-props.ts
 
 export interface OrderData {
   amount: number;
@@ -196,4 +197,14 @@ export interface OrderCancelResponse {
 
 export interface CancelOrderPayload {
   reason: string;
+} // Adjust path if needed
+
+// Interface for OrderDetailMainCard, OrderItemSummaryCard, PaymentSummaryCard
+export interface OrderDetailMainCardProps {
+  orderDetails: AllOrderDetail;
+}
+
+// Interface for DelhiveryDetailCard
+export interface DelhiveryDetailCardProps {
+  orderAddress: OrderAddress;
 }

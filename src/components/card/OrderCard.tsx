@@ -1,38 +1,37 @@
 import { useNavigation } from "@react-navigation/native";
-import { CheckCircle, Truck } from "lucide-react-native"; // Assuming lucide-react-native for icons
+import { CheckCircle, Truck } from "lucide-react-native";
 import React from "react";
 import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
-// Define the OrderDetail type based on your provided structure
-import type { OrderDetail } from "@/services/orders/orderApi.type"; // Adjust this path if needed
+import type { OrderDetail } from "@/services/orders/orderApi.type";
+import { router } from "expo-router";
 
 const OrderCard = ({ order }: { order: OrderDetail }) => {
   const navigation = useNavigation();
 
   const noOfItems = order.order_items.length;
 
-  // Helper function to get actual style objects from statusColors
   const getStatusStyles = (status: string) => {
     switch (status) {
       case "pending":
       case "accepted":
-        return { color: "#fbbf24", backgroundColor: "#fffbeb" }; // amber-600, amber-100
+        return { color: "#fbbf24", backgroundColor: "#fffbeb" };
       case "processing":
-        return { color: "#2563eb", backgroundColor: "#eff6ff" }; // blue-600, blue-100
+        return { color: "#2563eb", backgroundColor: "#eff6ff" };
       case "packed":
-        return { color: "#4f46e5", backgroundColor: "#eef2ff" }; // indigo-600, indigo-100
+        return { color: "#4f46e5", backgroundColor: "#eef2ff" };
       case "shipped":
-        return { color: "#9333ea", backgroundColor: "#f3e8ff" }; // purple-600, purple-100
+        return { color: "#9333ea", backgroundColor: "#f3e8ff" };
       case "out_for_delivery":
-        return { color: "#0ea5e9", backgroundColor: "#f0f9ff" }; // sky-600, sky-100
+        return { color: "#0ea5e9", backgroundColor: "#f0f9ff" };
       case "delivered":
-        return { color: "#15803d", backgroundColor: "#f0fdf4" }; // green-700, green-100
+        return { color: "#15803d", backgroundColor: "#f0fdf4" };
       case "cancelled":
       case "rejected":
-        return { color: "#b91c1c", backgroundColor: "#fef2f2" }; // red-700, red-100
+        return { color: "#b91c1c", backgroundColor: "#fef2f2" };
       case "returned":
       case "refunded":
-        return { color: "#475569", backgroundColor: "#f8fafc" }; // slate-600, slate-100
+        return { color: "#475569", backgroundColor: "#f8fafc" };
       default:
         return {};
     }
@@ -41,38 +40,47 @@ const OrderCard = ({ order }: { order: OrderDetail }) => {
   return (
     <View style={styles.card}>
       <View style={styles.header}>
-        <View style={styles.headerItem}>
+        {/* Header Item 1: Ordered On */}
+        <View style={styles.headerColumn}>
           <Text style={styles.orderedOnText}>
-            Ordered on{" "}
-            {new Date(order.createdAt).toLocaleDateString("en-IN", {
-              day: "2-digit",
-              month: "short",
-            })}
+            {`Ordered on ${new Date(order.createdAt).toLocaleDateString(
+              "en-IN",
+              {
+                day: "2-digit",
+                month: "short",
+              }
+            )}`}
           </Text>
         </View>
-        <View style={styles.headerItemRight}>
+
+        {/* Header Item 2: Order ID */}
+        <View style={styles.headerColumnRight}>
           <Text style={styles.orderIdText}>
-            Order ID:{" "}
+            Order ID:
             <Text style={styles.orderIdValue}>{order.order_number + 1000}</Text>
           </Text>
         </View>
-        <View
-          style={[
-            styles.headerItem,
-            styles.statusContainer,
-            getStatusStyles(order.status),
-          ]}
-        >
-          <Text style={[styles.statusText, getStatusStyles(order.status)]}>
-            {order.status.toUpperCase()}
-          </Text>
+
+        {/* Header Item 3: Status - FIXED HERE */}
+        <View style={styles.headerColumnStatus}>
+          <View style={[styles.statusBadge, getStatusStyles(order.status)]}>
+            <Text
+              style={[styles.statusText, getStatusStyles(order.status)]}
+              numberOfLines={1}
+              ellipsizeMode="tail"
+            >
+              {order.status.toUpperCase()}
+            </Text>
+          </View>
         </View>
-        <View style={styles.headerItemRight}>
+
+        {/* Header Item 4: Delivery Status */}
+        <View style={styles.headerColumnRight}>
           {order.delivered_at && (
             <View style={styles.deliveryInfo}>
               <CheckCircle size={16} color="#22c55e" />
               <Text style={styles.deliveryText}>
-                Delivered on{" "}
+                {"Delivered on "}
                 <Text style={styles.deliveryDate}>
                   {new Date(order.delivered_at).toLocaleDateString("en-IN", {
                     day: "2-digit",
@@ -87,7 +95,7 @@ const OrderCard = ({ order }: { order: OrderDetail }) => {
             <View style={styles.deliveryInfo}>
               <Truck size={16} color="#3b82f6" />
               <Text style={styles.deliveryText}>
-                Expected by{" "}
+                {"Expected by "}
                 <Text style={styles.deliveryDate}>
                   {new Date(order.expected_delivery_date).toLocaleDateString(
                     "en-IN",
@@ -102,6 +110,7 @@ const OrderCard = ({ order }: { order: OrderDetail }) => {
           )}
         </View>
       </View>
+
       <View style={styles.content}>
         <View style={styles.itemSummary}>
           <Text>
@@ -132,8 +141,10 @@ const OrderCard = ({ order }: { order: OrderDetail }) => {
           </View>
           <TouchableOpacity
             onPress={() => {
-              // Assuming you have a route named 'OrderDetails' for individual order tracking
-             // navigation.navigate("OrderDetails", { orderId: order.id });
+              router.push({
+                pathname: "/orders/[id]",
+                params: { id: order.id },
+              });
             }}
             style={styles.trackOrderButton}
           >
@@ -151,9 +162,10 @@ const styles = StyleSheet.create({
     width: "100%",
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: "#E9E9EB", // Approximation for border
+    borderColor: "#E9E9EB",
     backgroundColor: "#fff",
-    marginBottom: 10, // Added for spacing between cards
+    marginBottom: 10,
+    overflow: "hidden",
   },
   header: {
     flexDirection: "row",
@@ -165,13 +177,20 @@ const styles = StyleSheet.create({
     paddingTop: 8,
     paddingBottom: 6,
   },
-  headerItem: {
+  headerColumn: {
     width: "50%",
-    // For smaller screens, width: 'auto' on sm:
+    paddingRight: 5,
   },
-  headerItemRight: {
+  // NEW STYLE FOR STATUS COLUMN - allows badge to shrink to content
+  headerColumnStatus: {
+    width: "50%",
+    paddingRight: 5,
+    alignItems: "flex-start", // Align badge to the left
+  },
+  headerColumnRight: {
     width: "50%",
     alignItems: "flex-end",
+    paddingLeft: 5,
   },
   orderedOnText: {
     fontSize: 14,
@@ -184,15 +203,16 @@ const styles = StyleSheet.create({
   orderIdValue: {
     fontWeight: "600",
   },
-  statusContainer: {
+  // UPDATED STATUS BADGE - now shrinks to content width
+  statusBadge: {
     borderRadius: 6,
-    paddingHorizontal: 12,
-    paddingVertical: 1,
+    paddingHorizontal: 8, // Increased padding for better appearance
+    paddingVertical: 4, // Increased padding for better appearance
     marginTop: 4,
-    alignSelf: "flex-start", // Important for w-fit behavior
+    alignSelf: "flex-start", // This makes the badge shrink to content width
   },
   statusText: {
-    fontSize: 14,
+    fontSize: 12, // Slightly smaller font for better badge proportions
     fontWeight: "500",
     letterSpacing: -0.35,
   },
@@ -205,11 +225,11 @@ const styles = StyleSheet.create({
   },
   deliveryText: {
     fontSize: 14,
-    color: "#4b5563", // gray-600
+    color: "#4b5563",
   },
   deliveryDate: {
     fontWeight: "500",
-    color: "#1f2937", // gray-800
+    color: "#1f2937",
   },
   content: {
     flexDirection: "column",
@@ -219,6 +239,7 @@ const styles = StyleSheet.create({
   itemSummary: {
     flexDirection: "row",
     justifyContent: "space-between",
+    alignItems: "center",
   },
   amountText: {
     fontSize: 14,
@@ -232,6 +253,7 @@ const styles = StyleSheet.create({
   productImagesContainer: {
     flexDirection: "row",
     gap: 8,
+    flexWrap: "wrap",
   },
   productImageWrapper: {
     alignItems: "center",
@@ -245,7 +267,7 @@ const styles = StyleSheet.create({
     height: 36,
     width: 36,
     borderRadius: 8,
-    objectFit: "cover", // In React Native, this is 'cover', 'contain', 'stretch', 'repeat', 'center'
+    resizeMode: "cover",
   },
   moreItemsContainer: {
     alignItems: "center",
