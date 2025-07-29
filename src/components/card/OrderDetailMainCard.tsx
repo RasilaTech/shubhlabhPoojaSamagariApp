@@ -224,14 +224,10 @@ const OrderDetailMainCard = ({ orderDetails }: OrderDetailMainCardProps) => {
           handleCloseCancelDialog={handleCloseCancelDialog}
         />
       )}
-      {needHelpDialogVisible && (
-        <NeedHelpInfoDialog
-          isVisible={needHelpDialogVisible}
-          onClose={() => {
-            setNeedHelpDialogVisible(false);
-          }}
-        /> // No props needed for this example, or pass dismiss handler
-      )}
+      <NeedHelpInfoDialog
+        isVisible={needHelpDialogVisible}
+        onClose={() => setNeedHelpDialogVisible(false)}
+      />
     </View>
   );
 };

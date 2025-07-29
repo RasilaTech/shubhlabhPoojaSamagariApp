@@ -2,8 +2,8 @@ import { Mail, Phone } from "lucide-react-native"; // Assuming lucide-react-nati
 import React from "react";
 import {
   Dimensions,
-  Linking, // For opening mail and phone links
-  Modal, // For responsive width
+  Linking, 
+  Modal, 
   Pressable,
   StyleSheet,
   Text,
@@ -11,7 +11,6 @@ import {
   View,
 } from "react-native";
 
-// Get screen width for responsive sizing
 const screenWidth = Dimensions.get("window").width;
 
 interface NeedHelpInfoDialogProps {
@@ -33,16 +32,12 @@ const NeedHelpInfoDialog: React.FC<NeedHelpInfoDialogProps> = ({
 
   return (
     <Modal
-      transparent={true} // Makes the background transparent
-      animationType="fade" // Can be 'none', 'slide', 'fade'
+      transparent={true} 
+      animationType="fade" 
       visible={isVisible}
-      onRequestClose={onClose} // Handles Android back button press
+      onRequestClose={onClose}
     >
       <Pressable style={styles.modalOverlay} onPress={onClose}>
-        {/*
-          The AlertDialogContent from web is this main View.
-          We stop propagation to prevent closing the modal when clicking inside the dialog.
-        */}
         <Pressable
           style={styles.dialogContent}
           onPress={(e) => e.stopPropagation()}
@@ -58,7 +53,7 @@ const NeedHelpInfoDialog: React.FC<NeedHelpInfoDialogProps> = ({
               style={styles.contactLink}
             >
               <View style={styles.iconBackground}>
-                <Mail size={20} color="#4f46e5" /> {/* text-indigo-600 */}
+                <Mail size={20} color="#4f46e5" />
               </View>
               <Text
                 numberOfLines={1}
@@ -74,9 +69,9 @@ const NeedHelpInfoDialog: React.FC<NeedHelpInfoDialogProps> = ({
               style={styles.contactLink}
             >
               <View style={styles.iconBackground}>
-                <Phone size={20} color="#4f46e5" /> {/* text-indigo-600 */}
+                <Phone size={20} color="#4f46e5" /> 
               </View>
-              <Text style={styles.contactText}>+91 90000-57702</Text>
+              <Text style={styles.contactText}>+91 9000057702</Text>
             </TouchableOpacity>
           </View>
 
@@ -94,7 +89,7 @@ const NeedHelpInfoDialog: React.FC<NeedHelpInfoDialogProps> = ({
 const styles = StyleSheet.create({
   modalOverlay: {
     flex: 1,
-    backgroundColor: "rgba(0, 0, 0, 0.5)", // Dimmed background
+    backgroundColor: "rgba(0, 0, 0, 0.5)", 
     justifyContent: "center",
     alignItems: "center",
   },
