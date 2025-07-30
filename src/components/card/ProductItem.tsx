@@ -9,7 +9,9 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import TriggerProductVariantBottomSheet from "../bottomsheet/TriggerProductVariantBottomSheet";
 import AddToCartCounter from "../button/AddToCartCounter";
+import SoldOutBadge from "../button/SoldButton";
 
 interface ProductItemProps {
   product: Product;
@@ -26,9 +28,11 @@ const ProductItem = ({ product }: ProductItemProps) => {
       defaultProductVariant.mrp) *
       100
   );
-  const isOutOfStock = product.product_variants.every(
-    (variant) => variant.out_of_stock
-  );
+  const isOutOfStock =
+    product.product_variants.length === 1
+      ? product.product_variants[0].out_of_stock
+      : product.product_variants.every((variant) => variant.out_of_stock);
+
   const handlePressProduct = () => {
     router.push({
       pathname: "/product/[id]",
@@ -37,7 +41,10 @@ const ProductItem = ({ product }: ProductItemProps) => {
   };
 
   return (
-    <TouchableOpacity onPress={handlePressProduct} style={styles.container}>
+    <TouchableOpacity
+      onPress={handlePressProduct}
+      style={[styles.container, isOutOfStock && { opacity: 0.5 }]}
+    >
       <View style={styles.imageContainer}>
         {discountPercentage > 0 && (
           <ImageBackground
@@ -82,7 +89,13 @@ const ProductItem = ({ product }: ProductItemProps) => {
         </View>
       </View>
       <View style={styles.counterOverride}>
-        <AddToCartCounter productVariant={defaultProductVariant} />
+        {isOutOfStock ? (
+          <SoldOutBadge />
+        ) : product.product_variants.length > 1 ? (
+          <TriggerProductVariantBottomSheet product={product} />
+        ) : (
+          <AddToCartCounter productVariant={defaultProductVariant} />
+        )}
       </View>
     </TouchableOpacity>
   );
@@ -97,6 +110,7 @@ const styles = StyleSheet.create({
     boxShadow: "rgba(0, 0, 0, 0.24) 0px 3px 8px",
     marginBottom: 12,
     borderRadius: 12,
+    position: "relative", // Added to enable absolute positioning of child
   },
   imageContainer: {
     position: "relative",
@@ -115,6 +129,10 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   counterOverride: {
+    position: "absolute", // Position absolutely
+    bottom: 6, // Align to bottom with padding
+    left: 6, // Align to left with padding
+    right: 6, // Align to right with padding
     width: 120, // Force the counter to respect this width
     height: 32, // Fixed height to match counter design
   },
@@ -140,6 +158,7 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
     paddingHorizontal: 6,
     maxWidth: 110,
+    marginBottom: 38, // Add margin to account for absolute positioned counter
   },
   productName: {
     wordWrap: "break-word",

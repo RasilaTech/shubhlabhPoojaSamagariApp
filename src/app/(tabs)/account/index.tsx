@@ -1,4 +1,5 @@
 // app/(tabs)/account/index.tsx
+import { useLogoutMutation } from "@/services/auth/authApi"; // Adjust path
 import { router } from "expo-router"; // Import router from expo-router
 import {
   ChevronRight,
@@ -47,13 +48,11 @@ const AccountOption: React.FC<AccountOptionProps> = ({
 );
 
 export default function AccountScreen() {
-  // Renamed to default export for file-based routing
   const insets = useSafeAreaInsets();
+  const [logout, { isLoading }] = useLogoutMutation();
 
-  // Function to handle navigation for each option using router.push
-
-  // Function to handle logout
-  const handleLogout = () => {
+  // FIX: Declare handleLogout as async
+  const handleLogout = async () => {
     Alert.alert(
       "Logout",
       "Are you sure you want to log out?",
@@ -64,10 +63,18 @@ export default function AccountScreen() {
         },
         {
           text: "Logout",
-          onPress: () => {
-            console.log("User logged out!");
-            // Redirect to the login screen, replacing the current navigation stack
-            //  router.replace("/(auth)/login");
+          // FIX: Declare this inner onPress callback as async
+          onPress: async () => {
+            try {
+              await logout().unwrap(); // Use .unwrap() to handle potential errors
+              router.replace("/"); // Redirect after successful logout
+            } catch (error) {
+              console.error("Logout failed:", error);
+              Alert.alert(
+                "Logout Failed",
+                "Could not log out. Please try again."
+              );
+            }
           },
         },
       ],
@@ -90,14 +97,12 @@ export default function AccountScreen() {
           <AccountOption
             icon={User}
             title="User Profile"
-            onPress={() => router.push({ pathname: "/(tabs)/account/profile" })}
+            onPress={() => router.push({ pathname: "/account/profile" })} // Use /account/profile for relative path in stack
           />
           <AccountOption
             icon={MapPin}
             title="My Addresses"
-            onPress={() =>
-              router.push({ pathname: "/(tabs)/account/addresses" })
-            } // Fixed: absolute path
+            onPress={() => router.push({ pathname: "/account/addresses" })} // Use /account/addresses
             isLast
           />
         </View>
@@ -107,19 +112,17 @@ export default function AccountScreen() {
           <AccountOption
             icon={Info}
             title="About Us"
-            onPress={() => router.push({ pathname: "/(tabs)/account/about" })} // Fixed: absolute path
+            onPress={() => router.push({ pathname: "/account/about" })}
           />
           <AccountOption
             icon={FileText}
             title="Policies"
-            onPress={() =>
-              router.push({ pathname: "/(tabs)/account/policies" })
-            } // Fixed: absolute path
+            onPress={() => router.push({ pathname: "/account/policies" })}
           />
           <AccountOption
             icon={LifeBuoy}
             title="Customer Support"
-            onPress={() => router.push({ pathname: "/(tabs)/account/support" })} // Fixed: absolute path
+            onPress={() => router.push({ pathname: "/account/support" })}
             isLast
           />
         </View>
@@ -141,7 +144,7 @@ export default function AccountScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#f0f2f5",
+    backgroundColor: "#f0f0f5",
   },
   headingText: {
     fontSize: 26,

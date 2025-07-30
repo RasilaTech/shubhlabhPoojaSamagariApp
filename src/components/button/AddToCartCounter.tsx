@@ -61,41 +61,18 @@ const AddToCartCounter = ({ productVariant }: AddToCartCounterProps) => {
 
   const handleDecreaseProductQuantity = async (productId: string) => {
     if (isUpdatingCart) return; // Prevent double clicks
-    if (quantity === 1) {
-      // If quantity is 1 and decreasing, confirm removal
-      Alert.alert("Remove Item", `Remove ${productVariant.name} from cart?`, [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: "Remove",
-          onPress: async () => {
-            try {
-              await updateCartItem({
-                productVariantId: productId,
-                body: { action: "decrease" },
-              }).unwrap();
-            } catch (error: any) {
-              console.error("Failed to remove item from cart:", error);
-              Alert.alert(
-                "Error",
-                error?.data?.message || "Failed to remove item."
-              );
-            }
-          },
-        },
-      ]);
-    } else {
-      try {
-        await updateCartItem({
-          productVariantId: productId,
-          body: { action: "decrease" },
-        }).unwrap();
-      } catch (error: any) {
-        console.error("Failed to decrease quantity:", error);
-        Alert.alert(
-          "Error",
-          error?.data?.message || "Failed to decrease quantity."
-        );
-      }
+
+    try {
+      await updateCartItem({
+        productVariantId: productId,
+        body: { action: "decrease" },
+      }).unwrap();
+    } catch (error: any) {
+      console.error("Failed to decrease quantity:", error);
+      Alert.alert(
+        "Error",
+        error?.data?.message || "Failed to decrease quantity."
+      );
     }
   };
 
@@ -198,11 +175,8 @@ const styles = StyleSheet.create({
     borderColor: "rgba(2, 6, 12, 0.15)", // border-[#02060c26]
     backgroundColor: "white", // bg-white
     // shadow-button-shadow conversion
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 2, // Android shadow
+  
+   // Android shadow
   },
   addOutlineButtonText: {
     fontSize: 14, // text-sm

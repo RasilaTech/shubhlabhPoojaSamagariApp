@@ -1,4 +1,5 @@
 import { addressAPI } from "@/services/address/AddresssAPI";
+import { authAPI } from "@/services/auth/authApi";
 import { cartAPI } from "@/services/cart/cartAPI";
 import { categoryApi } from "@/services/category/categoryApi";
 import { configurationApi } from "@/services/configuration/configurationApi";
@@ -12,6 +13,7 @@ import authReducer from "./features/auth/authSlice";
 export const store = configureStore({
   reducer: {
     auth: authReducer,
+
     [categoryApi.reducerPath]: categoryApi.reducer,
     [productAPI.reducerPath]: productAPI.reducer,
     [orderApi.reducerPath]: orderApi.reducer,
@@ -20,6 +22,7 @@ export const store = configureStore({
     [couponAPI.reducerPath]: couponAPI.reducer,
     [configurationApi.reducerPath]: configurationApi.reducer,
     [cartAPI.reducerPath]: cartAPI.reducer,
+    [authAPI.reducerPath]: authAPI.reducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware().concat(
@@ -30,7 +33,8 @@ export const store = configureStore({
       addressAPI.middleware,
       couponAPI.middleware,
       cartAPI.middleware,
-      configurationApi.middleware
+      configurationApi.middleware,
+      authAPI.middleware
     ),
 });
 
