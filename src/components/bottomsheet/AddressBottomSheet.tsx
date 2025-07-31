@@ -30,15 +30,18 @@ export const AddressBottomSheet = ({
   onClose,
 }: TriggerAddressBottomSheetProps) => {
   const handleAddAddressPress = () => {
-    onClose(); 
+    onClose();
+    router.push({
+      pathname: "/address",
+    });
   };
 
   return (
     <Modal
       transparent={true}
-      animationType="slide" 
+      animationType="slide"
       visible={isVisible}
-      onRequestClose={onClose} 
+      onRequestClose={onClose}
     >
       <Pressable style={styles.modalOverlay} onPress={onClose}>
         <Pressable

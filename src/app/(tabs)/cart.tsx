@@ -1,5 +1,6 @@
 // app/(tabs)/cart.tsx
 import { AddressBottomSheet } from "@/components/bottomsheet/AddressBottomSheet";
+import PaymentBottomSheet from "@/components/bottomsheet/PaymentBottomSheet";
 import AddMoreItems from "@/components/card/AddMoreItems";
 import AddressCard from "@/components/card/AddressCard";
 import BillDetails from "@/components/card/BillDetails";
@@ -375,7 +376,7 @@ export default function Cart() {
         addresses={addressData.data || []}
         handleAddressChange={handleAddressChange}
       />
-      {/* 
+
       <PaymentBottomSheet
         isVisible={openPaymentSheet} // Pass isVisible
         onClose={() => setOpenPaymentSheet(false)} // Pass onClose
@@ -383,7 +384,7 @@ export default function Cart() {
           placeOrder(method);
           setOpenPaymentSheet(false); // Close sheet after selection
         }}
-      /> */}
+      />
     </View>
   );
 }

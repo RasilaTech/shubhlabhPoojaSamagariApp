@@ -1,9 +1,11 @@
 import { addressAPI } from "@/services/address/AddresssAPI";
+import locationReducer from "@/services/address/addressSlice";
 import { authAPI } from "@/services/auth/authApi";
 import { cartAPI } from "@/services/cart/cartAPI";
 import { categoryApi } from "@/services/category/categoryApi";
 import { configurationApi } from "@/services/configuration/configurationApi";
 import { couponAPI } from "@/services/coupon/couponAPI";
+import { mapsAPI } from "@/services/maps/MapsApi";
 import { orderApi } from "@/services/orders/orderApi";
 import { productAPI } from "@/services/product/productApi";
 import { subCategoryAPI } from "@/services/sub-category/subCategoryApi";
@@ -25,6 +27,8 @@ export const store = configureStore({
     [cartAPI.reducerPath]: cartAPI.reducer,
     [authAPI.reducerPath]: authAPI.reducer,
     [subCategoryAPI.reducerPath]: subCategoryAPI.reducer,
+    [mapsAPI.reducerPath]: mapsAPI.reducer,
+    location: locationReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware().concat(
@@ -37,7 +41,8 @@ export const store = configureStore({
       cartAPI.middleware,
       configurationApi.middleware,
       authAPI.middleware,
-      subCategoryAPI.middleware
+      subCategoryAPI.middleware,
+      mapsAPI.middleware
     ),
 });
 

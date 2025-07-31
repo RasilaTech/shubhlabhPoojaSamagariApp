@@ -1,3 +1,4 @@
+import { useGetInitialLocation } from "@/hooks/useGetInitialLocation";
 import { store } from "@/store/store";
 import {
   DarkTheme,
@@ -10,6 +11,11 @@ import { StatusBar } from "expo-status-bar";
 import "react-native-reanimated";
 import { Provider } from "react-redux";
 import { useColorScheme } from "../hooks/useColorScheme.web";
+
+function LocationInitializer() {
+  useGetInitialLocation(); // Call the hook here
+  return null;
+}
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
@@ -32,10 +38,12 @@ export default function RootLayout() {
 
   return (
     <Provider store={store}>
+      <LocationInitializer />
       <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
         <Stack>
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
           <Stack.Screen name="product" options={{ headerShown: false }} />
+          <Stack.Screen name="address" options={{ headerShown: false }} />
 
           <Stack.Screen name="+not-found" />
         </Stack>
