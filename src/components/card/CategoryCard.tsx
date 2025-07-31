@@ -1,5 +1,5 @@
 import { Category } from "@/services/category/categoryApi.type";
-import { useNavigation } from "@react-navigation/native";
+import { router } from "expo-router";
 import React from "react";
 import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
@@ -8,15 +8,14 @@ interface CategoryCardProps {
 }
 
 const CategoryCard: React.FC<CategoryCardProps> = ({ category }) => {
-  const navigation = useNavigation();
-
   return (
     <TouchableOpacity
       style={styles.card}
       onPress={() => {
-        // Navigate to a 'CategoryDetails' screen or similar, passing the category ID
-        // You'll need to define 'CategoryDetails' in your React Navigation stack
-      //  navigation.navigate("CategoryDetails", { categoryId: category.id });
+        router.push({
+          pathname: "/(tabs)/categories/[id]",
+          params: { id: category.id },
+        });
       }}
       activeOpacity={0.8} // Adjust opacity when pressed
     >

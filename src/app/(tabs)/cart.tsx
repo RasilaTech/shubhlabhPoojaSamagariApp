@@ -1,10 +1,12 @@
 // app/(tabs)/cart.tsx
+import { AddressBottomSheet } from "@/components/bottomsheet/AddressBottomSheet";
 import AddMoreItems from "@/components/card/AddMoreItems";
 import AddressCard from "@/components/card/AddressCard";
 import BillDetails from "@/components/card/BillDetails";
 import Coupons from "@/components/card/Coupons";
 import EmptyCart from "@/components/card/EmptyCart";
 import ReviewOrder from "@/components/card/ReviewOrder";
+import ConfirmationDialog from "@/components/dialog/ConfirmationDialog";
 import OrderErrorScreen from "@/components/error/OrderErrorScree";
 import OrderDetailSkeleton from "@/components/skeletons/OrderSkeleton";
 import { UserAddressPayload } from "@/services/address/addressApi.type";
@@ -353,28 +355,27 @@ export default function Cart() {
           </TouchableOpacity>
         )}
       </View>
-      {/* 
-      <CancelOrderDialog
-        isVisible={showClearCartDialog} // 'open' prop should be 'isVisible'
-        onOpenChange={setShowClearCartDialog} // 'onOpenChange' should be 'onClose'
+
+      <ConfirmationDialog
+        open={showClearCartDialog}
+        onOpenChange={setShowClearCartDialog}
         headingText="Clear your cart?"
         bodyText="Would you like to remove all items from your cart?"
         confirmationButtonText={clearCartLoading ? "Clearing..." : "Clear Cart"}
         cancelButtonText="Cancel"
         onConfirm={async () => {
           await clearCart();
-          setShowClearCartDialog(false); // Close dialog after clear
         }}
         isConfirming={clearCartLoading}
-      /> */}
+      />
 
-      {/* <AddressBottomSheet
+      <AddressBottomSheet
         isVisible={isAddressDrawerOpen} // Pass isVisible
         onClose={() => setIsAddressDrawerOpen(false)} // Pass onClose
         addresses={addressData.data || []}
         handleAddressChange={handleAddressChange}
       />
-
+      {/* 
       <PaymentBottomSheet
         isVisible={openPaymentSheet} // Pass isVisible
         onClose={() => setOpenPaymentSheet(false)} // Pass onClose

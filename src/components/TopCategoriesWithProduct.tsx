@@ -14,6 +14,7 @@ import {
 import { Category } from "@/services/category/categoryApi.type"; // Assuming src/scripts/category/categoryApi.type
 import { useGetProductsInfiniteQuery } from "@/services/product/productApi"; // Assuming src/scripts/product/productApi
 import ProductItem from "./card/ProductItem"; // Assuming ProductItem is in a sibling 'card' directory
+import { router } from "expo-router";
 
 interface TopCategoriesWithProductProps {
   category: Category;
@@ -108,7 +109,15 @@ const TopCategoriesWithProduct = ({
           end={{ x: 1, y: 0.5 }}
           style={styles.devider}
         />
-        <TouchableOpacity style={styles.seeAllButton}>
+        <TouchableOpacity
+          style={styles.seeAllButton}
+          onPress={() => {
+            router.push({
+              pathname: "/(tabs)/categories/[id]",
+              params: { id: category.id },
+            });
+          }}
+        >
           <Text style={styles.seeAllButtonText}>See All</Text>
           <ChevronRight size={13} color="#f97316" strokeWidth={3} />
         </TouchableOpacity>

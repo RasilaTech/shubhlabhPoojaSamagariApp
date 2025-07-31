@@ -74,10 +74,6 @@ const Categories = () => {
   }, [fetchNextPage, isFetchingNextPage, hasNextPage]);
 
   const renderCategoryItem = useCallback(({ item }: { item: Category }) => {
-    // If it's the dummy item, render an empty, invisible view
-    if (item.id === "dummy") {
-      return <View style={styles.hiddenDummyItem} />;
-    }
     // Otherwise, render the actual CategoryCard
     return <CategoryCard category={item} />;
   }, []);

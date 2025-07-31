@@ -18,7 +18,8 @@ import {
 import { LoginDialog } from "@/components/dialog/LoginDialog"; // Adjust path
 import { Product } from "@/services/product/productApi.type";
 import { useAppSelector } from "@/store/hook";
-import ProductVariantBottomSheet from "./ProductVariantBottomSheet";
+import { Minus, Plus } from "lucide-react-native";
+import ProductVariantBottomSheet from "../bottomsheet/ProductVariantBottomSheet";
 
 export interface TriggerProductVariantBottomSheetProps {
   product: Product;
@@ -32,7 +33,7 @@ const TriggerProductVariantBottomSheet = ({
   const { isAuthenticated } = useAppSelector((state) => state.auth);
 
   const { data: cartData = { data: [] } } = useGetCartItemsQuery(undefined, {
-    // skip: !isAuthenticated,
+    skip: !isAuthenticated,
   });
 
   const [updateCartItem, { isLoading: isUpdatingCart }] =
@@ -113,7 +114,7 @@ const TriggerProductVariantBottomSheet = ({
       {isUpdatingCart ? (
         <ActivityIndicator size="small" color="#1ba672" />
       ) : (
-        <Text style={styles.counterButtonText}>-</Text>
+        <Minus size={16} color="#1ba672" />
       )}
     </TouchableOpacity>
   );
@@ -131,7 +132,7 @@ const TriggerProductVariantBottomSheet = ({
       {isUpdatingCart ? (
         <ActivityIndicator size="small" color="#1ba672" />
       ) : (
-        <Text style={styles.counterButtonText}>+</Text>
+        <Plus size={16} color="#1ba672" />
       )}
     </TouchableOpacity>
   );
@@ -191,9 +192,9 @@ const styles = StyleSheet.create({
   },
   counterButtonBase: {
     height: "auto", // h-fit
-    width: 90, // Set explicit width for button/counter
+    width: "100%", // Set explicit width for button/counter
     borderRadius: 8, // rounded-[8px]
-    paddingVertical: 6, // py-1.5
+    paddingVertical: 8, // py-1.5
     alignItems: "center",
     justifyContent: "center",
   },
@@ -206,7 +207,6 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
     shadowRadius: 2,
-    elevation: 2,
   },
   addOutlineButtonText: {
     fontSize: 14, // text-sm
@@ -219,7 +219,7 @@ const styles = StyleSheet.create({
   counterGroup: {
     flexDirection: "row",
     height: "auto", // h-fit
-    width: 90, // Set explicit width for the entire counter group
+    width: "100%", // Set explicit width for button/counter
     alignItems: "center",
     justifyContent: "space-between",
     borderRadius: 8, // rounded-lg
@@ -230,7 +230,7 @@ const styles = StyleSheet.create({
   counterButtonSide: {
     height: "100%", // Take full height of counterGroup
     paddingHorizontal: 8, // px-2
-    paddingVertical: 6, // py-1.5
+    paddingVertical: 2, // py-1.5
     alignItems: "center",
     justifyContent: "center",
     backgroundColor: "white", // Default background

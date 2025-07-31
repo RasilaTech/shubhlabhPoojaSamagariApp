@@ -6,6 +6,7 @@ import { configurationApi } from "@/services/configuration/configurationApi";
 import { couponAPI } from "@/services/coupon/couponAPI";
 import { orderApi } from "@/services/orders/orderApi";
 import { productAPI } from "@/services/product/productApi";
+import { subCategoryAPI } from "@/services/sub-category/subCategoryApi";
 import { userAPI } from "@/services/user/userApi";
 import { configureStore } from "@reduxjs/toolkit";
 import authReducer from "./features/auth/authSlice";
@@ -23,6 +24,7 @@ export const store = configureStore({
     [configurationApi.reducerPath]: configurationApi.reducer,
     [cartAPI.reducerPath]: cartAPI.reducer,
     [authAPI.reducerPath]: authAPI.reducer,
+    [subCategoryAPI.reducerPath]: subCategoryAPI.reducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware().concat(
@@ -34,7 +36,8 @@ export const store = configureStore({
       couponAPI.middleware,
       cartAPI.middleware,
       configurationApi.middleware,
-      authAPI.middleware
+      authAPI.middleware,
+      subCategoryAPI.middleware
     ),
 });
 

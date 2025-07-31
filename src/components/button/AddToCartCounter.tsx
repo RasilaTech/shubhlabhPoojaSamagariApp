@@ -23,6 +23,7 @@ import {
 import { CartItem } from "@/services/cart/cartApi.type";
 import { ProductVariant } from "@/services/product/productApi.type";
 import { useAppSelector } from "@/store/hook";
+import { LoginDialog } from "../dialog/LoginDialog";
 
 export interface AddToCartCounterProps {
   productVariant: ProductVariant;
@@ -95,27 +96,27 @@ const AddToCartCounter = ({ productVariant }: AddToCartCounterProps) => {
   // Render loading state for buttons if any cart operation is pending
   const showLoading = isAddingToCart || isUpdatingCart || isFetchingCart;
 
-  // if (!isAuthenticated) {
-  //   return (
-  //     <TouchableOpacity
-  //       style={[styles.baseButton, styles.addOutlineButton]}
-  //       onPress={() => setShowLoginDialog(true)} // Open LoginDialog
-  //       disabled={showLoading}
-  //     >
-  //       {showLoading ? (
-  //         <ActivityIndicator size="small" color="#ff5200" />
-  //       ) : (
-  //         <Text style={styles.addOutlineButtonText}>Add</Text>
-  //       )}
+  if (!isAuthenticated) {
+    return (
+      <TouchableOpacity
+        style={[styles.baseButton, styles.addOutlineButton]}
+        onPress={() => setShowLoginDialog(true)} // Open LoginDialog
+        disabled={showLoading}
+      >
+        {showLoading ? (
+          <ActivityIndicator size="small" color="#ff5200" />
+        ) : (
+          <Text style={styles.addOutlineButtonText}>Add</Text>
+        )}
 
-  //       {/* Login Dialog (Modal) */}
-  //       {/* <LoginDialog
-  //         isVisible={showLoginDialog}
-  //         onClose={() => setShowLoginDialog(false)}
-  //       /> */}
-  //     </TouchableOpacity>
-  //   );
-  // }
+        {/* Login Dialog (Modal) */}
+        <LoginDialog
+          isVisible={showLoginDialog}
+          onClose={() => setShowLoginDialog(false)}
+        />
+      </TouchableOpacity>
+    );
+  }
 
   return quantity === 0 ? (
     <TouchableOpacity
@@ -136,7 +137,7 @@ const AddToCartCounter = ({ productVariant }: AddToCartCounterProps) => {
         onPress={() => handleDecreaseProductQuantity(productVariant.id)}
         disabled={showLoading}
       >
-        <Minus size={16} color="#1ba672" />
+        <Minus size={16}  color="#1ba672" />
       </TouchableOpacity>
 
       <View style={styles.quantityDisplay}>
@@ -164,10 +165,9 @@ const styles = StyleSheet.create({
     height: "auto", // h-fit
     width: "100%", // w-full
     borderRadius: 8, // rounded-[8px]
-    paddingVertical: 6, // py-1.5
+    paddingVertical: 4, // py-1.5
     alignItems: "center",
     justifyContent: "center",
-    // transition-all duration-150 ease-in-out - handled by TouchableOpacity's feedback
   },
   // Add button (outline variant)
   addOutlineButton: {
@@ -200,24 +200,21 @@ const styles = StyleSheet.create({
   },
   counterButton: {
     height: "100%", // h-fit
-    paddingHorizontal: 8, // px-2 (approx)
-    paddingVertical: 6, // py-1.5 (approx)
+    paddingHorizontal: 4, // px-2 (approx)
+    paddingVertical: 2, // py-1.5 (approx)
     alignItems: "center",
     justifyContent: "center",
-    // border-none is default for TouchableOpacity
-    // rounded-l-[8px] rounded-r-none / rounded-l-none rounded-r-[8px] - done implicitly by flex layout
-    // transition-colors duration-150 group-hover:bg-inherit hover:bg-[#02060c26] hover:text-[#1ba672]
+   
   },
   quantityDisplay: {
     flex: 1, // flex-1
     alignItems: "center", // justify-center
     justifyContent: "center",
-    // hover:bg-[#02060c26] - not applicable
   },
   quantityText: {
     // cursor-default - not applicable
-    paddingHorizontal: 2, // px-2 (approx)
-    paddingVertical: 2, // py-1.5 (approx)
+    paddingHorizontal: 8, // px-2 (approx)
+    paddingVertical: 6, // py-1.5 (approx)
     fontSize: 14, // text-sm
     lineHeight: 18, // leading-[1.125rem] (1.125 * 16px = 18px)
     fontWeight: "600", // font-semibold

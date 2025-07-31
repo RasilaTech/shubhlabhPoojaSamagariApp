@@ -17,7 +17,7 @@ interface ProductItemProps {
   product: Product;
 }
 
-const ProductItem = ({ product }: ProductItemProps) => {
+const ProductItem2 = ({ product }: ProductItemProps) => {
   const defaultVariantIndex = Math.max(
     0,
     product.product_variants.findIndex((variant) => variant.default_variant)
@@ -101,22 +101,29 @@ const ProductItem = ({ product }: ProductItemProps) => {
   );
 };
 
-export default ProductItem;
+export default ProductItem2;
 
 const styles = StyleSheet.create({
   container: {
+    flex: 1, // Make container flexible
     padding: 6,
     backgroundColor: "white",
-    boxShadow: "rgba(0, 0, 0, 0.24) 0px 3px 8px",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.24,
+    shadowRadius: 4,
+    elevation: 8,
     marginBottom: 12,
     borderRadius: 12,
-    position: "relative", // Added to enable absolute positioning of child
+    position: "relative",
+    minHeight: 200, // Ensure minimum height for consistent layout
   },
   imageContainer: {
     position: "relative",
     borderColor: "#f2f3f3",
     borderWidth: 1,
     borderRadius: 12,
+    width: "100%", // Take full width of container
   },
   imageOverlay: {
     position: "absolute",
@@ -129,12 +136,12 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   counterOverride: {
-    position: "absolute", // Position absolutely
-    bottom: 6, // Align to bottom with padding
-    left: 6, // Align to left with padding
-    right: 6, // Align to right with padding
-    width: 120, // Force the counter to respect this width
-    height: 32, // Fixed height to match counter design
+    position: "absolute",
+    bottom: 6,
+    left: 6,
+    right: 6, // This will make it take available width minus margins
+    height: 32,
+    // Remove fixed width to let it adapt to container
   },
   imageOverlay_image: {
     width: 30,
@@ -143,8 +150,8 @@ const styles = StyleSheet.create({
   },
   image: {
     borderRadius: 12,
-    width: 120,
-    aspectRatio: 1 / 1,
+    width: "100%", // Take full width instead of fixed 120px
+    aspectRatio: 1 / 1, // Maintain square aspect ratio
   },
   discountText: {
     color: "white",
@@ -154,18 +161,18 @@ const styles = StyleSheet.create({
     fontFamily: "outfit-semibold",
   },
   detailsContainer: {
+    flex: 1, // Take remaining space
     gap: 6,
     paddingVertical: 4,
     paddingHorizontal: 6,
-    maxWidth: 110,
-    marginBottom: 38, // Add margin to account for absolute positioned counter
+    marginBottom: 38, // Space for absolute positioned counter
   },
   productName: {
-    wordWrap: "break-word",
     fontSize: 14,
     lineHeight: 16,
     letterSpacing: -0.35,
     fontFamily: "outfit-semibold",
+    flexWrap: "wrap", // Better than wordWrap for React Native
   },
   productLabel: {
     fontSize: 12,

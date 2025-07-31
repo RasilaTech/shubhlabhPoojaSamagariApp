@@ -1,5 +1,7 @@
 // app/(tabs)/products/[id].tsx
-import ProductItem from "@/components/card/ProductItem";
+import ProductDetailCartButton from "@/components/button/ProductDetailCartButton";
+import SoldOutBadge from "@/components/button/SoldButton";
+import ProductItem2 from "@/components/card/ProductItem2";
 import OrderErrorScreen from "@/components/error/OrderErrorScree";
 import OrderDetailSkeleton from "@/components/skeletons/OrderSkeleton";
 import {
@@ -39,6 +41,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 // Get screen width for responsive layout
 const screenWidth = Dimensions.get("window").width;
 const isLargeScreen = screenWidth >= 768; // Example breakpoint for responsive layouts
+
 export default function ProductDetailsScreen() {
   const { id: productId = "" } = useLocalSearchParams<{ id: string }>();
 
@@ -109,6 +112,7 @@ export default function ProductDetailsScreen() {
     if (!mrp || !price || mrp <= price) return 0;
     return Math.round(((mrp - price) / mrp) * 100);
   };
+
   const handleGoBack = () => {
     router.back();
   };
@@ -315,8 +319,6 @@ export default function ProductDetailsScreen() {
               </LinearGradient>
             </View>
 
-            {/* Description (hidden on desktop, block on mobile) */}
-
             {/* Variant Selection */}
             <View style={styles.variantSelectionSection}>
               <Text style={styles.variantSelectionTitle}>Select Variant</Text>
@@ -350,15 +352,18 @@ export default function ProductDetailsScreen() {
             </View>
 
             {/* Quantity & Add to Cart */}
-            {/* <View style={styles.addToCartSection}>
-              <ProductDetailsCartButton productVariant={selectedVariant} />
-            </View> */}
+            <View style={styles.addToCartSection}>
+              {selectedVariant.out_of_stock === true ? (
+                <SoldOutBadge />
+              ) : (
+                <ProductDetailCartButton productVariant={selectedVariant} />
+              )}
+            </View>
 
-            {/* Description (hidden on mobile, block on desktop) */}
-
+            {/* Description (mobile only) */}
             {!isLargeScreen && (
               <View style={styles.descriptionContainerMobile}>
-                <Text> {truncatedDescription}</Text>
+                <Text>{truncatedDescription}</Text>
                 {selectedVariant.description &&
                   selectedVariant.description.split(" ").length > 30 && (
                     <TouchableOpacity
@@ -401,18 +406,24 @@ export default function ProductDetailsScreen() {
             <Text style={styles.relatedProductsTitle}>You might also like</Text>
             <FlatList
               data={relatedProducts}
-              renderItem={({ item }) => <ProductItem product={item} />}
+              renderItem={({ item }) => (
+                <View
+                  style={[
+                    styles.relatedProductItemWrapper,
+                    { width: isLargeScreen ? "22%" : "48%" },
+                  ]}
+                >
+                  <ProductItem2 product={item} />
+                </View>
+              )}
               keyExtractor={(item) => item.id}
-              numColumns={isLargeScreen ? 4 : 2} // Responsive columns
+              numColumns={isLargeScreen ? 4 : 2}
               columnWrapperStyle={styles.relatedProductsColumnWrapper}
               contentContainerStyle={styles.relatedProductsContentContainer}
               scrollEnabled={false} // Parent ScrollView handles overall scroll
             />
           </View>
         )}
-
-        {/* Bottom spacing for CartSummaryBanner */}
-        <View style={styles.bottomSpacer}></View>
       </ScrollView>
 
       {/* Fixed Cart Summary Banner */}
@@ -694,7 +705,6 @@ const styles = StyleSheet.create({
   relatedProductsSection: {
     marginTop: 32, // mt-8
     width: "100%", // w-full
-    // md:order-5
   },
   relatedProductsTitle: {
     marginBottom: 32, // mb-8
@@ -703,14 +713,15 @@ const styles = StyleSheet.create({
     color: "#1f2937", // text-gray-900
   },
   relatedProductsColumnWrapper: {
-    justifyContent: "space-around", // gap-6 (adjust as needed for grid)
-    marginBottom: 24, // gap-6 vertically
+    justifyContent: "flex-start", // Fixed: start from left
+    gap: 8, // Consistent gap between items
+    marginBottom: 16,
   },
   relatedProductsContentContainer: {
-    // Adjust if needed, FlatList automatically wraps
+    // Container styles if needed
   },
-  bottomSpacer: {
-    height: 20, // h-20
+  relatedProductItemWrapper: {
+    marginBottom: 2, // Vertical spacing between rows
+    // Width is set dynamically in the component: 48% for mobile, 23% for desktop
   },
-
 });
