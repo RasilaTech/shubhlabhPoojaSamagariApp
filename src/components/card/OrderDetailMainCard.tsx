@@ -1,14 +1,7 @@
 // src/components/card/OrderDetailMainCard.tsx
 import { BadgeCheck, BadgeX, Download, LifeBuoy } from "lucide-react-native"; // Assuming lucide-react-native
 import React, { useState } from "react";
-import {
-  Alert,
-  Image,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 // Adjust paths for RTK Query hook and types
 import { useDownloadInvoiceMutation } from "@/services/orders/orderApi";
 
@@ -71,12 +64,16 @@ const OrderDetailMainCard = ({ orderDetails }: OrderDetailMainCardProps) => {
 
   const handleDownloadInvoice = async () => {
     try {
-      await downloadInvoice(orderDetails.id).unwrap(); // Use unwrap() to handle promise result
-      Alert.alert("Success", "Invoice download initiated.");
-      // In a real app, you'd handle the file download or opening here
+      const result = await downloadInvoice(orderDetails.id).unwrap();
+      // Success is now handled in the transformResponse,
+      // but you can check result.success if needed
+      if (result.success) {
+        console.log("Invoice download completed successfully");
+      }
     } catch (error) {
       console.error("Failed to download invoice:", error);
-      Alert.alert("Error", "Failed to download invoice.");
+      // Error handling is done in transformResponse,
+      // but you can add additional handling here if needed
     }
   };
 

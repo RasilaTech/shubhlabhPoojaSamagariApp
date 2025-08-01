@@ -12,6 +12,7 @@ import { useGetProductsInfiniteQuery } from "@/services/product/productApi";
 import { useGetSubCategoriesInfiniteQuery } from "@/services/sub-category/subCategoryApi";
 import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { HomeSkeleteon } from "@/components/skeletons/HomeSkeleton";
 
 const { width, height } = Dimensions.get("window");
 const SIDEBAR_WIDTH = width * 0.2; // About 28% of screen width
@@ -84,7 +85,7 @@ export default function SubCategoriesWithProductScreen() {
   const isErrorOverall = catError || subCatError || productError;
 
   if (isLoadingOverall) {
-    return <OrderDetailSkeleton />;
+    return <HomeSkeleteon />;
   }
 
   if (isErrorOverall) {
@@ -108,7 +109,6 @@ export default function SubCategoriesWithProductScreen() {
       <NavBar />
 
       <View style={styles.contentLayout}>
-        {/* Left Sidebar */}
         <View style={styles.sidebar}>
           <SubCategorySideBar
             selectedCategoryId={selectedCategoryId}
@@ -118,7 +118,6 @@ export default function SubCategoriesWithProductScreen() {
           />
         </View>
 
-        {/* Right Product Section */}
         <View style={styles.productSectionWrapper}>
           <ProductSection
             productData={allProducts}

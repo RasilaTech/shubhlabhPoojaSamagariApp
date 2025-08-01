@@ -21,9 +21,7 @@ const baseQueryWithReauth: BaseQueryFn<
   await mutex.waitForUnlock();
 
   const getAuthState = () => api.getState() as RootState;
-  // let accessToken = getAuthState().auth.accessToken;
-  let accessToken =
-    "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJjZjU4MzYzMC04OWE0LTRiNGYtOGI4Ny01NDc3OWMxNmQ0M2QiLCJwaG9uZV9udW1iZXIiOiIrOTE5OTE0NDU0MTQ3Iiwicm9sZSI6ImFkbWluIiwiaWF0IjoxNzUzNzI0ODE4LCJleHAiOjE3NTUwMjA4MTh9.UELV5weEumGdp5fuWpIp4OYgPg10wRmunADBqq2Tpy00l3qDnUTqo1KuACGGeht9qG28ihwYo59fcDJN6oYjsztTdjaacnPeZNySyLpfgQeR-0wXrQ2pLyfIf_Tzk_fqjfrSESg8YNy5xd57-k4rpeeZvhd6ltZKbXnauCSAupkelZdWBdF3ycHNYC-R_4Z_Dg9NVaXYJh_gqovkK7k7i9BfMg1IuET7yK9Cjhb-6rqXTtUN2ictfeq8faDWxxY9dmfv2iHyuKsJKrbodh8EFtQCpt_1t797r6pRp4eH38ZHXwpjv6SSS-tiY2b1Sr8BqacTr1so9LC82BYtj_rpbg";
+  let accessToken = getAuthState().auth.accessToken;
 
   let headers = {
     ...args.headers,
@@ -86,9 +84,7 @@ const baseQueryWithReauth: BaseQueryFn<
       }
     } else {
       await mutex.waitForUnlock();
-      // accessToken = getAuthState().auth.accessToken;
-      accessToken =
-        "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJjZjU4MzYzMC04OWE0LTRiNGYtOGI4Ny01NDc3OWMxNmQ0M2QiLCJwaG9uZV9udW1iZXIiOiIrOTE5OTE0NDU0MTQ3Iiwicm9sZSI6ImFkbWluIiwiaWF0IjoxNzUzNzI0ODE4LCJleHAiOjE3NTUwMjA4MTh9.UELV5weEumGdp5fuWpIp4OYgPg10wRmunADBqq2Tpy00l3qDnUTqo1KuACGGeht9qG28ihwYo59fcDJN6oYjsztTdjaacnPeZNySyLpfgQeR-0wXrQ2pLyfIf_Tzk_fqjfrSESg8YNy5xd57-k4rpeeZvhd6ltZKbXnauCSAupkelZdWBdF3ycHNYC-R_4Z_Dg9NVaXYJh_gqovkK7k7i9BfMg1IuET7yK9Cjhb-6rqXTtUN2ictfeq8faDWxxY9dmfv2iHyuKsJKrbodh8EFtQCpt_1t797r6pRp4eH38ZHXwpjv6SSS-tiY2b1Sr8BqacTr1so9LC82BYtj_rpbg";
+      accessToken = getAuthState().auth.accessToken;
       if (accessToken) {
         headers["Authorization"] = `Bearer ${accessToken}`;
         const retryResult = await axiosInstance({ ...args, headers });

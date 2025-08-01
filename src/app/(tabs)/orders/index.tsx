@@ -12,9 +12,12 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 // Import types for clarity, adjust path if needed based on your project structure
+import OrderErrorScreen from "@/components/error/OrderErrorScree";
 import type { OrderDetail } from "@/services/orders/orderApi.type";
 
 const Orders = () => {
+  // const { isAuthenticated } = useAppSelector((state) => state.auth);
+
   const {
     data: infiniteOrdersData = {
       pages: [
@@ -34,14 +37,12 @@ const Orders = () => {
   const insets = useSafeAreaInsets();
   const tabBarHeight = useBottomTabBarHeight();
 
-  // Combine all orders from all pages
   const allOrders: OrderDetail[] = infiniteOrdersData.pages.flatMap(
     (page) => page.data
   );
 
   // Function to load more data when the end of the list is reached
   const loadMoreOrders = useCallback(() => {
-    // Only fetch next page if not already fetching and there is a next page
     if (!isFetchingNextPage && hasNextPage) {
       fetchNextPage();
     }
@@ -53,7 +54,6 @@ const Orders = () => {
     []
   );
 
-  // Render footer for loading indicator during pagination
   const renderFooter = () => {
     if (!isFetchingNextPage) return null;
     return (
@@ -73,15 +73,17 @@ const Orders = () => {
     );
   }
 
-  if (isError) {
-    return (
-      <View style={[styles.container, styles.centerContent]}>
-        <Text style={styles.errorText}>
-          Error fetching orders. Please try again later.
-        </Text>
-      </View>
-    );
-  }
+  // if (!isAuthenticated) {
+  //   return (
+  //     <View style={[styles.container, styles.centerContent]}>
+  //       <Text style={styles.noOrdersText}>Please Login to View orders</Text>
+  //     </View>
+  //   );
+  // }
+
+  // if (isError) {
+  //   return <OrderErrorScreen />;
+  // }
 
   if (allOrders.length === 0) {
     return (

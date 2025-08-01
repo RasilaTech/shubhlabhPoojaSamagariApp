@@ -22,7 +22,7 @@ export interface ProductSectionProps {
   isLoadingMore?: boolean;
 }
 
-const NoProductFoundIcon = require("../../../assets/images/no_products.png");
+const NoProductFoundIcon = require("../../assets/images/no-products.png");
 
 const screenWidth = Dimensions.get("window").width;
 const AVAILABLE_PRODUCT_WIDTH = screenWidth * 0.8 - 8; // 80% minus padding
@@ -97,7 +97,7 @@ export const ProductSection = ({
       {/* Product count header */}
       <View style={styles.productCountHeader}>
         <Text style={styles.productCountText}>
-          <Text style={styles.productCountBold}>{totalProuducts} items</Text>{" "}
+          <Text style={styles.productCountBold}>{totalProuducts}{"items "} </Text>
           found
         </Text>
       </View>

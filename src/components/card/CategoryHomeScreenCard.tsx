@@ -1,6 +1,7 @@
-import { Image, StyleSheet, Text, TouchableOpacity } from "react-native";
-import React from "react";
 import { Category } from "@/services/category/categoryApi.type";
+import { router } from "expo-router";
+import React from "react";
+import { Image, StyleSheet, Text, TouchableOpacity } from "react-native";
 
 interface CategoryHomeScreenCardProps {
   category: Category;
@@ -8,7 +9,15 @@ interface CategoryHomeScreenCardProps {
 
 const CategoryHomeScreenCard = ({ category }: CategoryHomeScreenCardProps) => {
   return (
-    <TouchableOpacity style={styles.container}>
+    <TouchableOpacity
+      style={styles.container}
+      onPress={() => {
+        router.push({
+          pathname: "/(tabs)/categories/[id]",
+          params: { id: category.id },
+        });
+      }}
+    >
       <Image
         source={{ uri: category.image }}
         style={styles.image}

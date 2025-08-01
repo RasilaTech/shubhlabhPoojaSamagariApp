@@ -50,7 +50,7 @@ const CurrentlyUnavailable = ({
                   ellipsizeMode="tail"
                   style={styles.productLabel}
                 >
-                  {item.variant.name}{" "}
+                  {item.variant.name}
                   {/* Assuming variant.name is also the label */}
                 </Text>
               </View>

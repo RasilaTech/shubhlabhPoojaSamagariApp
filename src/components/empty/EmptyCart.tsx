@@ -12,12 +12,11 @@ const EmptyCart: React.FC = () => {
   };
 
   const handleBrowseProducts = () => {
-    router.push("/"); // Navigate to your home/products Browse screen
+    router.push("/"); 
   };
 
   return (
     <View style={styles.container}>
-      {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={handleGoBack} style={styles.backButton}>
           <ChevronLeft size={24} color="#02060cbf" />
@@ -27,7 +26,6 @@ const EmptyCart: React.FC = () => {
         </Text>
       </View>
 
-      {/* Empty Cart Content */}
       <View style={styles.content}>
         <Image
           source={emptyCartImage}

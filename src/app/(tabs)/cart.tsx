@@ -17,6 +17,7 @@ import {
   useGetCartItemsQuery,
 } from "@/services/cart/cartAPI";
 import { CartItem } from "@/services/cart/cartApi.type";
+import { useGetAppConfigurationsQuery } from "@/services/configuration/configurationApi";
 import { useGetCouponsQuery } from "@/services/coupon/couponAPI";
 import { Coupon } from "@/services/coupon/couponApi.type";
 import { useCreateOrderMutation } from "@/services/orders/orderApi";
@@ -39,13 +40,14 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 export default function Cart() {
   const insets = useSafeAreaInsets();
   const { isAuthenticated } = useAppSelector((state) => state.auth);
-  //TODO:
+  const {
+    isLoading: isAppConfigLoading,
+    data: appConfigData,
+    isError: isAppConfigError,
+  } = useGetAppConfigurationsQuery();
 
-  // const configState = useAppSelector(selectConfiguration);
-  // const minOrderValue = configState.data?.data.min_order_amount ?? 0;
-  // const deliveryCharge = configState.data?.data.delivery_charge ?? 0;
-  const minOrderValue = 0;
-  const deliveryCharge = 0;
+  const minOrderValue = appConfigData?.data.min_order_amount ?? 0;
+  const deliveryCharge = appConfigData?.data.delivery_charge ?? 0;
 
   const {
     data: cartData = { data: [] },
@@ -67,7 +69,7 @@ export default function Cart() {
   const defaultAddress = addressData.data.find((address) => address.is_default);
 
   const { data: couponsData = { data: [] } } = useGetCouponsQuery(undefined, {
-    // skip: !isAuthenticated,
+    skip: !isAuthenticated,
   });
 
   const [clearCart, { isLoading: clearCartLoading }] = useClearCartMutation();
@@ -119,14 +121,12 @@ export default function Cart() {
       promoCodeDiscount = selectedCoupon.discount_value;
     }
 
-    // Ensure discount doesn't exceed the subtotal after item-level discounts
     promoCodeDiscount = Math.min(promoCodeDiscount, itemsTotal - discount);
   }
 
   const totalAmount =
     itemsTotal - discount - promoCodeDiscount + deliveryCharge;
 
-  // Clear selected coupon if order value falls below min_order_value for the coupon
   useEffect(() => {
     if (
       selectedCoupon &&
@@ -218,7 +218,7 @@ export default function Cart() {
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Your Cart</Text>
         </View>
-        <OrderDetailSkeleton /> {/* Display cart skeleton while loading */}
+        <OrderDetailSkeleton /> 
       </View>
     );
   }
@@ -237,7 +237,7 @@ export default function Cart() {
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Your Cart</Text>
         </View>
-        <OrderErrorScreen /> {/* Display generic error screen */}
+        <OrderErrorScreen />
       </View>
     );
   }

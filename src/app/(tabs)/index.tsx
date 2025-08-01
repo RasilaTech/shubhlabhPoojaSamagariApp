@@ -1,15 +1,17 @@
 import CategoryHomeScreenCard from "@/components/card/CategoryHomeScreenCard";
-import ImageCarousel, {
-  CarouselItemData,
-} from "@/components/carousel/ImageCarousel";
+import ImageCarousel from "@/components/carousel/ImageCarousel";
+import OrderErrorScreen from "@/components/error/OrderErrorScree";
 import NavBar from "@/components/nav/NavBar";
+import { HomeSkeleteon } from "@/components/skeletons/HomeSkeleton";
 import TopCategoriesWithProduct from "@/components/TopCategoriesWithProduct";
 import { useGetCategoriesInfiniteQuery } from "@/services/category/categoryApi";
+import { useGetAppConfigurationsQuery } from "@/services/configuration/configurationApi";
 import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
 import { LinearGradient } from "expo-linear-gradient";
+import { router } from "expo-router";
 import { ChevronRight } from "lucide-react-native";
+import React from "react";
 import {
-  Alert,
   Keyboard,
   ScrollView,
   StyleSheet,
@@ -37,67 +39,48 @@ export default function HomeScreen() {
     sort_order: "DESC",
   });
 
-  const carouselData: CarouselItemData[] = [
-    {
-      id: 1,
-      imageUri: "https://images.unsplash.com/photo-1554995207-c18c203602cb",
-      onPress: () => Alert.alert("Action!", "You tapped on the living room."),
-    },
-    {
-      id: 2,
-      imageUri: "https://images.unsplash.com/photo-1512917774080-9991f1c4c750",
-      onPress: () =>
-        Alert.alert("Action!", "You tapped on the two-story house."),
-    },
-    {
-      id: 3,
-      imageUri: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c",
-      // This item has no onPress action
-    },
-    {
-      id: 1,
-      imageUri: "https://images.unsplash.com/photo-1554995207-c18c203602cb",
-      onPress: () => Alert.alert("Action!", "You tapped on the living room."),
-    },
-    {
-      id: 2,
-      imageUri: "https://images.unsplash.com/photo-1512917774080-9991f1c4c750",
-      onPress: () =>
-        Alert.alert("Action!", "You tapped on the two-story house."),
-    },
-    {
-      id: 3,
-      imageUri: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c",
-      // This item has no onPress action
-    },
-    {
-      id: 1,
-      imageUri: "https://images.unsplash.com/photo-1554995207-c18c203602cb",
-      onPress: () => Alert.alert("Action!", "You tapped on the living room."),
-    },
-    {
-      id: 2,
-      imageUri: "https://images.unsplash.com/photo-1512917774080-9991f1c4c750",
-      onPress: () =>
-        Alert.alert("Action!", "You tapped on the two-story house."),
-    },
-    {
-      id: 3,
-      imageUri: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c",
-      // This item has no onPress action
-    },
-    {
-      id: 1,
-      imageUri: "https://images.unsplash.com/photo-1554995207-c18c203602cb",
-      onPress: () => Alert.alert("Action!", "You tapped on the living room."),
-    },
-  ];
+  const {
+    isLoading: isAppConfigLoading,
+    data: appConfigData,
+    isError: isAppConfigError,
+  } = useGetAppConfigurationsQuery();
 
   const categories = categoriesData.pages.flatMap((page) => page.data);
   const topFiveCategories = categories.slice(0, 5);
 
   const insets = useSafeAreaInsets();
   const tabBarHeight = useBottomTabBarHeight();
+
+  // Combine loading and error states
+  const isLoading = categoriesLoading || isAppConfigLoading;
+  const isError = categoriesError || isAppConfigError;
+  const adBanners = appConfigData?.data?.ad_banners;
+
+  if (isLoading) {
+    return (
+      <View
+        style={[
+          styles.container,
+          { paddingTop: insets.top, paddingBottom: tabBarHeight },
+        ]}
+      >
+        <HomeSkeleteon />
+      </View>
+    );
+  }
+
+  if (isError) {
+    return (
+      <View
+        style={[
+          styles.container,
+          { paddingTop: insets.top, paddingBottom: tabBarHeight },
+        ]}
+      >
+        <OrderErrorScreen />
+      </View>
+    );
+  }
 
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
@@ -118,8 +101,14 @@ export default function HomeScreen() {
                 end={{ x: 1, y: 0.5 }}
                 style={styles.devider}
               />
-              <TouchableOpacity style={styles.seeAllButton}>
+              <TouchableOpacity
+                style={styles.seeAllButton}
+                onPress={() => {
+                  router.push("/categories");
+                }}
+              >
                 <Text style={styles.seeAllButtonText}>See All</Text>
+                {/* FIX: The ChevronRight icon was missing */}
                 <ChevronRight size={13} color="#f97316" strokeWidth={3} />
               </TouchableOpacity>
             </View>
@@ -134,7 +123,11 @@ export default function HomeScreen() {
               </View>
             </ScrollView>
           </View>
-          <ImageCarousel items={carouselData} />
+          {/* FIX: Conditionally render ImageCarousel only if adBanners exists and has items */}
+          {adBanners && adBanners.length > 0 && (
+            <ImageCarousel items={adBanners} />
+          )}
+
           {topFiveCategories.length > 0 &&
             topFiveCategories.map((category) => (
               <TopCategoriesWithProduct category={category} key={category.id} />

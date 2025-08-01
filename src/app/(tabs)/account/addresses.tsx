@@ -3,7 +3,7 @@ import { UserAddressPayload } from "@/services/address/addressApi.type";
 import { useGetUserAddressListQuery } from "@/services/address/AddresssAPI"; // Adjust path
 import { router } from "expo-router";
 import { ChevronLeft } from "lucide-react-native";
-import React, { useState } from "react";
+import React from "react";
 import {
   ActivityIndicator,
   FlatList,
@@ -114,6 +114,7 @@ const styles = StyleSheet.create({
     color: "#02060cbf",
   },
   addressCardWrapper: {
+    marginBottom: 20,
     // Add any wrapper styles if needed
   },
   centerContent: {

@@ -1,50 +1,54 @@
 {
   "expo": {
-    "name": "shubhlabhPoojaSamagariApp",
+    "name": "ShubhlabhPoojaSamagari",
     "slug": "shubhlabhPoojaSamagariApp",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
+    "icon": "./assets/images/playstore-icon.png",
     "scheme": "shubhlabhpoojasamagariapp",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/images/playstore-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#3e0f11"
+    },
     "ios": {
       "supportsTablet": true,
-       "infoPlist": {
+      "infoPlist": {
         "NSLocationWhenInUseUsageDescription": "We need access to your location to provide you with a list of nearby stores and services."
       }
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
+        "foregroundImage": "./assets/images/playstore-icon.png",
+        "backgroundColor": "#3e0f11"
       },
       "permissions": [
         "ACCESS_COARSE_LOCATION",
         "ACCESS_FINE_LOCATION"
       ],
-      "edgeToEdgeEnabled": true
+      "edgeToEdgeEnabled": true,
+      "package": "com.shubhlabh.poojasamagri"
     },
     "web": {
       "bundler": "metro",
       "output": "static",
-      "favicon": "./assets/images/favicon.png"
+      "favicon": "./assets/images/ic_launcher-web.png"
     },
     "plugins": [
       "expo-router",
-      [
-        "expo-splash-screen",
-        {
-          "image": "./assets/images/splash-icon.png",
-          "imageWidth": 200,
-          "resizeMode": "contain",
-          "backgroundColor": "#ffffff"
-        }
-      ],
+      "expo-splash-screen",
       "expo-secure-store"
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "0a7c6064-dbb8-45ab-9498-8afa6776412a"
+      }
     }
   }
 }

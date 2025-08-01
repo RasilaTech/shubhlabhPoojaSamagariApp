@@ -1,6 +1,8 @@
 import baseQueryWithReauth from "@/api/baseQueryWithReauth";
 import { createApi } from "@reduxjs/toolkit/query/react";
-// import { cartAPI } from "../cart/cartAPI";
+import * as FileSystem from "expo-file-system";
+import * as Sharing from "expo-sharing";
+import { Alert } from "react-native";
 import type {
   CancelOrderPayload,
   CreateOrders,
@@ -107,27 +109,57 @@ export const orderApi = createApi({
       ],
     }),
 
-    downloadInvoice: builder.mutation<Blob, string>({
+    // Better approach: Handle the blob processing in transformResponse
+    downloadInvoice: builder.mutation<{ success: boolean }, string>({
       query: (id: string) => ({
         url: `/api/orders/${id}/invoice`,
         method: "GET",
         responseType: "blob",
       }),
-
-      async onQueryStarted(id, { queryFulfilled }) {
+      transformResponse: async (response: Blob, meta, arg) => {
         try {
-          const blob = await queryFulfilled;
+          if (!response) {
+            throw new Error("Received empty response for invoice download.");
+          }
 
-          const url = URL.createObjectURL(blob.data);
-          const link = document.createElement("a");
-          link.href = url;
-          link.download = `invoice_${id}.pdf`;
-          document.body.appendChild(link);
-          link.click();
-          document.body.removeChild(link);
-          URL.revokeObjectURL(url);
+          const blobToBase64 = (b: Blob): Promise<string> => {
+            return new Promise((resolve, reject) => {
+              const reader = new FileReader();
+              reader.onloadend = () => {
+                const base64 = reader.result?.toString().split(",")[1];
+                if (base64) {
+                  resolve(base64);
+                } else {
+                  reject(new Error("Failed to convert blob to base64."));
+                }
+              };
+              reader.onerror = reject;
+              reader.readAsDataURL(b);
+            });
+          };
+
+          const base64Data = await blobToBase64(response);
+          const fileUri = FileSystem.documentDirectory + `invoice_${arg}.pdf`;
+
+          await FileSystem.writeAsStringAsync(fileUri, base64Data, {
+            encoding: FileSystem.EncodingType.Base64,
+          });
+
+          if (await Sharing.isAvailableAsync()) {
+            await Sharing.shareAsync(fileUri);
+            Alert.alert(
+              "Success",
+              "Invoice downloaded and shared successfully."
+            );
+          } else {
+            Alert.alert("Downloaded", `Invoice saved to: ${fileUri}`);
+          }
+
+          return { success: true };
         } catch (error) {
           console.error("Invoice download failed", error);
+          Alert.alert("Error", "Invoice download failed. Please try again.");
+          throw error;
         }
       },
     }),

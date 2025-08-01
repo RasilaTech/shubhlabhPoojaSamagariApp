@@ -1,4 +1,5 @@
 import { useGetInitialLocation } from "@/hooks/useGetInitialLocation";
+import { useGetAppConfigurationsQuery } from "@/services/configuration/configurationApi";
 import { store } from "@/store/store";
 import {
   DarkTheme,
@@ -7,21 +8,20 @@ import {
 } from "@react-navigation/native";
 import { useFonts } from "expo-font";
 import { Stack } from "expo-router";
+import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
+import React, { useEffect } from "react";
 import "react-native-reanimated";
 import { Provider } from "react-redux";
 import { useColorScheme } from "../hooks/useColorScheme.web";
 
-function LocationInitializer() {
-  useGetInitialLocation(); // Call the hook here
-  return null;
-}
+// Prevent the splash screen from auto-hiding
+SplashScreen.preventAutoHideAsync();
 
-
-
-export default function RootLayout() {
+// This new component will contain all the app-level hooks
+function RootLayoutContent() {
   const colorScheme = useColorScheme();
-  const [loaded] = useFonts({
+  const [fontsLoaded] = useFonts({
     outfit: require("../../assets/fonts/Outfit-Regular.ttf"),
     "outfit-bold": require("../../assets/fonts/Outfit-Bold.ttf"),
     "outfit-medium": require("../../assets/fonts/Outfit-Medium.ttf"),
@@ -33,24 +33,47 @@ export default function RootLayout() {
     "outfit-thin": require("../../assets/fonts/Outfit-Thin.ttf"),
   });
 
-  if (!loaded) {
-    // Async font loading only occurs in development.
+  useGetInitialLocation();
+
+  const { isLoading: isAppConfigLoading, isError: isAppConfigError } =
+    useGetAppConfigurationsQuery();
+
+  useEffect(() => {
+    const hideSplash = async () => {
+      if (fontsLoaded && !isAppConfigLoading) {
+        await SplashScreen.hideAsync();
+      }
+    };
+    hideSplash();
+  }, [fontsLoaded, isAppConfigLoading]);
+
+  // Wait for all initial loading to complete
+  if (!fontsLoaded || isAppConfigLoading) {
     return null;
   }
 
+  if (isAppConfigError) {
+    // You can show a global error screen here
+    console.error("Failed to load app configurations:", isAppConfigError);
+  }
+
+  return (
+    <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
+      <Stack>
+        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        <Stack.Screen name="product" options={{ headerShown: false }} />
+        <Stack.Screen name="address" options={{ headerShown: false }} />
+        <Stack.Screen name="+not-found" />
+      </Stack>
+      <StatusBar style="auto" />
+    </ThemeProvider>
+  );
+}
+
+export default function RootLayout() {
   return (
     <Provider store={store}>
-      <LocationInitializer />
-      <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
-        <Stack>
-          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-          <Stack.Screen name="product" options={{ headerShown: false }} />
-          <Stack.Screen name="address" options={{ headerShown: false }} />
-
-          <Stack.Screen name="+not-found" />
-        </Stack>
-        <StatusBar style="auto" />
-      </ThemeProvider>
+      <RootLayoutContent />
     </Provider>
   );
 }

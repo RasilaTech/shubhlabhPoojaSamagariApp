@@ -1,15 +1,20 @@
-import { FlatList, StyleSheet, Text, View } from "react-native";
-import React from "react";
 import { Product } from "@/services/product/productApi.type";
+import React from "react";
+import { FlatList, StyleSheet, Text, View } from "react-native";
 import Animated, { FadeInUp, FadeOutUp } from "react-native-reanimated";
 import ProductCardInSearchBox from "../card/ProductCardInSearchBox";
 
 interface SearchDialogProps {
   products: Product[];
   query: string;
+  onProductSelect?: () => void;
 }
 
-const SearchDialog = ({ products, query }: SearchDialogProps) => {
+const SearchDialog = ({
+  products,
+  query,
+  onProductSelect,
+}: SearchDialogProps) => {
   return (
     <Animated.View
       entering={FadeInUp.duration(300)}
@@ -20,8 +25,11 @@ const SearchDialog = ({ products, query }: SearchDialogProps) => {
         <FlatList
           data={products}
           keyExtractor={(item) => item.id}
-          renderItem={({ item }) => <ProductCardInSearchBox product={item} />}
+          renderItem={({ item }) => (
+            <ProductCardInSearchBox product={item} onPress={onProductSelect} />
+          )}
           style={styles.list}
+          keyboardShouldPersistTaps="handled"
         />
       ) : (
         <View style={styles.noResultContainer}>

@@ -34,7 +34,7 @@ const AddressCard = ({
             {selectedAddress.address_line1}, {selectedAddress.address_line2}
           </Text>
           <Text style={styles.addressLine}>
-            {selectedAddress.city}, {selectedAddress.state} -{" "}
+            {selectedAddress.city}, {selectedAddress.state} {"- "}
             {selectedAddress.pincode}
           </Text>
           <Text style={styles.addressLine}>{selectedAddress.phone_number}</Text>

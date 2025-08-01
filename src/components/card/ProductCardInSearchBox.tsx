@@ -1,13 +1,17 @@
-import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import React from "react";
 import { Product } from "@/services/product/productApi.type";
 import { router } from "expo-router";
+import React from "react";
+import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 interface ProductCardInSearchBoxProps {
   product: Product;
+  onPress?: () => void;
 }
 
-const ProductCardInSearchBox = ({ product }: ProductCardInSearchBoxProps) => {
+const ProductCardInSearchBox = ({
+  product,
+  onPress,
+}: ProductCardInSearchBoxProps) => {
   const defaultVariantIndex = Math.max(
     0,
     product.product_variants.findIndex((variant) => variant.default_variant)
@@ -15,6 +19,12 @@ const ProductCardInSearchBox = ({ product }: ProductCardInSearchBoxProps) => {
   const defaultProductVariant = product.product_variants[defaultVariantIndex];
 
   const handlePress = () => {
+    // Call the callback first to handle dialog dismissal
+    if (onPress) {
+      onPress();
+    }
+
+    // Navigate to product detail
     router.push({
       pathname: "/product/[id]",
       params: { id: product.id },
@@ -22,7 +32,11 @@ const ProductCardInSearchBox = ({ product }: ProductCardInSearchBoxProps) => {
   };
 
   return (
-    <TouchableOpacity style={styles.container} onPress={handlePress}>
+    <TouchableOpacity
+      style={styles.container}
+      onPress={handlePress}
+      activeOpacity={0.7}
+    >
       <Image
         source={{ uri: defaultProductVariant.images[0] }}
         style={styles.image}

@@ -33,7 +33,6 @@ const Categories = () => {
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
-    // isFetching, // Not directly used in rendering logic here
   } = useGetCategoriesInfiniteQuery({
     limit: 10,
   });
@@ -45,10 +44,8 @@ const Categories = () => {
     (page) => page.data
   );
 
-  // --- Start of the fix for odd numbers ---
-  const numColumns = 2; // Define your number of columns here
+  const numColumns = 2;
 
-  // Calculate if we need to add a dummy item
   const needsDummyItem = allCategories.length % numColumns !== 0;
 
   const dataForGrid = needsDummyItem
@@ -65,7 +62,6 @@ const Categories = () => {
         },
       ] // Add a dummy item
     : allCategories;
-  // --- End of the fix ---
 
   const loadMoreCategories = useCallback(() => {
     if (!isFetchingNextPage && hasNextPage) {
@@ -74,7 +70,6 @@ const Categories = () => {
   }, [fetchNextPage, isFetchingNextPage, hasNextPage]);
 
   const renderCategoryItem = useCallback(({ item }: { item: Category }) => {
-    // Otherwise, render the actual CategoryCard
     return <CategoryCard category={item} />;
   }, []);
 
@@ -142,7 +137,7 @@ const Categories = () => {
     >
       <Text style={styles.headingText}>Categories</Text>
       <FlatList
-        data={dataForGrid} // Use the modified data array
+        data={dataForGrid}
         renderItem={renderCategoryItem}
         keyExtractor={(item) => item.id}
         onEndReached={loadMoreCategories}
@@ -150,7 +145,7 @@ const Categories = () => {
         ListFooterComponent={renderFooter}
         contentContainerStyle={styles.flatListContent}
         showsVerticalScrollIndicator={false}
-        numColumns={numColumns} // Use the defined numColumns
+        numColumns={numColumns}
         columnWrapperStyle={styles.row}
       />
     </View>

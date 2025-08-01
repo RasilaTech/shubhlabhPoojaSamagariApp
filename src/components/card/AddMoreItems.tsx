@@ -12,7 +12,7 @@ const AddMoreItems: React.FC = () => {
   return (
     <View style={styles.container}>
       <Text style={styles.text}>
-        Missed Something?{" "}
+        {"Missed Something? "}
         <Text onPress={handleAddMoreItems} style={styles.linkText}>
           Add more items
         </Text>

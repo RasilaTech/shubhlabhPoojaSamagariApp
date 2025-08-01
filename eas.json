@@ -1,0 +1,30 @@
+{
+  "cli": {
+    "version": ">= 5.9.0"
+  },
+  "build": {
+    "development": {
+      "developmentClient": true,
+      "distribution": "internal"
+    },
+    "preview": {
+      "android": {
+        "buildType": "apk"
+      },
+      "env": {
+        "EXPO_PUBLIC_BASE_URL": "https://api.shubhlabhpoojasamagri.com/"
+      }
+    },
+    "production": {
+      "android": {
+        "buildType": "app-bundle"
+      },
+      "env": {
+        "EXPO_PUBLIC_BASE_URL": "https://api.shubhlabhpoojasamagri.com/"
+      }
+    }
+  },
+  "submit": {
+    "production": {}
+  }
+}

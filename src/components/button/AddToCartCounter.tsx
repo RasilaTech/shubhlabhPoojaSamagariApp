@@ -16,10 +16,6 @@ import {
   useUpdateCartItemMutation,
 } from "@/services/cart/cartAPI"; // Adjust path
 
-// Import type definitions
-
-// Assuming LoginDialog is a React Native component that uses Modal
-// import LoginDialog from "@/components/dialog/LoginDialog"; // Adjust path
 import { CartItem } from "@/services/cart/cartApi.type";
 import { ProductVariant } from "@/services/product/productApi.type";
 import { useAppSelector } from "@/store/hook";
@@ -137,7 +133,7 @@ const AddToCartCounter = ({ productVariant }: AddToCartCounterProps) => {
         onPress={() => handleDecreaseProductQuantity(productVariant.id)}
         disabled={showLoading}
       >
-        <Minus size={16}  color="#1ba672" />
+        <Minus size={16} color="#1ba672" />
       </TouchableOpacity>
 
       <View style={styles.quantityDisplay}>
@@ -175,8 +171,8 @@ const styles = StyleSheet.create({
     borderColor: "rgba(2, 6, 12, 0.15)", // border-[#02060c26]
     backgroundColor: "white", // bg-white
     // shadow-button-shadow conversion
-  
-   // Android shadow
+
+    // Android shadow
   },
   addOutlineButtonText: {
     fontSize: 14, // text-sm
@@ -204,7 +200,6 @@ const styles = StyleSheet.create({
     paddingVertical: 2, // py-1.5 (approx)
     alignItems: "center",
     justifyContent: "center",
-   
   },
   quantityDisplay: {
     flex: 1, // flex-1

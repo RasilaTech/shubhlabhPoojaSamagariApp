@@ -368,7 +368,7 @@ export const LoginDialog: React.FC<LoginDialogProps> = ({
 
                       <View style={styles.resendContainer}>
                         <Text style={styles.resendText}>
-                          Not received your code?{" "}
+                          {"Not received your code? "}
                         </Text>
                         {showResend && resendCooldown > 0 ? (
                           <Text style={styles.resendCooldownText}>

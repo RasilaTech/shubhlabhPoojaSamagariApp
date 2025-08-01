@@ -1,3 +1,8 @@
+import { useGetProductsInfiniteQuery } from "@/services/product/productApi";
+import { useAppSelector } from "@/store/hook";
+import { router } from "expo-router";
+import { Search } from "lucide-react-native";
+import React, { useRef, useState } from "react";
 import {
   Image,
   Keyboard,
@@ -7,16 +12,15 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import React, { useState } from "react";
-import { Search } from "lucide-react-native";
 import RotatingText from "../animated/RotatingText";
-import { useGetProductsInfiniteQuery } from "@/services/product/productApi";
+import LoginButton from "../button/LoginButton";
 import SearchDialog from "../dialog/SearchDialog";
-import { router } from "expo-router";
 
 const NavBar = () => {
   const [isFocused, setIsFocused] = useState(false);
   const [query, setQuery] = useState("");
+  const blurTimeoutRef = useRef<number | null>(null);
+  const { isAuthenticated } = useAppSelector((state) => state.auth);
 
   const {
     data: productsData = {
@@ -38,6 +42,32 @@ const NavBar = () => {
     Keyboard.dismiss();
   };
 
+  const handleFocus = () => {
+    if (blurTimeoutRef.current) {
+      clearTimeout(blurTimeoutRef.current);
+      blurTimeoutRef.current = null;
+    }
+    setIsFocused(true);
+  };
+
+  const handleBlur = () => {
+    // Delay hiding the dialog to allow navigation to complete
+    blurTimeoutRef.current = setTimeout(() => {
+      setIsFocused(false);
+    }, 200);
+  };
+
+  const handleProductSelect = () => {
+    // Clear any pending blur timeout and hide the dialog immediately
+    if (blurTimeoutRef.current) {
+      clearTimeout(blurTimeoutRef.current);
+      blurTimeoutRef.current = null;
+    }
+    setIsFocused(false);
+    setQuery("");
+    Keyboard.dismiss();
+  };
+
   return (
     <View style={styles.outerContainer}>
       <View style={styles.container}>
@@ -48,7 +78,7 @@ const NavBar = () => {
           />
         </TouchableOpacity>
 
-        <View style={{ width: "100%", paddingHorizontal: 16 }}>
+        <View style={styles.searchContainer}>
           <View style={styles.inputContainer}>
             <Search size={18} strokeWidth={2.5} />
             {!isFocused && !query && (
@@ -70,14 +100,20 @@ const NavBar = () => {
             <TextInput
               style={styles.input}
               onChangeText={setQuery}
-              onFocus={() => setIsFocused(true)}
-              onBlur={() => setIsFocused(false)}
+              onFocus={handleFocus}
+              onBlur={handleBlur}
+              value={query}
             />
           </View>
+          {!isAuthenticated && <LoginButton />}
         </View>
       </View>
       {isFocused && query.length > 0 && (
-        <SearchDialog products={products} query={query} />
+        <SearchDialog
+          products={products}
+          query={query}
+          onProductSelect={handleProductSelect}
+        />
       )}
     </View>
   );
@@ -103,6 +139,13 @@ const styles = StyleSheet.create({
   image: {
     resizeMode: "contain",
   },
+  searchContainer: {
+    width: "100%",
+    paddingHorizontal: 16,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
   inputContainer: {
     borderColor: "#0000000a",
     borderWidth: 1,
@@ -110,7 +153,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     alignItems: "center",
     flexDirection: "row",
-    width: "100%",
+    flex: 1,
     height: 40,
     gap: 8,
     borderRadius: 12,

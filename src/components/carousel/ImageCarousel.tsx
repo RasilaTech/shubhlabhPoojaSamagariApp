@@ -1,27 +1,22 @@
-import {
-  View,
-  StyleSheet,
-  Image,
-  useWindowDimensions,
-  Pressable,
-} from "react-native";
-import Carousel, { ICarouselInstance } from "react-native-reanimated-carousel";
-import Animated, {
-  useSharedValue,
-  useAnimatedStyle,
-  withTiming,
-  Easing,
-} from "react-native-reanimated";
+import { AdBanner } from "@/services/configuration/configurationApi.type";
 import { useEffect, useRef, useState } from "react";
-
-export interface CarouselItemData {
-  id: string | number;
-  imageUri: string;
-  onPress?: () => void;
-}
+import {
+  Image,
+  Pressable,
+  StyleSheet,
+  useWindowDimensions,
+  View,
+} from "react-native";
+import Animated, {
+  Easing,
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
+} from "react-native-reanimated";
+import Carousel, { ICarouselInstance } from "react-native-reanimated-carousel";
 
 interface ImageCarouselProps {
-  items: CarouselItemData[];
+  items: AdBanner[];
 }
 
 const ImageCarousel: React.FC<ImageCarouselProps> = ({ items }) => {
@@ -65,9 +60,9 @@ const ImageCarousel: React.FC<ImageCarouselProps> = ({ items }) => {
         width={width}
         height={width / 2}
         onSnapToItem={(index) => setActiveIndex(index)}
-        renderItem={({ item }: { item: CarouselItemData }) => (
+        renderItem={({ item }: { item: AdBanner }) => (
           <Pressable style={styles.itemContainer}>
-            <Image source={{ uri: item.imageUri }} style={styles.image} />
+            <Image source={{ uri: item.image }} style={styles.image} />
           </Pressable>
         )}
       />
