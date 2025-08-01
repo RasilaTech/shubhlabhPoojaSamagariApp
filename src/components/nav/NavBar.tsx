@@ -1,5 +1,6 @@
 import {
   Image,
+  Keyboard,
   StyleSheet,
   Text,
   TextInput,
@@ -9,51 +10,75 @@ import {
 import React, { useState } from "react";
 import { Search } from "lucide-react-native";
 import RotatingText from "../animated/RotatingText";
+import { useGetProductsInfiniteQuery } from "@/services/product/productApi";
+import SearchDialog from "../dialog/SearchDialog";
+import { router } from "expo-router";
 
 const NavBar = () => {
   const [isFocused, setIsFocused] = useState(false);
   const [query, setQuery] = useState("");
 
+  const {
+    data: productsData = {
+      pages: [
+        {
+          data: [],
+        },
+      ],
+    },
+    // isLoading,
+    // isError,
+  } = useGetProductsInfiniteQuery({ q: query, limit: 5 });
+  const products = productsData.pages.flatMap((page) => page.data);
+
   const handleLogoPress = () => {
-    //TODO: Implement navigation to home screen
+    router.push({ pathname: "/" });
+    setIsFocused(false);
+    setQuery("");
+    Keyboard.dismiss();
   };
 
   return (
-    <View style={styles.container}>
-      <TouchableOpacity onPress={handleLogoPress}>
-        <Image
-          source={require("../../../assets/images/navbar-logo.png")}
-          style={[styles.image, isFocused ? { height: 0 } : { height: 45 }]}
-        />
-      </TouchableOpacity>
-
-      <View style={{ width: "100%", paddingHorizontal: 16 }}>
-        <View style={styles.inputContainer}>
-          <Search size={18} strokeWidth={2.5} />
-          {!isFocused && !query && (
-            <View style={styles.placeholderContainer}>
-              <Text style={styles.placeholderText}>Search </Text>
-              <RotatingText
-                texts={['"Coconut"', '"Oil"', '"Agarbatti"', '"Diyas"']}
-                staggerFrom={"last"}
-                staggerDuration={0.025}
-                rotationInterval={2000}
-                textStyle={styles.rotatingTextStyle}
-                initial={{ translateY: "100%" }}
-                animate={{ translateY: 0 }}
-                exit={{ translateY: "-120%" }}
-                transition={{ type: "spring", damping: 30, stiffness: 400 }}
-              />
-            </View>
-          )}
-          <TextInput
-            style={styles.input}
-            onChangeText={setQuery}
-            onFocus={() => setIsFocused(true)}
-            onBlur={() => setIsFocused(false)}
+    <View style={styles.outerContainer}>
+      <View style={styles.container}>
+        <TouchableOpacity onPress={handleLogoPress}>
+          <Image
+            source={require("../../../assets/images/navbar-logo.png")}
+            style={[styles.image, isFocused ? { height: 0 } : { height: 45 }]}
           />
+        </TouchableOpacity>
+
+        <View style={{ width: "100%", paddingHorizontal: 16 }}>
+          <View style={styles.inputContainer}>
+            <Search size={18} strokeWidth={2.5} />
+            {!isFocused && !query && (
+              <View style={styles.placeholderContainer}>
+                <Text style={styles.placeholderText}>Search </Text>
+                <RotatingText
+                  texts={['"Coconut"', '"Oil"', '"Agarbatti"', '"Diyas"']}
+                  staggerFrom={"last"}
+                  staggerDuration={0.025}
+                  rotationInterval={2000}
+                  textStyle={styles.rotatingTextStyle}
+                  initial={{ translateY: "100%" }}
+                  animate={{ translateY: 0 }}
+                  exit={{ translateY: "-120%" }}
+                  transition={{ type: "spring", damping: 30, stiffness: 400 }}
+                />
+              </View>
+            )}
+            <TextInput
+              style={styles.input}
+              onChangeText={setQuery}
+              onFocus={() => setIsFocused(true)}
+              onBlur={() => setIsFocused(false)}
+            />
+          </View>
         </View>
       </View>
+      {isFocused && query.length > 0 && (
+        <SearchDialog products={products} query={query} />
+      )}
     </View>
   );
 };
@@ -61,6 +86,11 @@ const NavBar = () => {
 export default NavBar;
 
 const styles = StyleSheet.create({
+  outerContainer: {
+    position: "relative",
+    width: "100%",
+    zIndex: 10,
+  },
   container: {
     width: "100%",
     alignItems: "center",
@@ -86,6 +116,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
   },
   input: {
+    flex: 1,
     width: "100%",
     height: "100%",
     fontWeight: "light",

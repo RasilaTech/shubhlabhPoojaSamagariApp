@@ -10,12 +10,14 @@ import type {
 export const addressAPI = createApi({
   reducerPath: "addressAPI",
   baseQuery: baseQueryWithReauth,
+  tagTypes: ["Address"],
   endpoints: (builder) => ({
     getUserAddressList: builder.query<UserAddressListResponse, void>({
       query: () => ({
         url: `/api/addresses/`,
         method: "GET",
       }),
+      providesTags: [{ type: "Address", id: "LIST" }],
     }),
 
     addUserAddress: builder.mutation<
@@ -27,24 +29,7 @@ export const addressAPI = createApi({
         method: "POST",
         data: body,
       }),
-
-      async onQueryStarted(_body, { dispatch, queryFulfilled }) {
-        try {
-          const { data: response } = await queryFulfilled;
-
-          dispatch(
-            addressAPI.util.updateQueryData(
-              "getUserAddressList",
-              undefined,
-              (draft) => {
-                draft.data.push(response.data);
-              }
-            )
-          );
-        } catch {
-          // Handle error if needed
-        }
-      },
+      invalidatesTags: [{ type: "Address", id: "LIST" }],
     }),
 
     updateUserAddress: builder.mutation<
@@ -57,35 +42,7 @@ export const addressAPI = createApi({
         data: body,
       }),
 
-      async onQueryStarted({ addressId }, { dispatch, queryFulfilled }) {
-        try {
-          const { data: response } = await queryFulfilled;
-
-          dispatch(
-            addressAPI.util.updateQueryData(
-              "getUserAddressList",
-              undefined,
-              (draft) => {
-                if (!response.data) {
-                  draft.data = draft.data.filter(
-                    (item) => item.id !== addressId
-                  );
-                  return;
-                }
-                const itemIndex = draft.data.findIndex(
-                  (item) => item.id === response.data?.id
-                );
-
-                if (itemIndex !== -1) {
-                  draft.data[itemIndex] = response.data;
-                }
-              }
-            )
-          );
-        } catch {
-          // Handle error if needed
-        }
-      },
+      invalidatesTags: [{ type: "Address", id: "LIST" }],
     }),
 
     deleteAddress: builder.mutation<UserAddressResponse, string>({
@@ -94,23 +51,7 @@ export const addressAPI = createApi({
         method: "DELETE",
       }),
 
-      async onQueryStarted(addressId, { dispatch, queryFulfilled }) {
-        try {
-          await queryFulfilled;
-
-          dispatch(
-            addressAPI.util.updateQueryData(
-              "getUserAddressList",
-              undefined,
-              (draft) => {
-                draft.data = draft.data.filter((item) => item.id !== addressId);
-              }
-            )
-          );
-        } catch {
-          // Handle error if needed
-        }
-      },
+      invalidatesTags: [{ type: "Address", id: "LIST" }],
     }),
   }),
 });

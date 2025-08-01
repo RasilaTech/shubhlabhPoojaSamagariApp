@@ -101,14 +101,14 @@ export default function HomeScreen() {
 
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
-      <ScrollView showsVerticalScrollIndicator={false}>
-        <View
-          style={[
-            styles.container,
-            { paddingTop: insets.top, paddingBottom: tabBarHeight },
-          ]}
-        >
-          <NavBar />
+      <View
+        style={[
+          styles.container,
+          { paddingTop: insets.top, paddingBottom: tabBarHeight },
+        ]}
+      >
+        <NavBar />
+        <ScrollView showsVerticalScrollIndicator={false}>
           <View style={styles.categoryListContainer}>
             <View style={styles.headingContainer}>
               <Text style={styles.headingText}>Shop By Category</Text>
@@ -139,8 +139,8 @@ export default function HomeScreen() {
             topFiveCategories.map((category) => (
               <TopCategoriesWithProduct category={category} key={category.id} />
             ))}
-        </View>
-      </ScrollView>
+        </ScrollView>
+      </View>
     </TouchableWithoutFeedback>
   );
 }
