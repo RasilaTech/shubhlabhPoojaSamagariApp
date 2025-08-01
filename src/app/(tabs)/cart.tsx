@@ -5,9 +5,9 @@ import AddMoreItems from "@/components/card/AddMoreItems";
 import AddressCard from "@/components/card/AddressCard";
 import BillDetails from "@/components/card/BillDetails";
 import Coupons from "@/components/card/Coupons";
-import EmptyCart from "@/components/card/EmptyCart";
 import ReviewOrder from "@/components/card/ReviewOrder";
 import ConfirmationDialog from "@/components/dialog/ConfirmationDialog";
+import EmptyCart from "@/components/empty/EmptyCart";
 import OrderErrorScreen from "@/components/error/OrderErrorScree";
 import OrderDetailSkeleton from "@/components/skeletons/OrderSkeleton";
 import { UserAddressPayload } from "@/services/address/addressApi.type";
@@ -34,11 +34,8 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context"; // For safe area
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-// Adjust paths for RTK Query hooks and types
-
-// Adjust path
 export default function Cart() {
   const insets = useSafeAreaInsets();
   const { isAuthenticated } = useAppSelector((state) => state.auth);
@@ -55,7 +52,7 @@ export default function Cart() {
     isLoading,
     isError,
   } = useGetCartItemsQuery(undefined, {
-    // skip: !isAuthenticated,
+    skip: !isAuthenticated,
   });
 
   const [createOrder, { isLoading: orderPlacingLoading }] =
@@ -64,7 +61,7 @@ export default function Cart() {
   const { data: addressData = { data: [] } } = useGetUserAddressListQuery(
     undefined,
     {
-      // skip: !isAuthenticated,
+      skip: !isAuthenticated,
     }
   );
   const defaultAddress = addressData.data.find((address) => address.is_default);
@@ -143,7 +140,7 @@ export default function Cart() {
     }
   }, [itemsTotal, discount, selectedCoupon]);
 
-  const [showClearCartDialog, setShowClearCartDialog] = useState(false); // State for confirmation dialog
+  const [showClearCartDialog, setShowClearCartDialog] = useState(false);
 
   const handleCouponChange = (coupon: Coupon | null) => {
     setSelectedCoupon(coupon);
@@ -151,11 +148,10 @@ export default function Cart() {
 
   const handleAddressChange = (address: UserAddressPayload) => {
     setSelectedAddress(address);
-    setIsAddressDrawerOpen(false); // Close drawer after selection
+    setIsAddressDrawerOpen(false);
   };
 
   const handleAddressDrawerOpen = () => {
-    // Renamed from handleAdressDrawerOpen for consistency
     setIsAddressDrawerOpen(true);
   };
 
@@ -167,7 +163,7 @@ export default function Cart() {
     const finalAddress = selectedAddress || defaultAddress;
     if (!finalAddress) {
       Alert.alert("Address Missing", "Please select an address to proceed.");
-      handleAddressDrawerOpen(); // Open address selection if no address
+      handleAddressDrawerOpen();
       return;
     }
     if (itemsTotal - discount < minOrderValue) {
@@ -199,38 +195,15 @@ export default function Cart() {
     try {
       const result = await createOrder(orderPayload).unwrap();
       console.log("Order creation result:", result);
-
-      // if (result.success) {
-      //   if (result.data) {
-      //     // Navigate to payment page or order success based on response
-      //     router.replace({
-      //       // Use router.replace to prevent going back to cart
-      //       pathname: "/payment-page", // Adjust route if different
-      //       params: { orderData: JSON.stringify(result.data) }, // Pass data as stringified JSON
-      //     });
-      //   } else {
-      //     router.replace("/order-success"); // Adjust route if different
-      //   }
-      // } else {
-      //   router.replace({
-      //     pathname: "/order-failure",
-      //     params: { message: result.message },
-      //   });
-      // }
     } catch (error: any) {
       console.error("Order creation failed:", error);
       Alert.alert(
         "Order Failed",
         error?.data?.message || "Order creation failed. Please try again."
       );
-      // router.replace({
-      //   pathname: "/order-failure",
-      //   params: { message: error?.data?.message || "Order creation failed" },
-      // });
     }
   };
 
-  // --- Conditional Renders for Main Cart Screen ---
   if (isLoading) {
     return (
       <View
@@ -270,7 +243,16 @@ export default function Cart() {
   }
 
   if (cartData.data.length === 0) {
-    return <EmptyCart />; // EmptyCart component handles its own header/layout
+    return (
+      <View
+        style={[
+          styles.container,
+          { paddingTop: insets.top, paddingBottom: insets.bottom },
+        ]}
+      >
+        <EmptyCart />;
+      </View>
+    );
   }
 
   return (
@@ -339,7 +321,7 @@ export default function Cart() {
               <ActivityIndicator color="white" />
             ) : (
               <Text style={styles.payButtonText}>
-                Pay{" "}
+                {"Pay "}
                 {`₹ ${new Intl.NumberFormat("en-IN", {
                   minimumFractionDigits: 2,
                   maximumFractionDigits: 2,
@@ -371,18 +353,18 @@ export default function Cart() {
       />
 
       <AddressBottomSheet
-        isVisible={isAddressDrawerOpen} // Pass isVisible
-        onClose={() => setIsAddressDrawerOpen(false)} // Pass onClose
+        isVisible={isAddressDrawerOpen}
+        onClose={() => setIsAddressDrawerOpen(false)}
         addresses={addressData.data || []}
         handleAddressChange={handleAddressChange}
       />
 
       <PaymentBottomSheet
-        isVisible={openPaymentSheet} // Pass isVisible
-        onClose={() => setOpenPaymentSheet(false)} // Pass onClose
+        isVisible={openPaymentSheet}
+        onClose={() => setOpenPaymentSheet(false)}
         onSelectPaymentMethod={(method) => {
           placeOrder(method);
-          setOpenPaymentSheet(false); // Close sheet after selection
+          setOpenPaymentSheet(false);
         }}
       />
     </View>

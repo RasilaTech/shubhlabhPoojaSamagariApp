@@ -9,9 +9,10 @@ import {
 } from "react-native";
 
 import type { Product } from "@/services/product/productApi.type";
-import EmptyCart from "./card/EmptyCart";
-import OrderDetailSkeleton from "./skeletons/OrderSkeleton";
+import { router } from "expo-router";
 import ProductItem2 from "./card/ProductItem2";
+import EmptyScreen from "./empty/EmptyScreen";
+import OrderDetailSkeleton from "./skeletons/OrderSkeleton";
 
 export interface ProductSectionProps {
   productData: Product[];
@@ -20,6 +21,8 @@ export interface ProductSectionProps {
   isFetching: boolean;
   isLoadingMore?: boolean;
 }
+
+const NoProductFoundIcon = require("../../../assets/images/no_products.png");
 
 const screenWidth = Dimensions.get("window").width;
 const AVAILABLE_PRODUCT_WIDTH = screenWidth * 0.8 - 8; // 80% minus padding
@@ -75,7 +78,16 @@ export const ProductSection = ({
   if (productData.length === 0) {
     return (
       <View style={styles.container}>
-        <EmptyCart />
+        <EmptyScreen
+          imageSrc={NoProductFoundIcon}
+          title={"No Products Found"}
+          showBackArrow={false}
+          subtitle={""}
+          buttonText={"Browse other Products"}
+          onButtonClick={function (): void {
+            router.push({ pathname: "/" });
+          }}
+        />
       </View>
     );
   }

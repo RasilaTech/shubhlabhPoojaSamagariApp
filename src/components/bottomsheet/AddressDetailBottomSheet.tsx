@@ -27,8 +27,8 @@ export interface CompleteAddressProps {
 
 // --- Zod Schema ---
 export const addressSchema = z.object({
-  address_line1: z.string().min(1, "Address Line 1 is required"),
-  address_line2: z.string().optional(),
+  address_line1: z.string().min(10, "Address Line 1 is required"),
+  address_line2: z.string().min(10, "Address Line 2 is required"),
   landmark: z.string().optional(),
   name: z.string().min(1, "Receiver's name is required"),
   phone_number: z

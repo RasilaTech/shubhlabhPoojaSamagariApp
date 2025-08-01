@@ -20,23 +20,15 @@ const UserAddress = () => {
     isLoading,
     isError,
   } = useGetUserAddressListQuery();
-  const [showEditForm, setShowEditForm] = useState(false); // Example state to toggle form view
   const insets = useSafeAreaInsets();
 
-  const handleEditAddress = (address: UserAddressPayload) => {
-    // Navigate to a new screen for editing the address, passing the address data
-    // router.push({
-    //   pathname: "/account/addresses/edit",
-    //   params: { addressId: address.id },
-    // });
-  };
   const handleGoBack = () => {
     router.back();
   };
 
   const renderAddressItem = ({ item }: { item: UserAddressPayload }) => (
     <View style={styles.addressCardWrapper}>
-      <UserAddressCard data={item} onEdit={handleEditAddress} />
+      <UserAddressCard data={item} />
     </View>
   );
 

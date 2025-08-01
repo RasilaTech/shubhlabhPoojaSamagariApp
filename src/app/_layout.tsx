@@ -17,6 +17,8 @@ function LocationInitializer() {
   return null;
 }
 
+
+
 export default function RootLayout() {
   const colorScheme = useColorScheme();
   const [loaded] = useFonts({
