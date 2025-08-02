@@ -1,6 +1,8 @@
+import { useGetAppConfigurationsQuery } from "@/services/configuration/configurationApi";
 import { ChevronRight, Wallet, X } from "lucide-react-native"; // Assuming lucide-react-native for icons
 import React from "react";
 import {
+  Alert,
   Dimensions,
   Modal,
   Pressable,
@@ -23,8 +25,21 @@ const PaymentBottomSheet = ({
   isVisible,
   onClose,
 }: TriggerPaymentBottomSheetProps) => {
+  const {
+    isLoading: isAppConfigLoading,
+    data: appConfigData,
+    isError: isAppConfigError,
+  } = useGetAppConfigurationsQuery();
+
   const handlePaymentSelect = (method: "cod" | "online") => {
-    onSelectPaymentMethod(method);
+    if (appConfigData?.data.store_status === false) {
+      Alert.alert(
+        "Store is Offline",
+        `We will back shortly after that you will start plaing orders`
+      );
+    } else {
+      onSelectPaymentMethod(method);
+    }
     onClose(); // Close the bottom sheet after a selection is made
   };
 

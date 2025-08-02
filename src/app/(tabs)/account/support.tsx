@@ -1,5 +1,3 @@
-// app/(tabs)/account/profile.tsx
-import { SupportText } from "@/constants/Constant";
 import { router } from "expo-router";
 import { ChevronLeft } from "lucide-react-native";
 import React from "react";
@@ -14,13 +12,30 @@ import {
 import RenderHtml from "react-native-render-html";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+// Adjust paths for your theme hooks and constants
+import { darkColors, lightColors } from "@/constants/ThemeColors";
+import { useTheme } from "@/hooks/useTheme";
+
+// Assuming you have a SupportText constant defined
+import { SupportText } from "@/constants/Constant";
+
 export default function UserSupportScreen() {
-  // Default export
   const { width } = useWindowDimensions();
   const insets = useSafeAreaInsets();
+  const { theme } = useTheme();
+  const colors = theme === "dark" ? darkColors : lightColors;
+
   const handleGoBack = () => {
     router.back();
   };
+
+  // Create a theme-aware style object for RenderHtml
+  const renderHtmlBaseStyle = {
+    color: colors.text,
+    fontSize: 14,
+    lineHeight: 20,
+  };
+
   return (
     <View
       style={[
@@ -28,14 +43,24 @@ export default function UserSupportScreen() {
         {
           paddingTop: insets.top,
           paddingBottom: insets.bottom,
+          backgroundColor: colors.background, // Apply background color from theme
         },
       ]}
     >
-      <View style={styles.header}>
+      <View
+        style={[
+          styles.header,
+          { backgroundColor: colors.cardBackground, shadowColor: colors.text },
+        ]}
+      >
         <TouchableOpacity onPress={handleGoBack} style={styles.backButton}>
-          <ChevronLeft size={24} color="#02060cbf" />
+          <ChevronLeft size={24} color={colors.text} />
         </TouchableOpacity>
-        <Text numberOfLines={1} ellipsizeMode="tail" style={styles.headerTitle}>
+        <Text
+          numberOfLines={1}
+          ellipsizeMode="tail"
+          style={[styles.headerTitle, { color: colors.text }]}
+        >
           Customer Support
         </Text>
       </View>
@@ -43,10 +68,10 @@ export default function UserSupportScreen() {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        
         <RenderHtml
           contentWidth={width}
-          source={{ html: SupportText }} // Fix: Wrap string in object with html property
+          source={{ html: SupportText }}
+          baseStyle={renderHtmlBaseStyle} // Apply theme-aware style
         />
       </ScrollView>
     </View>
@@ -58,12 +83,10 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#fff",
   },
   headingText: {
     fontSize: 26,
     fontWeight: "bold",
-    color: "#1a202c",
     marginTop: 20,
     marginBottom: 20,
   },
@@ -71,26 +94,23 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     padding: 12,
-    backgroundColor: "#fff",
-    shadowColor: "#000", // shadow-cart-card (approx)
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 3,
-    elevation: 4, // Android shadow
+    elevation: 4,
   },
   backButton: {
-    paddingRight: 10, // gap-2 from original
+    paddingRight: 10,
   },
   headerTitle: {
-    flex: 1, // Allow title to take remaining space
+    flex: 1,
     fontSize: 18,
     lineHeight: 21,
     fontWeight: "600",
     letterSpacing: -0.4,
-    color: "#02060cbf",
   },
   scrollContent: {
     padding: 16,
-    paddingBottom: 32, // Extra bottom padding
+    paddingBottom: 32,
   },
 });

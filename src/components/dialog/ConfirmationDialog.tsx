@@ -30,9 +30,6 @@ export const ConfirmationDialog: React.FC<ConfirmationDialogProps> = ({
   confirmationButtonText = "Confirm",
   cancelButtonText = "Cancel",
   onConfirm,
-  // className props are not used in RN, styles are merged
-  confirmationButtonClassName,
-  cancellationButtonClassName,
   isConfirming,
 }) => {
   const handleConfirmPress = () => {
@@ -193,5 +190,3 @@ const styles = StyleSheet.create({
     marginRight: 8, // mr-2
   },
 });
-
-export default ConfirmationDialog;

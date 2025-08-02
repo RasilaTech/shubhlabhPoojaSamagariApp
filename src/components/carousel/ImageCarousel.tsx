@@ -62,7 +62,7 @@ const ImageCarousel: React.FC<ImageCarouselProps> = ({ items }) => {
         onSnapToItem={(index) => setActiveIndex(index)}
         renderItem={({ item }: { item: AdBanner }) => (
           <Pressable style={styles.itemContainer}>
-            <Image source={{ uri: item.image }} style={styles.image} />
+            <Image source={{ uri: item.image }} style={styles.image} resizeMode="stretch" />
           </Pressable>
         )}
       />

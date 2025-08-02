@@ -1,10 +1,11 @@
+import { useCheckAuthOnLaunch } from "@/hooks/useCheckAuthOnLaunch";
 import { useGetInitialLocation } from "@/hooks/useGetInitialLocation";
 import { useGetAppConfigurationsQuery } from "@/services/configuration/configurationApi";
 import { store } from "@/store/store";
 import {
-  DarkTheme,
-  DefaultTheme,
-  ThemeProvider,
+  DarkTheme as NavDarkTheme,
+  DefaultTheme as NavDefaultTheme,
+  ThemeProvider as NavThemeProvider,
 } from "@react-navigation/native";
 import { useFonts } from "expo-font";
 import { Stack } from "expo-router";
@@ -13,14 +14,12 @@ import { StatusBar } from "expo-status-bar";
 import React, { useEffect } from "react";
 import "react-native-reanimated";
 import { Provider } from "react-redux";
-import { useColorScheme } from "../hooks/useColorScheme.web";
+import { ThemeProvider, useTheme } from "../hooks/useTheme"; // <--- Import new ThemeProvider and useTheme
 
-// Prevent the splash screen from auto-hiding
 SplashScreen.preventAutoHideAsync();
 
-// This new component will contain all the app-level hooks
-function RootLayoutContent() {
-  const colorScheme = useColorScheme();
+// This component now handles all app-level logic and renders the main UI
+function AppWrapper() {
   const [fontsLoaded] = useFonts({
     outfit: require("../../assets/fonts/Outfit-Regular.ttf"),
     "outfit-bold": require("../../assets/fonts/Outfit-Bold.ttf"),
@@ -34,46 +33,59 @@ function RootLayoutContent() {
   });
 
   useGetInitialLocation();
+  useCheckAuthOnLaunch();
 
   const { isLoading: isAppConfigLoading, isError: isAppConfigError } =
     useGetAppConfigurationsQuery();
 
+  const { theme, isReady: isThemeReady } = useTheme(); // Get theme state from our hook
+
   useEffect(() => {
     const hideSplash = async () => {
-      if (fontsLoaded && !isAppConfigLoading) {
+      // Hide splash screen when fonts, configs, and theme are ready
+      if (fontsLoaded && !isAppConfigLoading && isThemeReady) {
         await SplashScreen.hideAsync();
       }
     };
     hideSplash();
-  }, [fontsLoaded, isAppConfigLoading]);
+  }, [fontsLoaded, isAppConfigLoading, isThemeReady]);
 
-  // Wait for all initial loading to complete
-  if (!fontsLoaded || isAppConfigLoading) {
-    return null;
+  if (!fontsLoaded || isAppConfigLoading || !isThemeReady) {
+    return null; // Don't render anything until ready
   }
 
   if (isAppConfigError) {
-    // You can show a global error screen here
     console.error("Failed to load app configurations:", isAppConfigError);
   }
 
+  // Use the theme from our hook to set the Navigation ThemeProvider
+  const navigationTheme =
+    theme === "dark"
+      ? { ...NavDarkTheme, colors: { ...NavDarkTheme.colors, text: "#fff" } }
+      : {
+          ...NavDefaultTheme,
+          colors: { ...NavDefaultTheme.colors, text: "#000" },
+        };
+
   return (
-    <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
+    <NavThemeProvider value={navigationTheme}>
       <Stack>
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="product" options={{ headerShown: false }} />
+        <Stack.Screen name="products" options={{ headerShown: false }} />
         <Stack.Screen name="address" options={{ headerShown: false }} />
         <Stack.Screen name="+not-found" />
       </Stack>
-      <StatusBar style="auto" />
-    </ThemeProvider>
+      <StatusBar style={theme === "dark" ? "light" : "dark"} />
+    </NavThemeProvider>
   );
 }
 
 export default function RootLayout() {
   return (
     <Provider store={store}>
-      <RootLayoutContent />
+      <ThemeProvider>
+        <AppWrapper />
+      </ThemeProvider>
     </Provider>
   );
 }

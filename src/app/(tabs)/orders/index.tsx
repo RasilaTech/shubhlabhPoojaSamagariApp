@@ -14,9 +14,10 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 // Import types for clarity, adjust path if needed based on your project structure
 import OrderErrorScreen from "@/components/error/OrderErrorScree";
 import type { OrderDetail } from "@/services/orders/orderApi.type";
+import { useAppSelector } from "@/store/hook";
 
 const Orders = () => {
-  // const { isAuthenticated } = useAppSelector((state) => state.auth);
+  const { isAuthenticated } = useAppSelector((state) => state.auth);
 
   const {
     data: infiniteOrdersData = {
@@ -73,17 +74,17 @@ const Orders = () => {
     );
   }
 
-  // if (!isAuthenticated) {
-  //   return (
-  //     <View style={[styles.container, styles.centerContent]}>
-  //       <Text style={styles.noOrdersText}>Please Login to View orders</Text>
-  //     </View>
-  //   );
-  // }
+  if (!isAuthenticated) {
+    return (
+      <View style={[styles.container, styles.centerContent]}>
+        <Text style={styles.noOrdersText}>Please Login to View orders</Text>
+      </View>
+    );
+  }
 
-  // if (isError) {
-  //   return <OrderErrorScreen />;
-  // }
+  if (isError) {
+    return <OrderErrorScreen />;
+  }
 
   if (allOrders.length === 0) {
     return (

@@ -1,6 +1,7 @@
-// app/(tabs)/account/index.tsx
-import { useLogoutMutation } from "@/services/auth/authApi"; // Adjust path
-import { router } from "expo-router"; // Import router from expo-router
+import { darkColors, lightColors } from "@/constants/ThemeColors"; // <-- Import your color constants
+import { useTheme } from "@/hooks/useTheme"; // <-- Import useTheme
+import { useLogoutMutation } from "@/services/auth/authApi";
+import { router } from "expo-router";
 import {
   ChevronRight,
   FileText,
@@ -8,6 +9,7 @@ import {
   LifeBuoy,
   LogOut,
   MapPin,
+  Moon,
   User,
 } from "lucide-react-native";
 import React from "react";
@@ -15,13 +17,13 @@ import {
   Alert,
   ScrollView,
   StyleSheet,
+  Switch,
   Text,
   TouchableOpacity,
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-// Helper component for each account option item (can be extracted to src/components/common/AccountOption.tsx)
 interface AccountOptionProps {
   icon: React.ComponentType<{ size: number; color: string }>;
   title: string;
@@ -34,24 +36,62 @@ const AccountOption: React.FC<AccountOptionProps> = ({
   title,
   onPress,
   isLast,
-}) => (
-  <TouchableOpacity
-    style={[styles.optionContainer, !isLast && styles.optionBorder]}
-    onPress={onPress}
-  >
-    <View style={styles.optionLeftContent}>
-      <Icon size={20} color="#333" />
-      <Text style={styles.optionText}>{title}</Text>
+}) => {
+  const { theme } = useTheme();
+  const colors = theme === "dark" ? darkColors : lightColors;
+
+  return (
+    <TouchableOpacity
+      style={[
+        styles.optionContainer,
+        { backgroundColor: colors.cardBackground },
+        !isLast && { borderBottomColor: colors.border },
+      ]}
+      onPress={onPress}
+    >
+      <View style={styles.optionLeftContent}>
+        <Icon size={20} color={colors.text} />
+        <Text style={[styles.optionText, { color: colors.text }]}>{title}</Text>
+      </View>
+      <ChevronRight size={18} color={colors.textSecondary} />
+    </TouchableOpacity>
+  );
+};
+
+const ThemeToggle: React.FC<{ isLast: boolean }> = ({ isLast }) => {
+  const { theme, toggleTheme } = useTheme();
+  const colors = theme === "dark" ? darkColors : lightColors;
+
+  return (
+    <View
+      style={[
+        styles.optionContainer,
+        { backgroundColor: colors.cardBackground },
+        !isLast && { borderBottomColor: colors.border },
+      ]}
+    >
+      <View style={styles.optionLeftContent}>
+        <Moon size={20} color={colors.text} />
+        <Text style={[styles.optionText, { color: colors.text }]}>
+          Dark Mode
+        </Text>
+      </View>
+      <Switch
+        trackColor={{ false: colors.textSecondary, true: colors.accent }}
+        thumbColor={colors.cardBackground}
+        onValueChange={toggleTheme}
+        value={theme === "dark"}
+      />
     </View>
-    <ChevronRight size={18} color="#888" />
-  </TouchableOpacity>
-);
+  );
+};
 
 export default function AccountScreen() {
   const insets = useSafeAreaInsets();
   const [logout, { isLoading }] = useLogoutMutation();
+  const { theme } = useTheme();
+  const colors = theme === "dark" ? darkColors : lightColors;
 
-  // FIX: Declare handleLogout as async
   const handleLogout = async () => {
     Alert.alert(
       "Logout",
@@ -63,11 +103,10 @@ export default function AccountScreen() {
         },
         {
           text: "Logout",
-          // FIX: Declare this inner onPress callback as async
           onPress: async () => {
             try {
-              await logout().unwrap(); // Use .unwrap() to handle potential errors
-              router.replace("/"); // Redirect after successful logout
+              await logout().unwrap();
+              router.replace("/");
             } catch (error) {
               console.error("Logout failed:", error);
               Alert.alert(
@@ -86,29 +125,34 @@ export default function AccountScreen() {
     <View
       style={[
         styles.container,
-        { paddingTop: insets.top, paddingBottom: insets.bottom },
+        {
+          paddingTop: insets.top,
+          paddingBottom: insets.bottom,
+          backgroundColor: colors.background, // <-- Apply background color
+        },
       ]}
     >
-      <Text style={styles.headingText}>My Account</Text>
+      <Text style={[styles.headingText, { color: colors.text }]}>
+        My Account
+      </Text>
 
       <ScrollView contentContainerStyle={styles.scrollViewContent}>
-        {/* User Specific Options */}
         <View style={styles.section}>
           <AccountOption
             icon={User}
             title="User Profile"
-            onPress={() => router.push({ pathname: "/account/profile" })} // Use /account/profile for relative path in stack
+            onPress={() => router.push({ pathname: "/account/profile" })}
           />
           <AccountOption
             icon={MapPin}
             title="My Addresses"
-            onPress={() => router.push({ pathname: "/account/addresses" })} // Use /account/addresses
+            onPress={() => router.push({ pathname: "/account/addresses" })}
             isLast
           />
         </View>
 
-        {/* Information & Support Options */}
         <View style={styles.section}>
+          <ThemeToggle isLast={false} />
           <AccountOption
             icon={Info}
             title="About Us"
@@ -127,7 +171,6 @@ export default function AccountScreen() {
           />
         </View>
 
-        {/* Action Options */}
         <View style={styles.section}>
           <AccountOption
             icon={LogOut}
@@ -144,12 +187,10 @@ export default function AccountScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#f0f0f5",
   },
   headingText: {
     fontSize: 26,
     fontWeight: "bold",
-    color: "#1a202c",
     paddingHorizontal: 20,
     marginTop: 20,
     marginBottom: 20,
@@ -159,7 +200,6 @@ const styles = StyleSheet.create({
     paddingBottom: 20,
   },
   section: {
-    backgroundColor: "#fff",
     borderRadius: 10,
     marginBottom: 15,
     overflow: "hidden",
@@ -175,6 +215,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     paddingVertical: 15,
     paddingHorizontal: 15,
+    borderBottomWidth: 1,
   },
   optionLeftContent: {
     flexDirection: "row",
@@ -183,10 +224,8 @@ const styles = StyleSheet.create({
   },
   optionText: {
     fontSize: 16,
-    color: "#333",
   },
   optionBorder: {
     borderBottomWidth: 1,
-    borderBottomColor: "#eee",
   },
 });

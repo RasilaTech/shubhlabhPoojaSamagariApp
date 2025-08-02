@@ -1,8 +1,3 @@
-import UserAddressCard from "@/components/card/UserAddressCard";
-import { UserAddressPayload } from "@/services/address/addressApi.type";
-import { useGetUserAddressListQuery } from "@/services/address/AddresssAPI"; // Adjust path
-import { router } from "expo-router";
-import { ChevronLeft } from "lucide-react-native";
 import React from "react";
 import {
   ActivityIndicator,
@@ -13,6 +8,16 @@ import {
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { router } from "expo-router";
+import { ChevronLeft } from "lucide-react-native";
+
+import { useGetUserAddressListQuery } from "@/services/address/AddresssAPI"; // Adjust path
+import type { UserAddressPayload } from "@/services/address/addressApi.type"; // Adjust path
+import UserAddressCard from "../../../../src/components/card/UserAddressCard"; // Adjust path
+
+import { useTheme } from "@/hooks/useTheme"; // <-- Import useTheme hook
+import { darkColors, lightColors } from "@/constants/ThemeColors"; // <-- Import color palettes
+
 
 const UserAddress = () => {
   const {
@@ -21,6 +26,9 @@ const UserAddress = () => {
     isError,
   } = useGetUserAddressListQuery();
   const insets = useSafeAreaInsets();
+  
+  const { theme } = useTheme(); // Get the current theme
+  const colors = theme === "dark" ? darkColors : lightColors; // Select color palette
 
   const handleGoBack = () => {
     router.back();
@@ -28,23 +36,24 @@ const UserAddress = () => {
 
   const renderAddressItem = ({ item }: { item: UserAddressPayload }) => (
     <View style={styles.addressCardWrapper}>
+      {/* Pass the onEdit handler if you want to enable the edit flow */}
       <UserAddressCard data={item} />
     </View>
   );
 
   if (isLoading) {
     return (
-      <View style={styles.centerContent}>
-        <ActivityIndicator size="large" color="#ff5200" />
-        <Text style={styles.loadingText}>Loading addresses...</Text>
+      <View style={[styles.centerContent, { backgroundColor: colors.background }]}>
+        <ActivityIndicator size="large" color={colors.accent} />
+        <Text style={[styles.loadingText, { color: colors.textSecondary }]}>Loading addresses...</Text>
       </View>
     );
   }
 
   if (isError || addressData.data.length === 0) {
     return (
-      <View style={styles.centerContent}>
-        <Text style={styles.noAddressText}>No addresses found.</Text>
+      <View style={[styles.centerContent, { backgroundColor: colors.background }]}>
+        <Text style={[styles.noAddressText, { color: colors.textSecondary }]}>No addresses found.</Text>
       </View>
     );
   }
@@ -56,15 +65,16 @@ const UserAddress = () => {
         {
           paddingTop: insets.top,
           paddingBottom: insets.bottom,
+          backgroundColor: colors.background, // Apply background color
         },
       ]}
     >
-      <View style={styles.header}>
+      <View style={[styles.header, { backgroundColor: colors.cardBackground, shadowColor: colors.text }]}>
         <TouchableOpacity onPress={handleGoBack} style={styles.backButton}>
-          <ChevronLeft size={24} color="#02060cbf" />
+          <ChevronLeft size={24} color={colors.text} />
         </TouchableOpacity>
-        <Text numberOfLines={1} ellipsizeMode="tail" style={styles.headerTitle}>
-          Policies
+        <Text numberOfLines={1} ellipsizeMode="tail" style={[styles.headerTitle, { color: colors.text }]}>
+          My Addresses
         </Text>
       </View>
       <FlatList
@@ -83,7 +93,6 @@ export default UserAddress;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#f0f0f5",
     paddingVertical: 10,
   },
   flatListContent: {
@@ -94,28 +103,24 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     padding: 12,
-    backgroundColor: "#fff",
-    shadowColor: "#000", // shadow-cart-card (approx)
+    marginBottom: 12,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 3,
-    marginBottom: 12,
-    elevation: 4, // Android shadow
+    elevation: 4,
   },
   backButton: {
-    paddingRight: 10, // gap-2 from original
+    paddingRight: 10,
   },
   headerTitle: {
-    flex: 1, // Allow title to take remaining space
+    flex: 1,
     fontSize: 18,
     lineHeight: 21,
     fontWeight: "600",
     letterSpacing: -0.4,
-    color: "#02060cbf",
   },
   addressCardWrapper: {
     marginBottom: 20,
-    // Add any wrapper styles if needed
   },
   centerContent: {
     flex: 1,
@@ -125,10 +130,8 @@ const styles = StyleSheet.create({
   loadingText: {
     marginTop: 10,
     fontSize: 16,
-    color: "#555",
   },
   noAddressText: {
     fontSize: 16,
-    color: "#888",
   },
 });

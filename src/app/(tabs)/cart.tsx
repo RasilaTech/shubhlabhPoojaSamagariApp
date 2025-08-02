@@ -6,7 +6,7 @@ import AddressCard from "@/components/card/AddressCard";
 import BillDetails from "@/components/card/BillDetails";
 import Coupons from "@/components/card/Coupons";
 import ReviewOrder from "@/components/card/ReviewOrder";
-import ConfirmationDialog from "@/components/dialog/ConfirmationDialog";
+import { ConfirmationDialog } from "@/components/dialog/ConfirmationDialog";
 import EmptyCart from "@/components/empty/EmptyCart";
 import OrderErrorScreen from "@/components/error/OrderErrorScree";
 import OrderDetailSkeleton from "@/components/skeletons/OrderSkeleton";
@@ -23,8 +23,8 @@ import { Coupon } from "@/services/coupon/couponApi.type";
 import { useCreateOrderMutation } from "@/services/orders/orderApi";
 import { CreateOrders } from "@/services/orders/orderApi.type";
 import { useAppSelector } from "@/store/hook";
-import { router } from "expo-router"; // For navigation
-import { ChevronLeft, EllipsisVertical } from "lucide-react-native"; // Lucide icons
+import { router } from "expo-router";
+import { ChevronLeft, EllipsisVertical } from "lucide-react-native";
 import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
@@ -75,7 +75,7 @@ export default function Cart() {
   const [clearCart, { isLoading: clearCartLoading }] = useClearCartMutation();
 
   const [selectedCoupon, setSelectedCoupon] = useState<Coupon | null>(null);
-  const [openPaymentSheet, setOpenPaymentSheet] = useState<boolean>(false); // Renamed isOpenPaymentSheet for consistency
+  const [openPaymentSheet, setOpenPaymentSheet] = useState<boolean>(false);
 
   const [selectedAddress, setSelectedAddress] =
     useState<UserAddressPayload | null>(null);
@@ -204,7 +204,7 @@ export default function Cart() {
     }
   };
 
-  if (isLoading) {
+  if (isLoading || isAppConfigLoading) {
     return (
       <View
         style={[
@@ -218,12 +218,12 @@ export default function Cart() {
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Your Cart</Text>
         </View>
-        <OrderDetailSkeleton /> 
+        <OrderDetailSkeleton />
       </View>
     );
   }
 
-  if (isError) {
+  if (isError || isAppConfigError) {
     return (
       <View
         style={[
@@ -262,7 +262,6 @@ export default function Cart() {
         { paddingTop: insets.top, paddingBottom: insets.bottom },
       ]}
     >
-      {/* Fixed Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={router.back} style={styles.backButton}>
           <ChevronLeft size={24} color="#02060cbf" />
@@ -278,10 +277,8 @@ export default function Cart() {
         </TouchableOpacity>
       </View>
 
-      {/* Main Scrollable Content */}
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.mainContentLayout}>
-          {/* Left Column */}
           <View style={styles.leftColumn}>
             <Text style={styles.sectionHeading}>Review Your Order</Text>
             <ReviewOrder cartData={cartData.data} />
@@ -298,7 +295,6 @@ export default function Cart() {
               handleAdressDrawerOpen={handleAddressDrawerOpen}
             />
           </View>
-          {/* Right Column */}
           <View style={styles.rightColumn}>
             <BillDetails
               itemsTotal={itemsTotal}
@@ -309,7 +305,6 @@ export default function Cart() {
         </View>
       </ScrollView>
 
-      {/* Fixed Bottom Pay/Select Address Button */}
       <View style={styles.bottomFixedArea}>
         {selectedAddress || defaultAddress ? (
           <TouchableOpacity
