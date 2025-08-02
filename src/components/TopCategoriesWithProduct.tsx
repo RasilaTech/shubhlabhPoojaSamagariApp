@@ -160,7 +160,7 @@ export default TopCategoriesWithProduct;
 const styles = StyleSheet.create({
   container: {
     paddingTop: 16,
-    marginBottom: 10,
+    marginBottom: 24,
   },
 
   headingContainer: {

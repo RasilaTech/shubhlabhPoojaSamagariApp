@@ -170,7 +170,7 @@ const styles = StyleSheet.create({
   },
   categoryListContainer: {
     paddingTop: 16,
-    paddingBottom: 8,
+    paddingBottom: 16,
     gap: 12,
   },
   headingContainer: {

@@ -1,5 +1,4 @@
 import { CustomTabBar } from "@/components/common/CustomTabBar";
-import { useColorScheme } from "@/hooks/useColorScheme";
 import { Tabs } from "expo-router";
 import React from "react";
 
@@ -8,8 +7,6 @@ import React from "react";
 // ... other imports
 
 export default function TabLayout() {
-  const colorScheme = useColorScheme();
-
   return (
     <Tabs
       screenOptions={{

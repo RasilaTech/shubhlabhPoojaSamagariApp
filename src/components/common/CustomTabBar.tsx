@@ -31,8 +31,8 @@ const windowWidth = Dimensions.get("window").width;
 const TAB_BAR_HEIGHT = 60;
 const TAB_BAR_MARGIN_BOTTOM = 20;
 const PILL_PADDING = 8;
-const TAB_BAR_WIDTH = windowWidth * 0.9; // FIX: Use a fixed width for the entire bar (e.g., 90%)
-const TAB_BUTTON_WIDTH = TAB_BAR_WIDTH / 5; // FIX: Calculate tab width based on this total width
+const TAB_BAR_WIDTH = windowWidth * 0.9;
+const NUMBER_OF_TABS = 5;
 
 export const CustomTabBar = ({
   state,
@@ -45,8 +45,17 @@ export const CustomTabBar = ({
   const colors = theme === "dark" ? darkColors : lightColors;
 
   useEffect(() => {
-    // FIX: Animate position based on the new, consistent tab width
-    translateX.value = withTiming(state.index * TAB_BUTTON_WIDTH, {
+    // FIX: Simple calculation - divide the available width by number of tabs
+    // The available width is the total width minus padding on both sides
+    const availableWidth = TAB_BAR_WIDTH - PILL_PADDING * 2;
+    const tabWidth = availableWidth / NUMBER_OF_TABS;
+    const indicatorWidth = tabWidth * 0.7; // Make indicator 70% of tab width
+    const indicatorOffset = (tabWidth - indicatorWidth) / 2; // Center the indicator
+
+    // Position is: tab index * tab width + offset to center indicator
+    const targetPosition = state.index * tabWidth + indicatorOffset;
+
+    translateX.value = withTiming(targetPosition, {
       duration: 250,
     });
   }, [state.index, translateX]);
@@ -56,6 +65,11 @@ export const CustomTabBar = ({
       transform: [{ translateX: translateX.value }],
     };
   });
+
+  // Calculate these values for consistent use
+  const availableWidth = TAB_BAR_WIDTH - PILL_PADDING * 2;
+  const tabWidth = availableWidth / NUMBER_OF_TABS;
+  const indicatorWidth = tabWidth * 0.7;
 
   return (
     <View style={styles.container}>
@@ -69,8 +83,7 @@ export const CustomTabBar = ({
           style={[
             styles.indicator,
             {
-              // FIX: Use the new constant tab width for the indicator
-              width: TAB_BUTTON_WIDTH - PILL_PADDING * 2,
+              width: indicatorWidth,
               backgroundColor: colors.accent,
             },
             indicatorStyle,
@@ -102,8 +115,7 @@ export const CustomTabBar = ({
             <TouchableOpacity
               key={route.key}
               onPress={onPress}
-              // FIX: Use the new, consistent tab width for the buttons
-              style={[styles.tabButton, { width: TAB_BUTTON_WIDTH }]}
+              style={[styles.tabButton, { width: tabWidth }]}
             >
               <View style={styles.iconWrapper}>
                 {IconComponent && (
@@ -133,34 +145,32 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     height: TAB_BAR_HEIGHT,
     borderRadius: 9999,
-    // FIX: Apply the calculated width here
     width: TAB_BAR_WIDTH,
-    // FIX: Add padding to the wrapper itself, which will be inside the rounded edges
     paddingHorizontal: PILL_PADDING,
     shadowOffset: { width: 0, height: 10 },
     shadowOpacity: 0.1,
     shadowRadius: 15,
     elevation: 8,
+    alignItems: "center",
   },
   indicator: {
     position: "absolute",
-    // FIX: Position relative to the parent, which now has the padding
-    left: PILL_PADDING,
     height: TAB_BAR_HEIGHT - PILL_PADDING * 2,
-    marginVertical: PILL_PADDING,
     backgroundColor: "#3b82f6",
     borderRadius: 9999,
+    top: PILL_PADDING,
+    left: PILL_PADDING, // Start from the padded area
   },
   tabButton: {
-    flex: 1,
     alignItems: "center",
     justifyContent: "center",
     height: "100%",
-    // FIX: No padding on the button itself, the padding is on the wrapper
+    zIndex: 1,
   },
   iconWrapper: {
     flexDirection: "row",
     alignItems: "center",
+    justifyContent: "center",
     gap: 8,
   },
   tabLabel: {
