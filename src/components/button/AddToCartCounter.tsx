@@ -1,36 +1,44 @@
-import { Minus, Plus } from "lucide-react-native"; // For +/- icons
+import { Minus, Plus } from "lucide-react-native";
 import React, { useState } from "react";
 import {
-  ActivityIndicator, // For showing loading state on buttons
+  ActivityIndicator,
   Alert,
+  Modal,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
 } from "react-native";
 
-// Adjust paths for your RTK Query hooks and Redux hook
 import {
   useAddToCartMutation,
   useGetCartItemsQuery,
   useUpdateCartItemMutation,
-} from "@/services/cart/cartAPI"; // Adjust path
-
-import { CartItem } from "@/services/cart/cartApi.type";
-import { ProductVariant } from "@/services/product/productApi.type";
+} from "@/services/cart/cartAPI";
 import { useAppSelector } from "@/store/hook";
+
+import { darkColors, lightColors } from "@/constants/ThemeColors";
+import { useTheme } from "@/hooks/useTheme";
+
+import type { CartItem } from "@/services/cart/cartApi.type";
+import type { ProductVariant } from "@/services/product/productApi.type";
 import { LoginDialog } from "../dialog/LoginDialog";
 
 export interface AddToCartCounterProps {
   productVariant: ProductVariant;
 }
+
 const AddToCartCounter = ({ productVariant }: AddToCartCounterProps) => {
   const { isAuthenticated } = useAppSelector((state) => state.auth);
+  const { theme } = useTheme();
+  const colors = theme === "dark" ? darkColors : lightColors;
 
-  const [showLoginDialog, setShowLoginDialog] = useState(false); // State for LoginDialog visibility
+  const [showLoginDialog, setShowLoginDialog] = useState(false);
 
   const { data: cartData = { data: [] }, isFetching: isFetchingCart } =
-    useGetCartItemsQuery();
+    useGetCartItemsQuery(undefined, {
+      skip: !isAuthenticated,
+    });
 
   const [updateCartItem, { isLoading: isUpdatingCart }] =
     useUpdateCartItemMutation();
@@ -43,10 +51,9 @@ const AddToCartCounter = ({ productVariant }: AddToCartCounterProps) => {
   quantity = cartItem ? cartItem.quantity : 0;
 
   const handleAddItemToCart = async (productId: string) => {
-    if (isAddingToCart) return; // Prevent double clicks
+    if (isAddingToCart) return;
     try {
       await addCartItem({ product_variant_id: productId }).unwrap();
-      // Alert.alert("Success", "Item added to cart!");
     } catch (error: any) {
       console.error("Failed to add item to cart:", error);
       Alert.alert(
@@ -57,8 +64,7 @@ const AddToCartCounter = ({ productVariant }: AddToCartCounterProps) => {
   };
 
   const handleDecreaseProductQuantity = async (productId: string) => {
-    if (isUpdatingCart) return; // Prevent double clicks
-
+    if (isUpdatingCart) return;
     try {
       await updateCartItem({
         productVariantId: productId,
@@ -74,7 +80,7 @@ const AddToCartCounter = ({ productVariant }: AddToCartCounterProps) => {
   };
 
   const handleIncreaseProductQuantity = async (productId: string) => {
-    if (isUpdatingCart) return; // Prevent double clicks
+    if (isUpdatingCart) return;
     try {
       await updateCartItem({
         productVariantId: productId,
@@ -89,58 +95,88 @@ const AddToCartCounter = ({ productVariant }: AddToCartCounterProps) => {
     }
   };
 
-  // Render loading state for buttons if any cart operation is pending
   const showLoading = isAddingToCart || isUpdatingCart || isFetchingCart;
 
   if (!isAuthenticated) {
     return (
-      <TouchableOpacity
-        style={[styles.baseButton, styles.addOutlineButton]}
-        onPress={() => setShowLoginDialog(true)} // Open LoginDialog
-        disabled={showLoading}
-      >
-        {showLoading ? (
-          <ActivityIndicator size="small" color="#ff5200" />
-        ) : (
-          <Text style={styles.addOutlineButtonText}>Add</Text>
-        )}
-
-        {/* Login Dialog (Modal) */}
-        <LoginDialog
-          isVisible={showLoginDialog}
-          onClose={() => setShowLoginDialog(false)}
-        />
-      </TouchableOpacity>
+      <View>
+        <TouchableOpacity
+          style={[
+            styles.baseButton,
+            styles.addOutlineButton,
+            {
+              backgroundColor: colors.cardBackground,
+              borderColor: colors.border,
+            },
+          ]}
+          onPress={() => setShowLoginDialog(true)}
+          disabled={showLoading}
+        >
+          {showLoading ? (
+            <ActivityIndicator size="small" color={colors.accent} />
+          ) : (
+            <Text
+              style={[styles.addOutlineButtonText, { color: colors.accent }]}
+            >
+              Add
+            </Text>
+          )}
+        </TouchableOpacity>
+        <Modal
+          visible={showLoginDialog}
+          transparent
+          animationType="fade"
+          onRequestClose={() => setShowLoginDialog(false)}
+        >
+          <LoginDialog
+            isVisible={showLoginDialog}
+            onClose={() => setShowLoginDialog(false)}
+          />
+        </Modal>
+      </View>
     );
   }
 
   return quantity === 0 ? (
     <TouchableOpacity
-      style={[styles.baseButton, styles.addOutlineButton]}
+      style={[
+        styles.baseButton,
+        styles.addOutlineButton,
+        { backgroundColor: colors.cardBackground, borderColor: colors.border },
+      ]}
       onPress={() => handleAddItemToCart(productVariant.id)}
       disabled={showLoading}
     >
       {showLoading ? (
-        <ActivityIndicator size="small" color="#ff5200" />
+        <ActivityIndicator size="small" color={colors.accent} />
       ) : (
-        <Text style={styles.addOutlineButtonText}>Add</Text>
+        <Text style={[styles.addOutlineButtonText, { color: colors.accent }]}>
+          Add
+        </Text>
       )}
     </TouchableOpacity>
   ) : (
-    <View style={styles.counterContainer}>
+    <View
+      style={[
+        styles.counterContainer,
+        { backgroundColor: colors.cardBackground, borderColor: colors.border },
+      ]}
+    >
       <TouchableOpacity
         style={styles.counterButton}
         onPress={() => handleDecreaseProductQuantity(productVariant.id)}
         disabled={showLoading}
       >
-        <Minus size={16} color="#1ba672" />
+        <Minus size={16} color={colors.success} />
       </TouchableOpacity>
 
       <View style={styles.quantityDisplay}>
         {showLoading ? (
-          <ActivityIndicator size="small" color="#1ba672" />
+          <ActivityIndicator size="small" color={colors.success} />
         ) : (
-          <Text style={styles.quantityText}>{quantity}</Text>
+          <Text style={[styles.quantityText, { color: colors.success }]}>
+            {quantity}
+          </Text>
         )}
       </View>
 
@@ -149,73 +185,64 @@ const AddToCartCounter = ({ productVariant }: AddToCartCounterProps) => {
         onPress={() => handleIncreaseProductQuantity(productVariant.id)}
         disabled={showLoading}
       >
-        <Plus size={16} color="#1ba672" />
+        <Plus size={16} color={colors.success} />
       </TouchableOpacity>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  // Base button styles to be reused
   baseButton: {
-    height: "auto", // h-fit
-    width: "100%", // w-full
-    borderRadius: 8, // rounded-[8px]
-    paddingVertical: 4, // py-1.5
+    height: "auto",
+    width: "100%",
+    borderRadius: 8,
+    paddingVertical: 8,
     alignItems: "center",
     justifyContent: "center",
   },
-  // Add button (outline variant)
   addOutlineButton: {
     borderWidth: 1,
-    borderColor: "rgba(2, 6, 12, 0.15)", // border-[#02060c26]
-    backgroundColor: "white", // bg-white
-    // shadow-button-shadow conversion
-
-    // Android shadow
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
   },
   addOutlineButtonText: {
-    fontSize: 14, // text-sm
-    lineHeight: 18, // leading-[18px]
-    fontWeight: "600", // font-semibold
-    letterSpacing: -0.35, // -tracking-[0.35px]
-    color: "#ff5200", // text-[#ff5200]
-    // hover styles are not directly applicable
+    fontSize: 14,
+    lineHeight: 18,
+    fontWeight: "600",
+    letterSpacing: -0.35,
   },
-  // Counter container (for quantity > 0)
   counterContainer: {
     flexDirection: "row",
-    height: "auto", // h-fit
-    width: "100%", // w-full
+    height: "auto",
+    width: "100%",
     alignItems: "center",
     justifyContent: "space-between",
-    borderRadius: 8, // rounded-[8px]
+    borderRadius: 8,
     borderWidth: 1,
-    borderColor: "rgba(2, 6, 12, 0.15)", // border-[#02060c26]
-    overflow: "hidden", // Ensures buttons don't extend past border radius
+    overflow: "hidden",
   },
   counterButton: {
-    height: "100%", // h-fit
-    paddingHorizontal: 4, // px-2 (approx)
-    paddingVertical: 2, // py-1.5 (approx)
+    height: "100%",
+    paddingHorizontal: 4,
+    paddingVertical: 2,
     alignItems: "center",
     justifyContent: "center",
   },
   quantityDisplay: {
-    flex: 1, // flex-1
-    alignItems: "center", // justify-center
+    flex: 1,
+    alignItems: "center",
     justifyContent: "center",
   },
   quantityText: {
-    // cursor-default - not applicable
-    paddingHorizontal: 8, // px-2 (approx)
-    paddingVertical: 6, // py-1.5 (approx)
-    fontSize: 14, // text-sm
-    lineHeight: 18, // leading-[1.125rem] (1.125 * 16px = 18px)
-    fontWeight: "600", // font-semibold
-    letterSpacing: 0.35, // tracking-[0.35px]
-    color: "#1ba672", // text-[#1ba672]
-    // shadow-none - not applicable
+    paddingHorizontal: 8,
+    paddingVertical: 6,
+    fontSize: 14,
+    lineHeight: 18,
+    fontWeight: "600",
+    letterSpacing: 0.35,
   },
 });
 

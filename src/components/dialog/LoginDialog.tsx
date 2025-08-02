@@ -25,8 +25,9 @@ import {
   useVerifyOtpMutation,
 } from "@/services/auth/authApi"; // Adjust path
 
+import { darkColors, lightColors } from "@/constants/ThemeColors";
+import { useTheme } from "@/hooks/useTheme";
 import { OtpInput } from "../common/OtpInput"; // Adjust path
-
 const screenWidth = Dimensions.get("window").width;
 const screenHeight = Dimensions.get("window").height;
 const isLargeScreen = screenWidth >= 600; // sm:max-w-[750px] approx
@@ -75,16 +76,24 @@ const RNFormField: React.FC<RNFormFieldProps> = ({
   children,
   errorMessage,
 }) => {
+  const { theme } = useTheme();
+  const colors = theme === "dark" ? darkColors : lightColors;
   return (
     <Controller
       control={control}
       name={name}
       render={({ field }) => (
         <View style={styles.formItem}>
-          {label && <Text style={styles.formLabel}>{label}</Text>}
+          {label && (
+            <Text style={[styles.formLabel, { color: colors.textSecondary }]}>
+              {label}
+            </Text>
+          )}
           {children(field)}
           {errorMessage && (
-            <Text style={styles.formMessage}>{errorMessage}</Text>
+            <Text style={[styles.formMessage, { color: colors.destructive }]}>
+              {errorMessage}
+            </Text>
           )}
         </View>
       )}
@@ -101,6 +110,10 @@ export const LoginDialog: React.FC<LoginDialogProps> = ({
   isVisible,
   onClose,
 }) => {
+  const { theme } = useTheme();
+
+  const colors = theme === "dark" ? darkColors : lightColors;
+
   const [isOtpScreen, setIsOtpScreen] = useState(false);
   const [showResend, setShowResend] = useState(false);
   const [mobileValue, setMobileValue] = useState("");
@@ -221,7 +234,10 @@ export const LoginDialog: React.FC<LoginDialogProps> = ({
           style={styles.keyboardAvoidingView}
         >
           <Pressable
-            style={styles.dialogContainer}
+            style={[
+              styles.dialogContainer,
+              { backgroundColor: colors.cardBackground },
+            ]}
             onPress={(e) => e.stopPropagation()}
           >
             {/* Close Button */}
@@ -231,7 +247,12 @@ export const LoginDialog: React.FC<LoginDialogProps> = ({
 
             {/* Image Panel - Only on large screens */}
             {isLargeScreen && (
-              <View style={styles.imagePanel}>
+              <View
+                style={[
+                  styles.imagePanel,
+                  { backgroundColor: colors.background },
+                ]}
+              >
                 <Image
                   source={loginModalImage}
                   style={styles.loginImage}
@@ -246,8 +267,9 @@ export const LoginDialog: React.FC<LoginDialogProps> = ({
               {!isOtpScreen ? (
                 // Mobile Number Form
                 <View style={styles.formContent}>
-                  <Text style={styles.panelTitle}>Enter Mobile Number</Text>
-
+                  <Text style={[styles.panelTitle, { color: colors.text }]}>
+                    Enter Mobile Number
+                  </Text>
                   <FormProvider {...form}>
                     <View style={styles.formBody}>
                       <RNFormField
@@ -260,11 +282,27 @@ export const LoginDialog: React.FC<LoginDialogProps> = ({
                       >
                         {({ onChange, onBlur, value }) => (
                           <View style={styles.mobileInputGroup}>
-                            <Text style={styles.mobilePrefix}>+91</Text>
-                            <View style={styles.separator} />
+                            <Text
+                              style={[
+                                styles.mobilePrefix,
+                                { color: colors.text },
+                              ]}
+                            >
+                              +91
+                            </Text>
+                            <View
+                              style={[
+                                styles.separator,
+                                { backgroundColor: colors.border },
+                              ]}
+                            />
                             <TextInput
-                              style={styles.mobileInput}
+                              style={[
+                                styles.mobileInput,
+                                { color: colors.text },
+                              ]}
                               placeholder="Enter mobile number"
+                              placeholderTextColor={colors.textSecondary}
                               keyboardType="phone-pad"
                               maxLength={10}
                               onBlur={onBlur}
@@ -286,6 +324,7 @@ export const LoginDialog: React.FC<LoginDialogProps> = ({
                         style={[
                           styles.button,
                           isRequestingOtp && styles.disabledButton,
+                          { backgroundColor: colors.accent },
                         ]}
                         disabled={isRequestingOtp}
                       >
@@ -296,11 +335,24 @@ export const LoginDialog: React.FC<LoginDialogProps> = ({
                         )}
                       </TouchableOpacity>
 
-                      <Text style={styles.termsText}>
+                      <Text
+                        style={[
+                          styles.termsText,
+                          { color: colors.textSecondary },
+                        ]}
+                      >
                         {"By continuing, you agree to "}
-                        <Text style={styles.termsLink}>Terms of Use</Text>
+                        <Text
+                          style={[styles.termsLink, { color: colors.accent }]}
+                        >
+                          Terms of Use
+                        </Text>
                         {" and "}
-                        <Text style={styles.termsLink}>Privacy Policy</Text>.
+                        <Text
+                          style={[styles.termsLink, { color: colors.accent }]}
+                        >
+                          Privacy Policy
+                        </Text>
                       </Text>
                     </View>
                   </FormProvider>
@@ -308,21 +360,39 @@ export const LoginDialog: React.FC<LoginDialogProps> = ({
               ) : (
                 // OTP Form
                 <View style={styles.formContent}>
-                  <Text style={styles.panelTitle}>Verify OTP</Text>
-
+                  <Text style={[styles.panelTitle, { color: colors.text }]}>
+                    Verify OTP
+                  </Text>
                   <View style={styles.otpMessageContainer}>
-                    <Text style={styles.otpMessageText}>
+                    <Text
+                      style={[
+                        styles.otpMessageText,
+                        { color: colors.textSecondary },
+                      ]}
+                    >
                       Please enter the OTP sent to
                     </Text>
                     <View style={styles.numberChangeContainer}>
-                      <Text style={styles.otpMobileNumberText}>
+                      <Text
+                        style={[
+                          styles.otpMobileNumberText,
+                          { color: colors.text },
+                        ]}
+                      >
                         +91{mobileValue}
                       </Text>
                       <TouchableOpacity
                         onPress={() => setIsOtpScreen(false)}
                         style={styles.otpChangeButton}
                       >
-                        <Text style={styles.otpChangeText}>Change</Text>
+                        <Text
+                          style={[
+                            styles.otpChangeText,
+                            { color: colors.accent },
+                          ]}
+                        >
+                          Change
+                        </Text>
                       </TouchableOpacity>
                     </View>
                   </View>
@@ -353,6 +423,7 @@ export const LoginDialog: React.FC<LoginDialogProps> = ({
                           (otpForm.watch("otpCode")?.length !== 6 ||
                             isVerifyingOtp) &&
                             styles.disabledButton,
+                          { backgroundColor: colors.accent },
                         ]}
                         disabled={
                           otpForm.watch("otpCode")?.length !== 6 ||
@@ -367,16 +438,33 @@ export const LoginDialog: React.FC<LoginDialogProps> = ({
                       </TouchableOpacity>
 
                       <View style={styles.resendContainer}>
-                        <Text style={styles.resendText}>
+                        <Text
+                          style={[
+                            styles.resendText,
+                            { color: colors.textSecondary },
+                          ]}
+                        >
                           {"Not received your code? "}
                         </Text>
                         {showResend && resendCooldown > 0 ? (
-                          <Text style={styles.resendCooldownText}>
+                          <Text
+                            style={[
+                              styles.resendCooldownText,
+                              { color: colors.accent },
+                            ]}
+                          >
                             Resend in {resendCooldown}s
                           </Text>
                         ) : (
                           <TouchableOpacity onPress={handleResend}>
-                            <Text style={styles.resendLink}>Resend code</Text>
+                            <Text
+                              style={[
+                                styles.resendLink,
+                                { color: colors.accent },
+                              ]}
+                            >
+                              Resend code
+                            </Text>
                           </TouchableOpacity>
                         )}
                       </View>

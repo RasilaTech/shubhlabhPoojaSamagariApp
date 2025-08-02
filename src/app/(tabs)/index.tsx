@@ -9,7 +9,6 @@ import { useGetAppConfigurationsQuery } from "@/services/configuration/configura
 import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
-import { ChevronRight } from "lucide-react-native";
 import React from "react";
 import {
   Keyboard,
@@ -21,6 +20,10 @@ import {
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+
+import { darkColors, lightColors } from "@/constants/ThemeColors";
+import { useTheme } from "@/hooks/useTheme";
+import { ChevronRight } from "lucide-react-native";
 
 export default function HomeScreen() {
   const {
@@ -51,7 +54,9 @@ export default function HomeScreen() {
   const insets = useSafeAreaInsets();
   const tabBarHeight = useBottomTabBarHeight();
 
-  // Combine loading and error states
+  const { theme } = useTheme();
+  const colors = theme === "dark" ? darkColors : lightColors;
+
   const isLoading = categoriesLoading || isAppConfigLoading;
   const isError = categoriesError || isAppConfigError;
   const adBanners = appConfigData?.data?.ad_banners;
@@ -61,7 +66,11 @@ export default function HomeScreen() {
       <View
         style={[
           styles.container,
-          { paddingTop: insets.top, paddingBottom: tabBarHeight },
+          {
+            paddingTop: insets.top,
+            paddingBottom: tabBarHeight,
+            backgroundColor: colors.background,
+          },
         ]}
       >
         <HomeSkeleteon />
@@ -74,7 +83,11 @@ export default function HomeScreen() {
       <View
         style={[
           styles.container,
-          { paddingTop: insets.top, paddingBottom: tabBarHeight },
+          {
+            paddingTop: insets.top,
+            paddingBottom: tabBarHeight,
+            backgroundColor: colors.background,
+          },
         ]}
       >
         <OrderErrorScreen />
@@ -87,14 +100,25 @@ export default function HomeScreen() {
       <View
         style={[
           styles.container,
-          { paddingTop: insets.top, paddingBottom: tabBarHeight },
+          {
+            paddingTop: insets.top,
+            paddingBottom: tabBarHeight,
+            backgroundColor: colors.background,
+          },
         ]}
       >
         <NavBar />
         <ScrollView showsVerticalScrollIndicator={false}>
-          <View style={styles.categoryListContainer}>
+          <View
+            style={[
+              styles.categoryListContainer,
+              { backgroundColor: colors.cardBackground },
+            ]}
+          >
             <View style={styles.headingContainer}>
-              <Text style={styles.headingText}>Shop By Category</Text>
+              <Text style={[styles.headingText, { color: colors.text }]}>
+                Shop By Category
+              </Text>
               <LinearGradient
                 colors={["rgba(2, 6, 12, 0.15)", "rgba(2, 6, 12, 0)"]}
                 start={{ x: 0, y: 0.5 }}
@@ -107,9 +131,12 @@ export default function HomeScreen() {
                   router.push("/categories");
                 }}
               >
-                <Text style={styles.seeAllButtonText}>See All</Text>
-                {/* FIX: The ChevronRight icon was missing */}
-                <ChevronRight size={13} color="#f97316" strokeWidth={3} />
+                <Text
+                  style={[styles.seeAllButtonText, { color: colors.accent }]}
+                >
+                  See All
+                </Text>
+                <ChevronRight size={13} color={colors.accent} strokeWidth={3} />
               </TouchableOpacity>
             </View>
             <ScrollView horizontal showsHorizontalScrollIndicator={false}>
@@ -123,7 +150,6 @@ export default function HomeScreen() {
               </View>
             </ScrollView>
           </View>
-          {/* FIX: Conditionally render ImageCarousel only if adBanners exists and has items */}
           {adBanners && adBanners.length > 0 && (
             <ImageCarousel items={adBanners} />
           )}
@@ -141,13 +167,11 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#f0f0f5",
   },
   categoryListContainer: {
     paddingTop: 16,
     paddingBottom: 8,
     gap: 12,
-    backgroundColor: "white",
   },
   headingContainer: {
     flexDirection: "row",
@@ -162,11 +186,9 @@ const styles = StyleSheet.create({
   headingText: {
     fontSize: 16,
     fontFamily: "outfit-medium",
-    color: "#02060C",
   },
   seeAllButtonText: {
     fontSize: 13,
-    color: "#f97316",
     fontFamily: "outfit-semibold",
   },
   seeAllButton: {

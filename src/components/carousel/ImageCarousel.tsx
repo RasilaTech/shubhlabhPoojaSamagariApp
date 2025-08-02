@@ -1,5 +1,4 @@
-import { AdBanner } from "@/services/configuration/configurationApi.type";
-import { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   Image,
   Pressable,
@@ -15,12 +14,18 @@ import Animated, {
 } from "react-native-reanimated";
 import Carousel, { ICarouselInstance } from "react-native-reanimated-carousel";
 
+import { darkColors, lightColors } from "@/constants/ThemeColors";
+import { useTheme } from "@/hooks/useTheme";
+import { AdBanner } from "@/services/configuration/configurationApi.type";
+
 interface ImageCarouselProps {
   items: AdBanner[];
 }
 
 const ImageCarousel: React.FC<ImageCarouselProps> = ({ items }) => {
   const { width } = useWindowDimensions();
+  const { theme } = useTheme();
+  const colors = theme === "dark" ? darkColors : lightColors;
 
   const [activeIndex, setActiveIndex] = useState(0);
   const ref = useRef<ICarouselInstance>(null);
@@ -50,7 +55,9 @@ const ImageCarousel: React.FC<ImageCarouselProps> = ({ items }) => {
   };
 
   return (
-    <View style={styles.container}>
+    <View
+      style={[styles.container, { backgroundColor: colors.cardBackground }]}
+    >
       <Carousel
         loop
         autoPlay
@@ -62,7 +69,11 @@ const ImageCarousel: React.FC<ImageCarouselProps> = ({ items }) => {
         onSnapToItem={(index) => setActiveIndex(index)}
         renderItem={({ item }: { item: AdBanner }) => (
           <Pressable style={styles.itemContainer}>
-            <Image source={{ uri: item.image }} style={styles.image} resizeMode="stretch" />
+            <Image
+              source={{ uri: item.image }}
+              style={styles.image}
+              resizeMode="stretch"
+            />
           </Pressable>
         )}
       />
@@ -77,12 +88,17 @@ const ImageCarousel: React.FC<ImageCarouselProps> = ({ items }) => {
             <View
               style={[
                 styles.dot,
+                { backgroundColor: colors.border },
                 activeIndex === index ? styles.activeDot : styles.inactiveDot,
               ]}
             >
               {activeIndex === index && (
                 <Animated.View
-                  style={[styles.completionDot, animatedDotStyle]}
+                  style={[
+                    styles.completionDot,
+                    { backgroundColor: colors.text },
+                    animatedDotStyle,
+                  ]}
                 />
               )}
             </View>
@@ -97,7 +113,6 @@ const styles = StyleSheet.create({
   container: {
     alignItems: "center",
     gap: 6,
-    backgroundColor: "white",
   },
   itemContainer: {
     flex: 1,
@@ -119,19 +134,16 @@ const styles = StyleSheet.create({
   },
   activeDot: {
     width: 36,
-    backgroundColor: "#00000021",
     position: "relative",
   },
   completionDot: {
     position: "absolute",
-    backgroundColor: "black",
     width: 36,
     height: 4,
     borderRadius: 2,
   },
   inactiveDot: {
     width: 12,
-    backgroundColor: "#00000021",
   },
 });
 

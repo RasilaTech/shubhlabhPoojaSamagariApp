@@ -1,13 +1,21 @@
 import React from "react";
 import { FlatList, StyleSheet, View } from "react-native";
+
+import { darkColors, lightColors } from "@/constants/ThemeColors";
+import { useTheme } from "@/hooks/useTheme";
 import Skeleton from "./skeleton";
 
 export function HomeSkeleteon() {
-  const categoryData = [...Array(10)]; // Generate a fixed number of category placeholders
-  const trendingProductsData = [...Array(4)]; // Generate a fixed number of product placeholders
+  const { theme } = useTheme();
+  const colors = theme === "dark" ? darkColors : lightColors;
+
+  const categoryData = [...Array(10)];
+  const trendingProductsData = [...Array(4)];
 
   return (
-    <View style={styles.outerContainer}>
+    <View
+      style={[styles.outerContainer, { backgroundColor: colors.background }]}
+    >
       {/* Categories */}
       <View style={styles.sectionContainer}>
         <Skeleton width={128} height={24} style={styles.sectionHeading} />
@@ -65,33 +73,32 @@ export function HomeSkeleteon() {
 const styles = StyleSheet.create({
   outerContainer: {
     flex: 1,
-    padding: 16, // px-4 py-6
-    backgroundColor: "#fff",
-    gap: 24, // space-y-6
+    padding: 16,
+    gap: 24,
   },
   sectionContainer: {
-    gap: 16, // space-y-4
+    gap: 16,
   },
   sectionHeading: {
-    marginBottom: 16, // mb-4
+    marginBottom: 16,
   },
   categoryList: {
-    gap: 16, // space-x-4
-    paddingRight: 24, // Ensure some padding at the end of the horizontal list
+    gap: 16,
+    paddingRight: 24,
   },
   categoryItem: {
     alignItems: "center",
-    gap: 8, // space-y-2
+    gap: 8,
   },
   productGrid: {
     flexDirection: "row",
     flexWrap: "wrap",
-    gap: 16, // gap-4
+    gap: 16,
     justifyContent: "space-between",
   },
   productItem: {
-    flexBasis: "48%", // Approx. grid-cols-2
-    gap: 8, // space-y-2
-    marginBottom: 16, // Margin for the grid layout
+    flexBasis: "48%",
+    gap: 8,
+    marginBottom: 16,
   },
 });

@@ -1,4 +1,3 @@
-// app/(tabs)/cart.tsx
 import { AddressBottomSheet } from "@/components/bottomsheet/AddressBottomSheet";
 import PaymentBottomSheet from "@/components/bottomsheet/PaymentBottomSheet";
 import AddMoreItems from "@/components/card/AddMoreItems";
@@ -19,10 +18,11 @@ import {
 import { CartItem } from "@/services/cart/cartApi.type";
 import { useGetAppConfigurationsQuery } from "@/services/configuration/configurationApi";
 import { useGetCouponsQuery } from "@/services/coupon/couponAPI";
-import { Coupon } from "@/services/coupon/couponApi.type";
 import { useCreateOrderMutation } from "@/services/orders/orderApi";
 import { CreateOrders } from "@/services/orders/orderApi.type";
 import { useAppSelector } from "@/store/hook";
+import { darkColors, lightColors } from "@/constants/ThemeColors";
+import { useTheme } from "@/hooks/useTheme";
 import { router } from "expo-router";
 import { ChevronLeft, EllipsisVertical } from "lucide-react-native";
 import React, { useEffect, useState } from "react";
@@ -36,10 +36,14 @@ import {
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { Coupon } from "@/services/coupon/couponApi.type";
 
 export default function Cart() {
   const insets = useSafeAreaInsets();
   const { isAuthenticated } = useAppSelector((state) => state.auth);
+  const { theme } = useTheme();
+  const colors = theme === "dark" ? darkColors : lightColors;
+
   const {
     isLoading: isAppConfigLoading,
     data: appConfigData,
@@ -209,14 +213,18 @@ export default function Cart() {
       <View
         style={[
           styles.container,
-          { paddingTop: insets.top, paddingBottom: insets.bottom },
+          {
+            paddingTop: insets.top,
+            paddingBottom: insets.bottom,
+            backgroundColor: colors.background,
+          },
         ]}
       >
-        <View style={styles.header}>
+        <View style={[styles.header, { backgroundColor: colors.cardBackground }]}>
           <TouchableOpacity onPress={router.back} style={styles.backButton}>
-            <ChevronLeft size={24} color="#02060cbf" />
+            <ChevronLeft size={24} color={colors.text} />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Your Cart</Text>
+          <Text style={[styles.headerTitle, { color: colors.text }]}>Your Cart</Text>
         </View>
         <OrderDetailSkeleton />
       </View>
@@ -228,14 +236,18 @@ export default function Cart() {
       <View
         style={[
           styles.container,
-          { paddingTop: insets.top, paddingBottom: insets.bottom },
+          {
+            paddingTop: insets.top,
+            paddingBottom: insets.bottom,
+            backgroundColor: colors.background,
+          },
         ]}
       >
-        <View style={styles.header}>
+        <View style={[styles.header, { backgroundColor: colors.cardBackground }]}>
           <TouchableOpacity onPress={router.back} style={styles.backButton}>
-            <ChevronLeft size={24} color="#02060cbf" />
+            <ChevronLeft size={24} color={colors.text} />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Your Cart</Text>
+          <Text style={[styles.headerTitle, { color: colors.text }]}>Your Cart</Text>
         </View>
         <OrderErrorScreen />
       </View>
@@ -247,10 +259,14 @@ export default function Cart() {
       <View
         style={[
           styles.container,
-          { paddingTop: insets.top, paddingBottom: insets.bottom },
+          {
+            paddingTop: insets.top,
+            paddingBottom: insets.bottom,
+            backgroundColor: colors.background,
+          },
         ]}
       >
-        <EmptyCart />;
+        <EmptyCart />
       </View>
     );
   }
@@ -259,28 +275,32 @@ export default function Cart() {
     <View
       style={[
         styles.container,
-        { paddingTop: insets.top, paddingBottom: insets.bottom },
+        {
+          paddingTop: insets.top,
+          paddingBottom: insets.bottom,
+          backgroundColor: colors.background,
+        },
       ]}
     >
-      <View style={styles.header}>
+      <View style={[styles.header, { backgroundColor: colors.cardBackground }]}>
         <TouchableOpacity onPress={router.back} style={styles.backButton}>
-          <ChevronLeft size={24} color="#02060cbf" />
+          <ChevronLeft size={24} color={colors.text} />
         </TouchableOpacity>
-        <Text numberOfLines={1} ellipsizeMode="tail" style={styles.headerTitle}>
+        <Text numberOfLines={1} ellipsizeMode="tail" style={[styles.headerTitle, { color: colors.text }]}>
           Your Cart
         </Text>
         <TouchableOpacity
           onPress={() => setShowClearCartDialog(true)}
           style={styles.clearCartButton}
         >
-          <EllipsisVertical size={24} color="#02060c73" />
+          <EllipsisVertical size={24} color={colors.textSecondary} />
         </TouchableOpacity>
       </View>
 
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.mainContentLayout}>
           <View style={styles.leftColumn}>
-            <Text style={styles.sectionHeading}>Review Your Order</Text>
+            <Text style={[styles.sectionHeading, { color: colors.text }]}>Review Your Order</Text>
             <ReviewOrder cartData={cartData.data} />
             <AddMoreItems />
             <Coupons
@@ -305,10 +325,10 @@ export default function Cart() {
         </View>
       </ScrollView>
 
-      <View style={styles.bottomFixedArea}>
+      <View style={[styles.bottomFixedArea, { backgroundColor: colors.cardBackground }]}>
         {selectedAddress || defaultAddress ? (
           <TouchableOpacity
-            style={styles.payButton}
+            style={[styles.payButton, { backgroundColor: colors.accent }]}
             onPress={() => setOpenPaymentSheet(true)}
             disabled={orderPlacingLoading}
           >
@@ -326,7 +346,7 @@ export default function Cart() {
           </TouchableOpacity>
         ) : (
           <TouchableOpacity
-            style={[styles.payButton, styles.selectAddressButton]}
+            style={[styles.payButton, styles.selectAddressButton, { backgroundColor: colors.accent }]}
             onPress={handleAddressDrawerOpen}
           >
             <Text style={styles.payButtonText}>Select Address</Text>
@@ -343,6 +363,8 @@ export default function Cart() {
         cancelButtonText="Cancel"
         onConfirm={async () => {
           await clearCart();
+          // FIX: Close dialog after clearing cart
+          setShowClearCartDialog(false);
         }}
         isConfirming={clearCartLoading}
       />
@@ -369,24 +391,20 @@ export default function Cart() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#f0f0f5",
   },
   header: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
     paddingVertical: 12,
-    paddingHorizontal: 16, // px-2 was too small, adjusted to 16
-    backgroundColor: "white",
-    shadowColor: "#000",
+    paddingHorizontal: 16,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 3,
     elevation: 4,
-    // sticky top-0 z-10 - implicit as it's outside ScrollView
   },
   backButton: {
-    paddingRight: 8, // gap-2
+    paddingRight: 8,
   },
   headerTitle: {
     flex: 1,
@@ -394,76 +412,59 @@ const styles = StyleSheet.create({
     lineHeight: 21,
     fontWeight: "600",
     letterSpacing: -0.4,
-    color: "#02060cbf",
   },
   clearCartButton: {
-    paddingLeft: 8, // Adjust as needed
+    paddingLeft: 8,
   },
-
   scrollContent: {
-    flexGrow: 1, // Allows content to fill available space
-    padding: 16, // p-4
-    backgroundColor: "#f0f0f5",
+    flexGrow: 1,
+    padding: 16,
   },
   mainContentLayout: {
-    flexDirection: "column", // Default for mobile (sm:flex-row)
-    gap: 16, // gap-4
+    flexDirection: "column",
+    gap: 16,
     justifyContent: "space-between",
-    // sm:flex-row - responsive logic if you want side-by-side on larger screens
-    // For large screens: flexDirection: Dimensions.get('window').width > 600 ? 'row' : 'column'
   },
   leftColumn: {
-    flex: 6, // flex-6
+    flex: 6,
     flexDirection: "column",
-    gap: 12, // gap-3
+    gap: 12,
   },
   sectionHeading: {
-    marginLeft: 4, // ml-1
+    marginLeft: 4,
     fontSize: 16,
     fontWeight: "600",
     letterSpacing: -0.4,
-    color: "#02060cbf",
   },
   rightColumn: {
-    flex: 4, // flex-4
+    flex: 4,
     flexDirection: "column",
-    gap: 12, // gap-3
+    gap: 12,
   },
-
   bottomFixedArea: {
-    // shadow-cart-card conversion
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: -2 }, // Shadow on top
+    shadowOffset: { width: 0, height: -2 },
     shadowOpacity: 0.1,
     shadowRadius: 3,
-    elevation: 8, // Higher elevation for bottom fixed elements
-    borderTopLeftRadius: 8, // rounded-tl-lg
-    borderTopRightRadius: 8, // rounded-tr-lg
-    backgroundColor: "white", // bg-white
-    paddingHorizontal: 16, // px-4
-    paddingTop: 16, // py-4
+    elevation: 8,
+    borderTopLeftRadius: 8,
+    borderTopRightRadius: 8,
+    paddingHorizontal: 16,
+    paddingTop: 16,
     paddingBottom: 50,
-    // bottom-0 z-10 - implicit due to position outside ScrollView
   },
   payButton: {
-    width: "100%", // w-full
-    borderRadius: 8, // rounded-lg
-    backgroundColor: "#ff5200", // bg-[#ff5200]
-    paddingVertical: 12, // py-2.5 (adjusted for better touch target)
+    width: "100%",
+    borderRadius: 8,
+    paddingVertical: 12,
     alignItems: "center",
     justifyContent: "center",
-    // cursor-pointer - not applicable
-    // transition duration-150 ease-in-out hover:scale-[0.98] hover:bg-[#ff5200] focus:outline-none
   },
   payButtonText: {
-    fontSize: 18, // text-lg
-    lineHeight: 20, // leading-5 (adjusted from leading-5.5)
-    fontWeight: "500", // font-normal
-    color: "white", // text-white
-    letterSpacing: -0.45, // -tracking-[0.45px]
+    fontSize: 18,
+    lineHeight: 20,
+    fontWeight: "500",
+    color: "white",
+    letterSpacing: -0.45,
   },
-  selectAddressButton: {
-    // Reuses payButton styles
-    // hover:shadow-none - not applicable
-  },
+  selectAddressButton: {},
 });

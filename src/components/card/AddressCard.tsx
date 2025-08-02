@@ -1,5 +1,6 @@
-// src/components/card/AddressCard.tsx
-import { UserAddressPayload } from "@/services/address/addressApi.type";
+import { darkColors, lightColors } from "@/constants/ThemeColors";
+import { useTheme } from "@/hooks/useTheme";
+import type { UserAddressPayload } from "@/services/address/addressApi.type";
 import React from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
@@ -12,35 +13,51 @@ const AddressCard = ({
   selectedAddress,
   handleAdressDrawerOpen,
 }: AddressCardProps) => {
+  const { theme } = useTheme();
+  const colors = theme === "dark" ? darkColors : lightColors;
+
   return (
-    <View style={styles.container}>
+    <View
+      style={[
+        styles.container,
+        { backgroundColor: colors.cardBackground, shadowColor: colors.text },
+      ]}
+    >
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Delivery Address</Text>
+        <Text style={[styles.headerTitle, { color: colors.text }]}>
+          Delivery Address
+        </Text>
         <TouchableOpacity
           onPress={handleAdressDrawerOpen}
           style={styles.changeButton}
         >
-          <Text style={styles.changeButtonText}>CHANGE</Text>
+          <Text style={[styles.changeButtonText, { color: colors.accent }]}>
+            CHANGE
+          </Text>
         </TouchableOpacity>
       </View>
-      <View style={styles.separator}></View>
+      <View
+        style={[styles.separator, { borderBottomColor: colors.border }]}
+      ></View>
 
       {selectedAddress ? (
         <View style={styles.addressDetails}>
-          <Text style={styles.addressName}>
+          <Text style={[styles.addressName, { color: colors.text }]}>
             {selectedAddress.name || "Default Address"}
           </Text>
-          <Text style={styles.addressLine}>
+          <Text style={[styles.addressLine, { color: colors.textSecondary }]}>
             {selectedAddress.address_line1}, {selectedAddress.address_line2}
           </Text>
-          <Text style={styles.addressLine}>
+          <Text style={[styles.addressLine, { color: colors.textSecondary }]}>
             {selectedAddress.city}, {selectedAddress.state} {"- "}
             {selectedAddress.pincode}
           </Text>
-          <Text style={styles.addressLine}>{selectedAddress.phone_number}</Text>
+          <Text style={[styles.addressLine, { color: colors.textSecondary }]}>
+            {selectedAddress.phone_number}
+          </Text>
         </View>
       ) : (
-        <Text style={styles.noAddressText}>
+        <Text style={[styles.noAddressText, { color: colors.textSecondary }]}>
           No address selected. Please select an address to proceed.
         </Text>
       )}
@@ -50,66 +67,57 @@ const AddressCard = ({
 
 const styles = StyleSheet.create({
   container: {
-    // shadow-cart-card conversion
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
     shadowRadius: 2,
     elevation: 3,
-    marginBottom: 4, // mb-1
-    flexDirection: "column", // flex w-full flex-col
-    gap: 16, // gap-4
-    borderRadius: 8, // rounded-lg
-    backgroundColor: "white", // bg-white
-    padding: 12, // p-3
+    marginBottom: 4,
+    flexDirection: "column",
+    gap: 16,
+    borderRadius: 8,
+    padding: 12,
   },
   header: {
-    flexDirection: "row", // flex
-    alignItems: "center", // items-center
-    justifyContent: "space-between", // justify-between
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
   },
   headerTitle: {
-    fontSize: 16, // text-[16px]
-    lineHeight: 21, // leading-[21px]
-    fontWeight: "500", // font-medium
-    letterSpacing: -0.4, // tracking-[-0.4px]
+    fontSize: 16,
+    lineHeight: 21,
+    fontWeight: "500",
+    letterSpacing: -0.4,
   },
-  changeButton: {
-    // cursor-pointer - not applicable
-  },
+  changeButton: {},
   changeButtonText: {
-    fontSize: 14, // text-sm
-    fontWeight: "600", // font-semibold
-    color: "#d96d2a", // text-[#d96d2a]
+    fontSize: 14,
+    fontWeight: "600",
   },
   separator: {
-    borderBottomWidth: 1, // border-b
-    borderBottomColor: "rgba(2, 6, 12, 0.15)", // border-dashed border-[#02060c26]
+    borderBottomWidth: 1,
     borderStyle: "dashed",
-    width: "100%", // w-full
-    marginVertical: 4, // To visually separate from gap of header/address
+    width: "100%",
+    marginVertical: 4,
   },
   addressDetails: {
-    flexDirection: "column", // flex flex-col
-    gap: 12, // gap-3
+    flexDirection: "column",
+    gap: 12,
   },
   addressName: {
-    fontSize: 14, // text-[14px]
-    lineHeight: 18, // leading-[18px]
-    fontWeight: "600", // font-semibold
-    color: "#02060C", // text-[#02060C]
+    fontSize: 14,
+    lineHeight: 18,
+    fontWeight: "600",
   },
   addressLine: {
-    fontSize: 12, // text-[12px]
-    lineHeight: 16, // leading-[16px]
-    fontWeight: "400", // font-normal
-    color: "rgba(2, 6, 12, 0.45)", // text-[#02060C73]
+    fontSize: 12,
+    lineHeight: 16,
+    fontWeight: "400",
   },
   noAddressText: {
-    fontSize: 14, // text-[14px]
-    lineHeight: 18, // leading-[18px]
-    fontWeight: "400", // font-normal
-    color: "rgba(2, 6, 12, 0.45)", // text-[#02060C73]
+    fontSize: 14,
+    lineHeight: 18,
+    fontWeight: "400",
   },
 });
 

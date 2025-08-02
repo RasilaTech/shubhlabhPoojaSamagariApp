@@ -1,3 +1,4 @@
+import { ConfirmationDialog } from "@/components/dialog/ConfirmationDialog"; // <--- Import ConfirmationDialog
 import { darkColors, lightColors } from "@/constants/ThemeColors"; // <-- Import your color constants
 import { useTheme } from "@/hooks/useTheme"; // <-- Import useTheme
 import { useLogoutMutation } from "@/services/auth/authApi";
@@ -12,7 +13,7 @@ import {
   Moon,
   User,
 } from "lucide-react-native";
-import React from "react";
+import React, { useState } from "react";
 import {
   Alert,
   ScrollView,
@@ -88,37 +89,26 @@ const ThemeToggle: React.FC<{ isLast: boolean }> = ({ isLast }) => {
 
 export default function AccountScreen() {
   const insets = useSafeAreaInsets();
-  const [logout, { isLoading }] = useLogoutMutation();
+  const [logout, { isLoading: isLoggingOut }] = useLogoutMutation(); // Use isLoading for button state
   const { theme } = useTheme();
   const colors = theme === "dark" ? darkColors : lightColors;
 
-  const handleLogout = async () => {
-    Alert.alert(
-      "Logout",
-      "Are you sure you want to log out?",
-      [
-        {
-          text: "Cancel",
-          style: "cancel",
-        },
-        {
-          text: "Logout",
-          onPress: async () => {
-            try {
-              await logout().unwrap();
-              router.replace("/");
-            } catch (error) {
-              console.error("Logout failed:", error);
-              Alert.alert(
-                "Logout Failed",
-                "Could not log out. Please try again."
-              );
-            }
-          },
-        },
-      ],
-      { cancelable: true }
-    );
+  const [showLogoutDialog, setShowLogoutDialog] = useState(false);
+  const handleLogout = () => {
+    // FIX: Instead of calling Alert.alert, just show your custom dialog
+    setShowLogoutDialog(true);
+  };
+
+  // The actual logout logic that your ConfirmationDialog will call
+  const handleConfirmLogout = async () => {
+    try {
+      await logout().unwrap();
+      setShowLogoutDialog(false); // Close dialog on success
+      router.replace("/");
+    } catch (error) {
+      console.error("Logout failed:", error);
+      Alert.alert("Logout Failed", "Could not log out. Please try again.");
+    }
   };
 
   return (
@@ -180,6 +170,16 @@ export default function AccountScreen() {
           />
         </View>
       </ScrollView>
+      <ConfirmationDialog
+        open={showLogoutDialog}
+        onOpenChange={setShowLogoutDialog}
+        headingText="Logout"
+        bodyText="Are you sure you want to log out?"
+        confirmationButtonText={isLoggingOut ? "Logging out..." : "Logout"}
+        cancelButtonText="Cancel"
+        onConfirm={handleConfirmLogout} // Pass the confirmed action
+        isConfirming={isLoggingOut}
+      />
     </View>
   );
 }

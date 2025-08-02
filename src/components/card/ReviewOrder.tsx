@@ -1,4 +1,3 @@
-// src/components/card/ReviewOrder.tsx
 import { useRemoveCartItemMutation } from "@/services/cart/cartAPI"; // Adjust path
 import { router } from "expo-router"; // For navigation
 import React from "react";
@@ -12,8 +11,11 @@ import {
 } from "react-native";
 
 import { CartItem } from "@/services/cart/cartApi.type";
-import AddToCartCounter from "../button/AddToCartCounter";
 import CurrentlyUnavailable from "./CurrentlyUnavailable"; // Adjust path
+
+import { darkColors, lightColors } from "@/constants/ThemeColors";
+import { useTheme } from "@/hooks/useTheme";
+import AddToCartCounter from "../button/AddToCartCounter";
 
 export interface ReviewOrderProps {
   cartData: CartItem[];
@@ -21,6 +23,8 @@ export interface ReviewOrderProps {
 
 const ReviewOrder = ({ cartData }: ReviewOrderProps) => {
   const [removeCartItem] = useRemoveCartItemMutation();
+  const { theme } = useTheme();
+  const colors = theme === "dark" ? darkColors : lightColors;
 
   const handleRemoveItem = async (productVariantId: string) => {
     await removeCartItem(productVariantId);
@@ -34,7 +38,6 @@ const ReviewOrder = ({ cartData }: ReviewOrderProps) => {
   );
 
   const handleProductPress = (productId: string) => {
-    // Assuming product details screen is /products/[id]
     router.push({ pathname: "/product/[id]", params: { id: productId } });
   };
 
@@ -54,16 +57,19 @@ const ReviewOrder = ({ cartData }: ReviewOrderProps) => {
           <Text
             numberOfLines={2}
             ellipsizeMode="tail"
-            style={styles.availableProductName}
+            style={[styles.availableProductName, { color: colors.text }]}
           >
             {item.variant.name}
           </Text>
           <Text
             numberOfLines={1}
             ellipsizeMode="tail"
-            style={styles.availableProductLabel}
+            style={[
+              styles.availableProductLabel,
+              { color: colors.textSecondary },
+            ]}
           >
-            {item.variant.name} {/* Assuming variant.name is also the label */}
+            {item.variant.name}
           </Text>
         </View>
       </TouchableOpacity>
@@ -75,14 +81,16 @@ const ReviewOrder = ({ cartData }: ReviewOrderProps) => {
           </View>
         </View>
         <View style={styles.availablePriceDetails}>
-          <Text style={styles.availableMrpPrice}>
+          <Text
+            style={[styles.availableMrpPrice, { color: colors.textSecondary }]}
+          >
             ₹
             {new Intl.NumberFormat("en-IN", {
               minimumFractionDigits: 2,
               maximumFractionDigits: 2,
             }).format(item.quantity * item.variant.mrp)}
           </Text>
-          <Text style={styles.availableSalePrice}>
+          <Text style={[styles.availableSalePrice, { color: colors.text }]}>
             ₹
             {new Intl.NumberFormat("en-IN", {
               minimumFractionDigits: 2,
@@ -97,13 +105,25 @@ const ReviewOrder = ({ cartData }: ReviewOrderProps) => {
   return (
     <View style={styles.container}>
       {availableItems.length > 0 && (
-        <View style={styles.availableItemsCard}>
+        <View
+          style={[
+            styles.availableItemsCard,
+            { backgroundColor: colors.cardBackground },
+          ]}
+        >
           <FlatList
             data={availableItems}
             renderItem={renderAvailableItem}
             keyExtractor={(item) => item.product_variant_id}
             scrollEnabled={false}
-            ItemSeparatorComponent={() => <View style={styles.itemSeparator} />}
+            ItemSeparatorComponent={() => (
+              <View
+                style={[
+                  styles.itemSeparator,
+                  { backgroundColor: colors.border },
+                ]}
+              />
+            )}
             contentContainerStyle={styles.flatListContentPadding}
           />
         </View>
@@ -131,14 +151,12 @@ const styles = StyleSheet.create({
     elevation: 3,
     marginBottom: 4,
     borderRadius: 8,
-    backgroundColor: "white",
   },
   flatListContentPadding: {
     padding: 12,
   },
   itemSeparator: {
     height: 1,
-    backgroundColor: "#e2e8f0",
     marginVertical: 8,
   },
   availableItemRow: {
@@ -146,14 +164,14 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
     gap: 8,
-    paddingVertical: 8, // Increased padding for better spacing
-    minHeight: 65, // Increased minimum height
+    paddingVertical: 8,
+    minHeight: 65,
   },
   availableItemLeftContent: {
     flexDirection: "row",
-    flex: 1, // Take available space
-    minWidth: 0, // Allow shrinking
-    maxWidth: "60%", // Reduced max width to give more space to right content
+    flex: 1,
+    minWidth: 0,
+    maxWidth: "60%",
     gap: 12,
     alignItems: "center",
   },
@@ -165,51 +183,50 @@ const styles = StyleSheet.create({
   },
   availableProductInfo: {
     flexDirection: "column",
-    flex: 1, // Take remaining space after image
-    minWidth: 0, // Essential for text truncation
+    flex: 1,
+    minWidth: 0,
   },
   availableProductName: {
     fontSize: 13,
     lineHeight: 17,
     fontWeight: "500",
     letterSpacing: -0.33,
-    color: "rgba(2, 6, 12, 0.75)",
   },
   availableProductLabel: {
     fontSize: 12,
     lineHeight: 16,
     fontWeight: "400",
-    color: "rgba(2, 6, 12, 0.45)",
+    letterSpacing: -0.2,
   },
   availableItemRightContent: {
-    flexDirection: "row", // Counter and price side by side
-    alignItems: "center", // Align vertically in center
-    justifyContent: "flex-end", // Push to right
-    gap: 10, // Reduced gap slightly
-    flexShrink: 0, // Don't shrink
-    minWidth: 135, // Increased minimum width to accommodate larger counter
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "flex-end",
+    gap: 10,
+    flexShrink: 0,
+    flexGrow: 0,
+    minWidth: 135,
   },
   counterWrapper: {
-    width: 85, // Fixed width for counter
+    width: 85,
     flexShrink: 0,
     alignItems: "center",
     justifyContent: "center",
   },
   counterOverride: {
-    width: 85, // Force the counter to respect this width
-    height: 32, // Fixed height to match counter design
+    width: 85,
+    height: 32,
   },
   availablePriceDetails: {
     flexDirection: "column",
     alignItems: "flex-end",
-    minWidth: 45, // Ensure price section has minimum width
+    minWidth: 45,
   },
   availableMrpPrice: {
     fontSize: 10,
     lineHeight: 13,
     fontWeight: "600",
     letterSpacing: -0.25,
-    color: "rgba(2, 6, 12, 0.45)",
     textDecorationLine: "line-through",
   },
   availableSalePrice: {
@@ -217,8 +234,7 @@ const styles = StyleSheet.create({
     lineHeight: 18,
     fontWeight: "400",
     letterSpacing: -0.25,
-    color: "rgba(2, 6, 12, 0.74)",
   },
 });
 
-export default ReviewOrder;
+export default ReviewOrder

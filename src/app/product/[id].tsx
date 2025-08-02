@@ -1,9 +1,10 @@
-// app/(tabs)/products/[id].tsx
 import ProductDetailCartButton from "@/components/button/ProductDetailCartButton";
 import SoldOutBadge from "@/components/button/SoldButton";
 import ProductItem2 from "@/components/card/ProductItem2";
 import OrderErrorScreen from "@/components/error/OrderErrorScree";
 import OrderDetailSkeleton from "@/components/skeletons/OrderSkeleton";
+import { darkColors, lightColors } from "@/constants/ThemeColors";
+import { useTheme } from "@/hooks/useTheme";
 import {
   useGetProductByIdQuery,
   useGetProductsInfiniteQuery,
@@ -33,7 +34,6 @@ import {
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-
 // Adjust paths for RTK Query hooks and types
 
 // Import your converted components
@@ -43,6 +43,8 @@ const screenWidth = Dimensions.get("window").width;
 const isLargeScreen = screenWidth >= 768; // Example breakpoint for responsive layouts
 
 export default function ProductDetailsScreen() {
+  const { theme } = useTheme();
+  const colors = theme === "dark" ? darkColors : lightColors;
   const { id: productId = "" } = useLocalSearchParams<{ id: string }>();
 
   const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(
@@ -185,15 +187,25 @@ export default function ProductDetailsScreen() {
         {
           paddingTop: insets.top,
           paddingBottom: insets.bottom,
+          backgroundColor: colors.background,
         },
       ]}
     >
       {/* Header - Fixed at top */}
-      <View style={styles.header}>
+      <View
+        style={[
+          styles.header,
+          { backgroundColor: colors.cardBackground, shadowColor: colors.text },
+        ]}
+      >
         <TouchableOpacity onPress={handleGoBack} style={styles.backButton}>
-          <ChevronLeft size={24} color="#02060cbf" />
+          <ChevronLeft size={24} color={colors.text} />
         </TouchableOpacity>
-        <Text numberOfLines={1} ellipsizeMode="tail" style={styles.headerTitle}>
+        <Text
+          numberOfLines={1}
+          ellipsizeMode="tail"
+          style={[styles.headerTitle, { color: colors.text }]}
+        >
           Product Details
         </Text>
       </View>
@@ -203,7 +215,12 @@ export default function ProductDetailsScreen() {
         <View style={styles.mainContentGrid}>
           {/* Product Image Section */}
           <View style={styles.imageSection}>
-            <View style={styles.mainImageWrapper}>
+            <View
+              style={[
+                styles.mainImageWrapper,
+                { backgroundColor: colors.cardBackground },
+              ]}
+            >
               <Image
                 source={{
                   uri:
@@ -245,17 +262,50 @@ export default function ProductDetailsScreen() {
             {/* Features Section (hidden on mobile, visible on tablet/web) */}
             {isLargeScreen && (
               <View style={styles.featuresGrid}>
-                <View style={styles.featureItem}>
-                  <Truck size={24} color="#3b82f6" />
-                  <Text style={styles.featureText}>3 Days Delivery</Text>
+                <View
+                  style={[
+                    styles.featureItem,
+                    {
+                      backgroundColor: colors.cardBackground,
+                      borderColor: colors.border,
+                      shadowColor: colors.text,
+                    },
+                  ]}
+                >
+                  <Truck size={24} color={colors.text} />
+                  <Text style={[styles.featureText, { color: colors.text }]}>
+                    3 Days Delivery
+                  </Text>
                 </View>
-                <View style={styles.featureItem}>
-                  <Shield size={24} color="#22c55e" />
-                  <Text style={styles.featureText}>Quality Assured</Text>
+                <View
+                  style={[
+                    styles.featureItem,
+                    {
+                      backgroundColor: colors.cardBackground,
+                      borderColor: colors.border,
+                      shadowColor: colors.text,
+                    },
+                  ]}
+                >
+                  <Shield size={24} color={colors.text} />
+                  <Text style={[styles.featureText, { color: colors.text }]}>
+                    Quality Assured
+                  </Text>
                 </View>
-                <View style={styles.featureItem}>
-                  <RotateCcw size={24} color="#a855f7" />
-                  <Text style={styles.featureText}>Easy Returns</Text>
+                <View
+                  style={[
+                    styles.featureItem,
+                    {
+                      backgroundColor: colors.cardBackground,
+                      borderColor: colors.border,
+                      shadowColor: colors.text,
+                    },
+                  ]}
+                >
+                  <RotateCcw size={24} color={colors.text} />
+                  <Text style={[styles.featureText, { color: colors.text }]}>
+                    Easy Returns
+                  </Text>
                 </View>
               </View>
             )}
@@ -266,17 +316,20 @@ export default function ProductDetailsScreen() {
             {/* Title & Brand */}
             <View style={styles.titleBrandRating}>
               <View style={styles.titleShareRow}>
-                <Text style={styles.productTitle}>{selectedVariant.name}</Text>
+                <Text style={[styles.productTitle, { color: colors.text }]}>
+                  {selectedVariant.name}
+                </Text>
                 <TouchableOpacity
                   onPress={handleShare}
                   style={styles.shareButton}
                 >
-                  <Share2 size={24} color="#000" />
+                  <Share2 size={24} color={colors.text} />
                 </TouchableOpacity>
               </View>
 
-              <Text style={styles.brandName}>{selectedVariant.brand_name}</Text>
-
+              <Text style={[styles.brandName, { color: colors.textSecondary }]}>
+                {selectedVariant.brand_name}
+              </Text>
               {/* Rating */}
               <View style={styles.ratingContainer}>
                 <View style={styles.starsContainer}>
@@ -284,12 +337,14 @@ export default function ProductDetailsScreen() {
                     <Star
                       key={i}
                       size={20}
-                      color="#facc15" // fill-yellow-400
+                      color={colors.text}
                       fill="#facc15"
                     />
                   ))}
                 </View>
-                <Text style={styles.reviewText}>
+                <Text
+                  style={[styles.reviewText, { color: colors.textSecondary }]}
+                >
                   Based on {randomNumber} Reviews
                 </Text>
               </View>
@@ -297,10 +352,12 @@ export default function ProductDetailsScreen() {
 
             {/* Price */}
             <View style={styles.priceInfoContainer}>
-              <Text style={styles.currentPrice}>
+              <Text style={[styles.currentPrice, { color: colors.text }]}>
                 ₹{selectedVariant.price.toLocaleString("en-IN")}
               </Text>
-              <Text style={styles.originalPrice}>
+              <Text
+                style={[styles.originalPrice, { color: colors.textSecondary }]}
+              >
                 ₹{selectedVariant.mrp.toLocaleString("en-IN")}
               </Text>
               <LinearGradient
@@ -362,8 +419,18 @@ export default function ProductDetailsScreen() {
 
             {/* Description (mobile only) */}
             {!isLargeScreen && (
-              <View style={styles.descriptionContainerMobile}>
-                <Text>{truncatedDescription}</Text>
+              <View
+                style={[
+                  styles.descriptionContainerMobile,
+                  {
+                    backgroundColor: colors.cardBackground,
+                    borderColor: colors.border,
+                  },
+                ]}
+              >
+                <Text style={[styles.descriptionText, { color: colors.text }]}>
+                  {truncatedDescription}
+                </Text>
                 {selectedVariant.description &&
                   selectedVariant.description.split(" ").length > 30 && (
                     <TouchableOpacity
@@ -385,17 +452,50 @@ export default function ProductDetailsScreen() {
         {/* Mobile features section (hidden on desktop, visible on mobile) */}
         {!isLargeScreen && (
           <View style={styles.featuresGridMobile}>
-            <View style={styles.featureItem}>
-              <Truck size={24} color="#3b82f6" />
-              <Text style={styles.featureText}>3 Days Delivery</Text>
+            <View
+              style={[
+                styles.featureItem,
+                {
+                  backgroundColor: colors.cardBackground,
+                  borderColor: colors.border,
+                  shadowColor: colors.text,
+                },
+              ]}
+            >
+              <Truck size={24} color={colors.text} />
+              <Text style={[styles.featureText, { color: colors.text }]}>
+                3 Days Delivery
+              </Text>
             </View>
-            <View style={styles.featureItem}>
-              <Shield size={24} color="#22c55e" />
-              <Text style={styles.featureText}>Quality Assured</Text>
+            <View
+              style={[
+                styles.featureItem,
+                {
+                  backgroundColor: colors.cardBackground,
+                  borderColor: colors.border,
+                  shadowColor: colors.text,
+                },
+              ]}
+            >
+              <Shield size={24} color={colors.text} />
+              <Text style={[styles.featureText, { color: colors.text }]}>
+                Quality Assured
+              </Text>
             </View>
-            <View style={styles.featureItem}>
-              <RotateCcw size={24} color="#a855f7" />
-              <Text style={styles.featureText}>Easy Returns</Text>
+            <View
+              style={[
+                styles.featureItem,
+                {
+                  backgroundColor: colors.cardBackground,
+                  borderColor: colors.border,
+                  shadowColor: colors.text,
+                },
+              ]}
+            >
+              <RotateCcw size={24} color={colors.text} />
+              <Text style={[styles.featureText, { color: colors.text }]}>
+                Easy Returns
+              </Text>
             </View>
           </View>
         )}
@@ -403,7 +503,9 @@ export default function ProductDetailsScreen() {
         {/* Related products section */}
         {relatedProducts.length > 0 && (
           <View style={styles.relatedProductsSection}>
-            <Text style={styles.relatedProductsTitle}>You might also like</Text>
+            <Text style={[styles.relatedProductsTitle, { color: colors.text }]}>
+              You might also like
+            </Text>
             <FlatList
               data={relatedProducts}
               renderItem={({ item }) => (
@@ -434,13 +536,11 @@ export default function ProductDetailsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#f0f0f5",
   },
   header: {
     flexDirection: "row",
     alignItems: "center",
     padding: 12,
-    backgroundColor: "#fff",
     shadowColor: "#000", // shadow-cart-card (approx)
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
@@ -463,7 +563,6 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     paddingHorizontal: 16,
     paddingTop: 20, // Space for fixed header
-    backgroundColor: "#f0f0f5",
   },
   mainContentGrid: {
     flexDirection: isLargeScreen ? "row" : "column",
@@ -483,7 +582,6 @@ const styles = StyleSheet.create({
     maxWidth: 400,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#fff",
     borderRadius: 8,
     overflow: "hidden",
   },
@@ -537,8 +635,7 @@ const styles = StyleSheet.create({
     flex: 1,
     borderRadius: 16,
     borderWidth: 1,
-    borderColor: "#f3f4f6",
-    backgroundColor: "#fff",
+
     padding: 16,
     alignItems: "center",
     shadowColor: "#000",
@@ -646,6 +743,10 @@ const styles = StyleSheet.create({
     backgroundColor: "#eff6ff",
     padding: 24,
     // md:block - handled by isLargeScreen conditional rendering
+  },
+
+  descriptionText: {
+    fontSize: 12,
   },
 
   showMoreButton: {

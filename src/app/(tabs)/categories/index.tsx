@@ -10,8 +10,10 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import CategoryCard from "@/components/card/CategoryCard";
+import { darkColors, lightColors } from "@/constants/ThemeColors"; // <-- Import color palettes
+import { useTheme } from "@/hooks/useTheme"; // <-- Import useTheme hook
 import { useGetCategoriesInfiniteQuery } from "@/services/category/categoryApi";
-import { Category } from "@/services/category/categoryApi.type"; // Ensure Category type is correctly imported
+import { Category } from "@/services/category/categoryApi.type";
 
 const Categories = () => {
   const {
@@ -39,6 +41,8 @@ const Categories = () => {
 
   const insets = useSafeAreaInsets();
   const tabBarHeight = useBottomTabBarHeight();
+  const { theme } = useTheme();
+  const colors = theme === "dark" ? darkColors : lightColors;
 
   const allCategories: Category[] = categoriesData.pages.flatMap(
     (page) => page.data
@@ -60,7 +64,7 @@ const Categories = () => {
           createdAt: "",
           updatedAt: "",
         },
-      ] // Add a dummy item
+      ]
     : allCategories;
 
   const loadMoreCategories = useCallback(() => {
@@ -70,6 +74,10 @@ const Categories = () => {
   }, [fetchNextPage, isFetchingNextPage, hasNextPage]);
 
   const renderCategoryItem = useCallback(({ item }: { item: Category }) => {
+    // FIX: Only render CategoryCard if it's not the dummy item
+    if (item.id === "dummy") {
+      return <View style={styles.hiddenDummyItem} />;
+    }
     return <CategoryCard category={item} />;
   }, []);
 
@@ -77,8 +85,10 @@ const Categories = () => {
     if (!isFetchingNextPage) return null;
     return (
       <View style={styles.loadingFooter}>
-        <ActivityIndicator size="small" color="#0000ff" />
-        <Text style={styles.loadingText}>Loading more categories...</Text>
+        <ActivityIndicator size="small" color={colors.accent} />
+        <Text style={[styles.loadingText, { color: colors.textSecondary }]}>
+          Loading more categories...
+        </Text>
       </View>
     );
   };
@@ -89,11 +99,13 @@ const Categories = () => {
         style={[
           styles.container,
           styles.centerContent,
-          { paddingTop: insets.top },
+          { paddingTop: insets.top, backgroundColor: colors.background },
         ]}
       >
-        <ActivityIndicator size="large" color="#0000ff" />
-        <Text style={styles.messageText}>Loading categories...</Text>
+        <ActivityIndicator size="large" color={colors.accent} />
+        <Text style={[styles.messageText, { color: colors.textSecondary }]}>
+          Loading categories...
+        </Text>
       </View>
     );
   }
@@ -104,10 +116,10 @@ const Categories = () => {
         style={[
           styles.container,
           styles.centerContent,
-          { paddingTop: insets.top },
+          { paddingTop: insets.top, backgroundColor: colors.background },
         ]}
       >
-        <Text style={styles.errorText}>
+        <Text style={[styles.errorText, { color: colors.destructive }]}>
           Error fetching categories. Please try again later.
         </Text>
       </View>
@@ -120,10 +132,12 @@ const Categories = () => {
         style={[
           styles.container,
           styles.centerContent,
-          { paddingTop: insets.top },
+          { paddingTop: insets.top, backgroundColor: colors.background },
         ]}
       >
-        <Text style={styles.messageText}>No categories found.</Text>
+        <Text style={[styles.messageText, { color: colors.textSecondary }]}>
+          No categories found.
+        </Text>
       </View>
     );
   }
@@ -132,10 +146,16 @@ const Categories = () => {
     <View
       style={[
         styles.container,
-        { paddingTop: insets.top, paddingBottom: tabBarHeight },
+        {
+          paddingTop: insets.top,
+          paddingBottom: tabBarHeight,
+          backgroundColor: colors.background,
+        },
       ]}
     >
-      <Text style={styles.headingText}>Categories</Text>
+      <Text style={[styles.headingText, { color: colors.text }]}>
+        Categories
+      </Text>
       <FlatList
         data={dataForGrid}
         renderItem={renderCategoryItem}
@@ -157,13 +177,11 @@ export default Categories;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "white",
     paddingHorizontal: 14,
   },
   headingText: {
     fontSize: 26,
     fontWeight: "bold",
-    color: "#1a202c", // Darker text for heading
     paddingHorizontal: 10,
     marginTop: 20,
     marginBottom: 20,
@@ -180,7 +198,6 @@ const styles = StyleSheet.create({
   loadingText: {
     marginLeft: 10,
     fontSize: 16,
-    color: "#555",
   },
   centerContent: {
     flex: 1,
@@ -190,19 +207,16 @@ const styles = StyleSheet.create({
   },
   messageText: {
     fontSize: 16,
-    color: "#555",
     textAlign: "center",
     marginTop: 10,
   },
   errorText: {
     fontSize: 16,
-    color: "red",
     textAlign: "center",
     marginHorizontal: 20,
   },
   noCategoriesText: {
     fontSize: 16,
-    color: "#555",
     textAlign: "center",
   },
   row: {
@@ -210,9 +224,9 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   hiddenDummyItem: {
-    flex: 1, // Crucial for it to take up space like a real item
-    marginHorizontal: 4, // Match the margin of your CategoryCard if any
-    height: 0, // Make it invisible
-    width: 0, // Make it invisible
+    flex: 1,
+    marginHorizontal: 4,
+    height: 0,
+    width: 0,
   },
 });

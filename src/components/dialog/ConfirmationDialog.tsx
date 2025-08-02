@@ -1,15 +1,17 @@
 import React from "react";
 import {
-  ActivityIndicator, // For the spinning loader
-  Modal, // For the dialog overlay
-  Pressable, // For the dismissable overlay and dialog content
+  ActivityIndicator,
+  Modal,
+  Pressable,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
 } from "react-native";
 
-// Assuming your props interface is defined in this path
+import { darkColors, lightColors } from "@/constants/ThemeColors"; // <-- Import color palettes
+import { useTheme } from "@/hooks/useTheme"; // <-- Import useTheme hook
+
 export interface ConfirmationDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -22,6 +24,7 @@ export interface ConfirmationDialogProps {
   isConfirming: boolean;
   onConfirm: () => void;
 }
+
 export const ConfirmationDialog: React.FC<ConfirmationDialogProps> = ({
   open,
   onOpenChange,
@@ -32,6 +35,9 @@ export const ConfirmationDialog: React.FC<ConfirmationDialogProps> = ({
   onConfirm,
   isConfirming,
 }) => {
+  const { theme } = useTheme();
+  const colors = theme === "dark" ? darkColors : lightColors;
+
   const handleConfirmPress = () => {
     if (!isConfirming) {
       onConfirm();
@@ -50,13 +56,25 @@ export const ConfirmationDialog: React.FC<ConfirmationDialogProps> = ({
         onPress={() => onOpenChange(false)}
       >
         <Pressable
-          style={styles.dialogContent}
+          style={[
+            styles.dialogContent,
+            { backgroundColor: colors.cardBackground },
+          ]}
           onPress={(e) => e.stopPropagation()}
         >
           <View style={styles.dialogHeader}>
-            <Text style={styles.dialogTitle}>{headingText}</Text>
+            <Text style={[styles.dialogTitle, { color: colors.text }]}>
+              {headingText}
+            </Text>
             {bodyText && (
-              <Text style={styles.dialogDescription}>{bodyText}</Text>
+              <Text
+                style={[
+                  styles.dialogDescription,
+                  { color: colors.textSecondary },
+                ]}
+              >
+                {bodyText}
+              </Text>
             )}
           </View>
 
@@ -68,10 +86,15 @@ export const ConfirmationDialog: React.FC<ConfirmationDialogProps> = ({
               style={[
                 styles.button,
                 styles.cancelButton,
-                // You can add styles based on cancellationButtonClassName here if you map them
+                {
+                  backgroundColor: colors.background,
+                  borderColor: colors.border,
+                },
               ]}
             >
-              <Text style={styles.cancelButtonText}>{cancelButtonText}</Text>
+              <Text style={[styles.cancelButtonText, { color: colors.accent }]}>
+                {cancelButtonText}
+              </Text>
             </TouchableOpacity>
 
             {/* Confirm Button */}
@@ -82,13 +105,13 @@ export const ConfirmationDialog: React.FC<ConfirmationDialogProps> = ({
                 styles.button,
                 styles.confirmButton,
                 isConfirming && styles.disabledButton,
-                // You can add styles based on confirmationButtonClassName here
+                { backgroundColor: colors.accent, borderColor: colors.border },
               ]}
             >
               {isConfirming ? (
                 <ActivityIndicator
                   size="small"
-                  color="#fff"
+                  color="#fff" // Loader is always white on a colored button
                   style={styles.loader}
                 />
               ) : null}
@@ -112,12 +135,11 @@ const styles = StyleSheet.create({
   },
   dialogContent: {
     width: "90%",
-    maxWidth: 400, // sm:max-w-[750px] approx
-    borderRadius: 24, // rounded-3xl
-    paddingHorizontal: 16, // px-4
-    paddingTop: 24, // pt-6
-    paddingBottom: 16, // pb-4
-    backgroundColor: "#fff",
+    maxWidth: 400,
+    borderRadius: 24,
+    paddingHorizontal: 16,
+    paddingTop: 24,
+    paddingBottom: 16,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
@@ -128,11 +150,10 @@ const styles = StyleSheet.create({
     flexDirection: "column",
   },
   dialogTitle: {
-    fontSize: 20, // text-[20px]
-    lineHeight: 24, // leading-6
-    fontWeight: "600", // font-semibold
-    letterSpacing: -0.5, // -tracking-[0.5px]
-    color: "rgba(2, 6, 12, 0.92)", // text-[#02060ceb]
+    fontSize: 20,
+    lineHeight: 24,
+    fontWeight: "600",
+    letterSpacing: -0.5,
     textAlign: "left",
   },
   dialogDescription: {
@@ -140,7 +161,6 @@ const styles = StyleSheet.create({
     lineHeight: 20,
     fontWeight: "400",
     letterSpacing: -0.35,
-    color: "rgba(2, 6, 12, 0.75)",
     textAlign: "left",
     marginTop: 8,
   },
@@ -150,30 +170,25 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   button: {
-    flex: 1, // flex-1
-    height: "auto", // h-auto
+    flex: 1,
+    height: "auto",
     alignItems: "center",
     justifyContent: "center",
-    borderRadius: 12, // rounded-[12px]
-    paddingHorizontal: 16, // px-4
-    paddingVertical: 12, // py-3
-    // hover:scale-[0.95] - handled by TouchableOpacity's default feedback
-    // focus:ring-0 focus-visible:ring-0 - not applicable
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
   },
   cancelButton: {
-    backgroundColor: "#ffeee5", // bg-[#ffeee5]
-    borderWidth: 0, // border-none
+    borderWidth: 0,
   },
   cancelButtonText: {
     fontSize: 14,
     lineHeight: 20,
     fontWeight: "600",
     letterSpacing: -0.35,
-    color: "#ff5200", // text-[#ff5200]
   },
   confirmButton: {
-    backgroundColor: "#ff5200", // bg-[#ff5200]
-    borderWidth: 0, // border-none
+    borderWidth: 0,
     flexDirection: "row",
   },
   confirmButtonText: {
@@ -181,12 +196,12 @@ const styles = StyleSheet.create({
     lineHeight: 20,
     fontWeight: "600",
     letterSpacing: -0.35,
-    color: "rgba(255, 255, 255, 0.92)", // text-[#ffffffeb]
+    color: "rgba(255, 255, 255, 0.92)",
   },
   disabledButton: {
-    opacity: 0.7, // Add a visual disabled state
+    opacity: 0.7,
   },
   loader: {
-    marginRight: 8, // mr-2
+    marginRight: 8,
   },
 });

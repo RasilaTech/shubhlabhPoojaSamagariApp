@@ -12,6 +12,9 @@ import {
   View,
 } from "react-native";
 
+import { darkColors, lightColors } from "@/constants/ThemeColors";
+import { useTheme } from "@/hooks/useTheme";
+
 export interface SubCategorySidebarProps {
   selectedCategoryId: string;
   categoryData: Category;
@@ -25,10 +28,17 @@ export const SubCategorySideBar = ({
   subCategoryData,
   handleUpdateCategory,
 }: SubCategorySidebarProps) => {
+  const { theme } = useTheme();
+  const colors = theme === "dark" ? darkColors : lightColors;
+
   if (!categoryData?.id) {
     return (
-      <View style={styles.noDataContainer}>
-        <Text style={styles.noDataText}>No category data available.</Text>
+      <View
+        style={[styles.noDataContainer, { backgroundColor: colors.background }]}
+      >
+        <Text style={[styles.noDataText, { color: colors.textSecondary }]}>
+          No category data available.
+        </Text>
       </View>
     );
   }
@@ -42,15 +52,27 @@ export const SubCategorySideBar = ({
       <TouchableOpacity
         key={item.id}
         onPress={() => handleUpdateCategory(item.id)}
-        style={[styles.listItem, isSelected && styles.selectedListItem]}
+        style={[
+          styles.listItem,
+          isSelected && styles.selectedListItem,
+          {
+            backgroundColor: isSelected
+              ? colors.accent + "10"
+              : colors.cardBackground,
+          },
+        ]}
       >
-        {/* Left highlight bar */}
-        {isSelected && <View style={styles.highlightBar} />}
+        {isSelected && (
+          <View
+            style={[styles.highlightBar, { backgroundColor: colors.accent }]}
+          />
+        )}
 
         <View style={styles.itemContent}>
           <View
             style={[
               styles.imageContainer,
+              { borderColor: colors.border },
               isSelected
                 ? styles.selectedImageContainer
                 : styles.defaultImageContainer,
@@ -73,8 +95,8 @@ export const SubCategorySideBar = ({
             ellipsizeMode="tail"
             style={[
               styles.itemText,
-              isSelected ? styles.selectedItemText : styles.defaultItemText,
               isMainCategory && styles.mainCategoryText,
+              { color: isSelected ? colors.accent : colors.textSecondary },
             ]}
           >
             {item.name}
@@ -86,30 +108,34 @@ export const SubCategorySideBar = ({
 
   return (
     <View style={styles.container}>
-      {/* Header with back arrow and category name */}
-      <View style={styles.sidebarHeader}>
+      <View
+        style={[
+          styles.sidebarHeader,
+          {
+            backgroundColor: colors.cardBackground,
+            borderBottomColor: colors.border,
+          },
+        ]}
+      >
         <TouchableOpacity
           style={styles.backButton}
           onPress={() => router.back()}
         >
-          <Ionicons name="arrow-back" size={16} color="rgba(2, 6, 12, 0.75)" />
+          <Ionicons name="arrow-back" size={16} color={colors.textSecondary} />
         </TouchableOpacity>
       </View>
 
-      {/* Scrollable category list */}
       <ScrollView
         style={styles.scrollContainer}
         contentContainerStyle={styles.listContainer}
         showsVerticalScrollIndicator={false}
       >
-        {/* Render Main Category first */}
         {renderCategoryItem(
           categoryData,
           selectedCategoryId === categoryData.id,
           true
         )}
 
-        {/* Render Subcategories */}
         {subCategoryData.map((subCategory) =>
           renderCategoryItem(subCategory, selectedCategoryId === subCategory.id)
         )}
@@ -121,31 +147,27 @@ export const SubCategorySideBar = ({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "white",
-    // Force the container to respect its parent width
+    // backgroundColor: 'white',
     width: "100%",
     maxWidth: "100%",
   },
   noDataContainer: {
-    padding: 8, // Reduced padding
+    padding: 8,
     alignItems: "center",
     justifyContent: "center",
     flex: 1,
   },
   noDataText: {
-    fontSize: 12, // Smaller font
-    color: "#666",
+    fontSize: 12,
     textAlign: "center",
   },
   sidebarHeader: {
     flexDirection: "row",
     alignItems: "center",
     borderBottomWidth: 1,
-    borderBottomColor: "rgba(40, 44, 63, 0.05)",
-    paddingHorizontal: 8, // Reduced from 12
-    paddingVertical: 12, // Reduced from 16
-    backgroundColor: "white",
-    minHeight: 48, // Reduced from 56
+    paddingHorizontal: 8,
+    paddingVertical: 12,
+    minHeight: 48,
   },
   backButton: {
     padding: 4,
@@ -154,82 +176,69 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   listContainer: {
-    paddingVertical: 8, // Reduced from 16
+    paddingVertical: 8,
     paddingHorizontal: 4,
   },
   listItem: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 12, // Reduced from 20
-    paddingVertical: 6, // Reduced from 8
-    paddingHorizontal: 4, // Reduced from 8
+    marginBottom: 12,
+    paddingVertical: 6,
+    paddingHorizontal: 4,
     position: "relative",
-    borderRadius: 6, // Slightly smaller
-    // Ensure items don't overflow
+    borderRadius: 6,
     width: "100%",
     maxWidth: "100%",
   },
   selectedListItem: {
-    backgroundColor: "rgba(255, 82, 0, 0.05)",
+    // backgroundColor: "rgba(255, 82, 0, 0.05)",
   },
   itemContent: {
     flex: 1,
     alignItems: "center",
-    gap: 6, // Reduced from 8
-    // Prevent overflow
+    gap: 6,
     minWidth: 0,
     maxWidth: "100%",
   },
   imageContainer: {
-    width: 48, // Reduced from 60
-    height: 48, // Reduced from 60
-    borderRadius: 6, // Adjusted proportionally
+    width: 48,
+    height: 48,
+    borderRadius: 6,
     borderWidth: 1,
-    borderColor: "rgba(2, 6, 12, 0.15)",
     overflow: "hidden",
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "#f8f9fa",
-    // Prevent the image from pushing sidebar width
-    flexShrink: 0,
   },
   selectedImageContainer: {
     borderColor: "#ff5200",
-    backgroundColor: "rgba(255, 82, 0, 0.1)",
   },
-  defaultImageContainer: {
-    backgroundColor: "#f8f9fa",
-  },
+  defaultImageContainer: {},
   itemImage: {
     width: "100%",
     height: "100%",
   },
   selectedImageScale: {
-    transform: [{ scale: 1.05 }], // Reduced from 1.1
+    transform: [{ scale: 1.05 }],
   },
   defaultImageScale: {
     transform: [{ scale: 1 }],
   },
   itemText: {
     textAlign: "center",
-    fontSize: 11, // Reduced from 12
-    lineHeight: 13, // Reduced from 14
+    fontSize: 11,
+    lineHeight: 13,
     fontWeight: "400",
     letterSpacing: -0.2,
-    // Ensure text doesn't push sidebar width
     width: "100%",
     maxWidth: "100%",
-    paddingHorizontal: 2, // Reduced from 4
+    paddingHorizontal: 2,
     flexShrink: 1,
   },
-  defaultItemText: {
-    color: "rgba(2, 6, 12, 0.6)",
-  },
+  defaultItemText: {},
   mainCategoryText: {
     fontWeight: "500",
   },
   selectedItemText: {
-    color: "#ff5200",
     fontWeight: "500",
   },
   highlightBar: {
@@ -239,7 +248,6 @@ const styles = StyleSheet.create({
     height: "60%",
     width: 3,
     borderRadius: 2,
-    backgroundColor: "#ff5200",
     transform: [{ translateY: -12 }],
   },
 });

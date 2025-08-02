@@ -1,20 +1,21 @@
 import { LinearGradient } from "expo-linear-gradient";
+import { router } from "expo-router";
 import { ChevronRight } from "lucide-react-native";
 import React, { useCallback } from "react";
 import {
   ActivityIndicator,
-  FlatList, // Use FlatList instead of ScrollView
+  FlatList,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
 } from "react-native";
 
-// Adjust paths based on your actual file structure
-import { Category } from "@/services/category/categoryApi.type"; // Assuming src/scripts/category/categoryApi.type
-import { useGetProductsInfiniteQuery } from "@/services/product/productApi"; // Assuming src/scripts/product/productApi
-import ProductItem from "./card/ProductItem"; // Assuming ProductItem is in a sibling 'card' directory
-import { router } from "expo-router";
+import { darkColors, lightColors } from "@/constants/ThemeColors";
+import { useTheme } from "@/hooks/useTheme";
+import { Category } from "@/services/category/categoryApi.type";
+import { useGetProductsInfiniteQuery } from "@/services/product/productApi";
+import ProductItem from "./card/ProductItem";
 
 interface TopCategoriesWithProductProps {
   category: Category;
@@ -23,6 +24,9 @@ interface TopCategoriesWithProductProps {
 const TopCategoriesWithProduct = ({
   category,
 }: TopCategoriesWithProductProps) => {
+  const { theme } = useTheme();
+  const colors = theme === "dark" ? darkColors : lightColors;
+
   const {
     data: productsInfiniteData = {
       pages: [
@@ -31,75 +35,87 @@ const TopCategoriesWithProduct = ({
         },
       ],
     },
-    isLoading, // Added isLoading for initial state
-    isError, // Added isError for error handling
+    isLoading,
+    isError,
     fetchNextPage,
-    hasNextPage, // Crucial for knowing if there are more pages
-    isFetchingNextPage, // For showing loading indicator during pagination
+    hasNextPage,
+    isFetchingNextPage,
   } = useGetProductsInfiniteQuery({
     category_id: category.id,
-    limit: 10, // Adjusted limit for better pagination demonstration
+    limit: 10,
   });
 
   const products = productsInfiniteData.pages.flatMap((page) => page.data);
 
-  // Callback to load more products when the end of the list is reached
   const loadMoreProducts = useCallback(() => {
-    // Only fetch next page if not already fetching and there is a next page
     if (!isFetchingNextPage && hasNextPage) {
       fetchNextPage();
     }
   }, [fetchNextPage, isFetchingNextPage, hasNextPage]);
 
-  // Render function for each product item
   const renderProductItem = useCallback(
     ({ item }: { item: any }) => <ProductItem product={item} key={item.id} />,
     []
   );
 
-  // Render function for the loading footer
   const renderListFooter = () => {
-    if (!isFetchingNextPage) return null; // Only show if actively fetching next page
+    if (!isFetchingNextPage) return null;
     return (
       <View style={styles.loadingFooter}>
-        <ActivityIndicator size="small" color="#f97316" />
-        <Text style={styles.loadingText}>Loading more...</Text>
+        <ActivityIndicator size="small" color={colors.accent} />
+        <Text style={[styles.loadingText, { color: colors.textSecondary }]}>
+          Loading more...
+        </Text>
       </View>
     );
   };
 
-  // Optional: Handle initial loading/error state if products are crucial for this component
   if (isLoading && products.length === 0) {
     return (
-      <View style={[styles.container, styles.centerContent]}>
-        <ActivityIndicator size="large" color="#f97316" />
-        <Text style={styles.loadingText}>Loading products...</Text>
+      <View
+        style={[
+          styles.container,
+          styles.centerContent,
+          { backgroundColor: colors.cardBackground },
+        ]}
+      >
+        <ActivityIndicator size="large" color={colors.accent} />
+        <Text style={[styles.loadingText, { color: colors.textSecondary }]}>
+          Loading products...
+        </Text>
       </View>
     );
   }
 
   if (isError) {
     return (
-      <View style={[styles.container, styles.centerContent]}>
-        <Text style={styles.errorText}>
+      <View
+        style={[
+          styles.container,
+          styles.centerContent,
+          { backgroundColor: colors.cardBackground },
+        ]}
+      >
+        <Text style={[styles.errorText, { color: colors.destructive }]}>
           Failed to load products for {category.name}.
         </Text>
       </View>
     );
   }
 
-  // If there are no products even after loading, you might want to show a message
-  if (products.length === 0 && !isLoading) {
+  if (products.length === 0 && !isLoading && !isFetchingNextPage) {
     return <View></View>;
   }
 
   return (
-    <View style={styles.container}>
+    <View
+      style={[styles.container, { backgroundColor: colors.cardBackground }]}
+    >
       <View style={styles.headingContainer}>
         <Text
-          style={styles.headingText}
-          numberOfLines={1} // Crucial: Restrict text to a single line
-          ellipsizeMode="tail" // Add "..." at the end if it truncates
+          style={[styles.headingText, { color: colors.text }]}
+          numberOfLines={1}
+          ellipsizeMode="tail"
         >
           {category.name.toUpperCase()}
         </Text>
@@ -118,21 +134,21 @@ const TopCategoriesWithProduct = ({
             });
           }}
         >
-          <Text style={styles.seeAllButtonText}>See All</Text>
-          <ChevronRight size={13} color="#f97316" strokeWidth={3} />
+          <Text style={[styles.seeAllButtonText, { color: colors.accent }]}>
+            See All
+          </Text>
+          <ChevronRight size={13} color={colors.accent} strokeWidth={3} />
         </TouchableOpacity>
       </View>
       <FlatList
-        horizontal // Enable horizontal scrolling
+        horizontal
         showsHorizontalScrollIndicator={false}
         data={products}
         renderItem={renderProductItem}
         keyExtractor={(item) => item.id}
-        // Pagination props
         onEndReached={loadMoreProducts}
-        onEndReachedThreshold={0.1} // Trigger when 10% from the end is reached
+        onEndReachedThreshold={0.1}
         ListFooterComponent={renderListFooter}
-        // Styles for the FlatList content
         contentContainerStyle={styles.productsFlatListContent}
       />
     </View>
@@ -143,9 +159,8 @@ export default TopCategoriesWithProduct;
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: "white",
     paddingTop: 16,
-    marginBottom: 10, // Added some bottom margin to separate categories sections
+    marginBottom: 10,
   },
 
   headingContainer: {
@@ -157,9 +172,8 @@ const styles = StyleSheet.create({
   headingText: {
     fontSize: 14,
     fontWeight: "500",
-    color: "black",
     letterSpacing: 1.5,
-    flexShrink: 1, // Allow this text to shrink if container space is limited
+    flexShrink: 1,
   },
   devider: {
     flex: 1,
@@ -172,40 +186,35 @@ const styles = StyleSheet.create({
   },
   seeAllButtonText: {
     fontSize: 13,
-    color: "#f97316",
-    // fontFamily: "outfit-semibold", // Uncomment if loaded
-    fontWeight: "600", // Fallback
+    fontWeight: "600",
   },
   productsFlatListContent: {
     marginTop: 12,
     paddingHorizontal: 16,
-    gap: 8, // Use gap for spacing between items, works in newer RN versions
-    paddingRight: 30, // Add some extra padding at the end of the horizontal list
+    gap: 8,
+    paddingRight: 30,
   },
   loadingFooter: {
     flexDirection: "row",
     alignItems: "center",
-    paddingHorizontal: 16, // Match main padding
+    paddingHorizontal: 16,
     paddingVertical: 10,
   },
   loadingText: {
     marginLeft: 8,
     fontSize: 14,
-    color: "#555",
   },
   centerContent: {
     justifyContent: "center",
     alignItems: "center",
-    minHeight: 150, // Give it some height for loading/error messages
+    minHeight: 150,
   },
   errorText: {
     fontSize: 14,
-    color: "red",
     textAlign: "center",
   },
   noProductsText: {
     fontSize: 14,
-    color: "#666",
     textAlign: "center",
   },
 });

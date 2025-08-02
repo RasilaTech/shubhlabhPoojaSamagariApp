@@ -13,16 +13,30 @@ import AddToCartCounter from "../button/AddToCartCounter";
 import SoldOutBadge from "../button/SoldButton";
 import TriggerProductVariantBottomSheet from "../button/TriggerProductVariantBottomSheet";
 
+import { darkColors, lightColors } from "@/constants/ThemeColors";
+import { useTheme } from "@/hooks/useTheme";
+
 interface ProductItemProps {
   product: Product;
 }
 
 const ProductItem = ({ product }: ProductItemProps) => {
+  const { theme } = useTheme();
+  const colors = theme === "dark" ? darkColors : lightColors;
+
   const defaultVariantIndex = Math.max(
     0,
     product.product_variants.findIndex((variant) => variant.default_variant)
   );
   const defaultProductVariant = product.product_variants[defaultVariantIndex];
+
+  if (!defaultProductVariant) {
+    console.warn(
+      `ProductItem: No default variant found for product ID ${product.id}`
+    );
+    return null;
+  }
+
   const discountPercentage = Math.round(
     ((defaultProductVariant.mrp - defaultProductVariant.price) /
       defaultProductVariant.mrp) *
@@ -43,9 +57,13 @@ const ProductItem = ({ product }: ProductItemProps) => {
   return (
     <TouchableOpacity
       onPress={handlePressProduct}
-      style={[styles.container, isOutOfStock && { opacity: 0.5 }]}
+      style={[
+        styles.container,
+        isOutOfStock && styles.outOfStockContainerOpacity,
+        { backgroundColor: colors.cardBackground, shadowColor: colors.text },
+      ]}
     >
-      <View style={styles.imageContainer}>
+      <View style={[styles.imageContainer, { borderColor: colors.border }]}>
         {discountPercentage > 0 && (
           <ImageBackground
             style={styles.imageOverlay}
@@ -63,22 +81,30 @@ const ProductItem = ({ product }: ProductItemProps) => {
         />
       </View>
       <View style={styles.detailsContainer}>
-        <Text style={styles.productName} numberOfLines={2}>
+        <Text
+          style={[styles.productName, { color: colors.text }]}
+          numberOfLines={2}
+        >
           {defaultProductVariant.name}
         </Text>
         <View>
-          <Text style={styles.productLabel} numberOfLines={1}>
+          <Text
+            style={[styles.productLabel, { color: colors.textSecondary }]}
+            numberOfLines={1}
+          >
             {defaultProductVariant.display_label}
           </Text>
           <View style={styles.priceContainer}>
-            <Text style={styles.productPrice}>
+            <Text style={[styles.productPrice, { color: colors.text }]}>
               {defaultProductVariant.price.toLocaleString("en-IN", {
                 style: "currency",
                 currency: "INR",
               })}
             </Text>
             {discountPercentage > 0 && (
-              <Text style={styles.productMrp}>
+              <Text
+                style={[styles.productMrp, { color: colors.textSecondary }]}
+              >
                 {defaultProductVariant.mrp.toLocaleString("en-IN", {
                   style: "currency",
                   currency: "INR",
@@ -106,17 +132,22 @@ export default ProductItem;
 const styles = StyleSheet.create({
   container: {
     padding: 6,
-    backgroundColor: "white",
-    boxShadow: "rgba(0, 0, 0, 0.24) 0px 3px 8px",
     marginBottom: 12,
     borderRadius: 12,
-    position: "relative", // Added to enable absolute positioning of child
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.24,
+    shadowRadius: 8,
+    elevation: 8,
+    position: "relative",
+  },
+  outOfStockContainerOpacity: {
+    opacity: 0.5,
   },
   imageContainer: {
     position: "relative",
-    borderColor: "#f2f3f3",
     borderWidth: 1,
     borderRadius: 12,
+    overflow: "hidden",
   },
   imageOverlay: {
     position: "absolute",
@@ -129,12 +160,12 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   counterOverride: {
-    position: "absolute", // Position absolutely
-    bottom: 6, // Align to bottom with padding
-    left: 6, // Align to left with padding
-    right: 6, // Align to right with padding
-    width: 120, // Force the counter to respect this width
-    height: 32, // Fixed height to match counter design
+    position: "absolute",
+    bottom: 6,
+    left: 6,
+    right: 6,
+    width: 120,
+    height: 32,
   },
   imageOverlay_image: {
     width: 30,
@@ -158,10 +189,9 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
     paddingHorizontal: 6,
     maxWidth: 110,
-    marginBottom: 38, // Add margin to account for absolute positioned counter
+    marginBottom: 38,
   },
   productName: {
-    wordWrap: "break-word",
     fontSize: 14,
     lineHeight: 16,
     letterSpacing: -0.35,
@@ -172,7 +202,6 @@ const styles = StyleSheet.create({
     lineHeight: 16,
     letterSpacing: -0.3,
     fontFamily: "outfit-regular",
-    color: "#02060c99",
   },
   priceContainer: {
     marginTop: 4,
@@ -186,16 +215,12 @@ const styles = StyleSheet.create({
     lineHeight: 16,
     letterSpacing: -0.35,
     fontFamily: "outfit-semibold",
-    color: "#02060cbf",
   },
   productMrp: {
     fontSize: 12,
     lineHeight: 14,
     letterSpacing: -0.3,
     fontFamily: "outfit-extra-light",
-    color: "#02060c99",
     textDecorationLine: "line-through",
-    textDecorationColor: "#02060c99",
-    textDecorationStyle: "solid",
   },
 });

@@ -696,10 +696,12 @@ const styles = StyleSheet.create({
   nameInputsContainer: {
     flexDirection: "row",
     gap: 16,
+    marginTop: 10,
     marginBottom: 16,
   },
   nameInputWrapper: {
     flex: 1,
+    gap: 4,
   },
   genderOptionsContainer: {
     flexDirection: "row",

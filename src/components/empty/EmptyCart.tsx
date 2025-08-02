@@ -1,27 +1,44 @@
-// src/components/common/EmptyCart.tsx
-import { router } from "expo-router"; // For navigation
-import { ChevronLeft } from "lucide-react-native"; // Lucide icon
+import { router } from "expo-router";
+import { ChevronLeft } from "lucide-react-native";
 import React from "react";
 import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
-const emptyCartImage = require("../../../assets/images/emptyCart.png"); // Adjust path and extension
+import { darkColors, lightColors } from "@/constants/ThemeColors";
+import { useTheme } from "@/hooks/useTheme";
+
+const emptyCartImage = require("../../../assets/images/emptyCart.png");
 
 const EmptyCart: React.FC = () => {
+  const { theme } = useTheme();
+  const colors = theme === "dark" ? darkColors : lightColors;
+
   const handleGoBack = () => {
     router.back();
   };
 
   const handleBrowseProducts = () => {
-    router.push("/"); 
+    router.push("/");
   };
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
+      <View
+        style={[
+          styles.header,
+          {
+            backgroundColor: colors.cardBackground,
+            borderBottomColor: colors.border,
+          },
+        ]}
+      >
         <TouchableOpacity onPress={handleGoBack} style={styles.backButton}>
-          <ChevronLeft size={24} color="#02060cbf" />
+          <ChevronLeft size={24} color={colors.text} />
         </TouchableOpacity>
-        <Text numberOfLines={1} ellipsizeMode="tail" style={styles.headerTitle}>
+        <Text
+          numberOfLines={1}
+          ellipsizeMode="tail"
+          style={[styles.headerTitle, { color: colors.text }]}
+        >
           Your Cart
         </Text>
       </View>
@@ -33,15 +50,27 @@ const EmptyCart: React.FC = () => {
           style={styles.emptyCartImage}
           resizeMode="contain"
         />
-        <Text style={styles.emptyCartTitle}>Your cart is getting lonely</Text>
-        <Text style={styles.emptyCartMessage}>
+        <Text style={[styles.emptyCartTitle, { color: colors.text }]}>
+          Your cart is getting lonely
+        </Text>
+        <Text
+          style={[styles.emptyCartMessage, { color: colors.textSecondary }]}
+        >
           Fill it up with all things good!
         </Text>
         <TouchableOpacity
           onPress={handleBrowseProducts}
-          style={styles.browseButton}
+          style={[
+            styles.browseButton,
+            {
+              backgroundColor: colors.cardBackground,
+              borderColor: colors.border,
+            },
+          ]}
         >
-          <Text style={styles.browseButtonText}>Browse Products</Text>
+          <Text style={[styles.browseButtonText, { color: colors.text }]}>
+            Browse Products
+          </Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -51,17 +80,12 @@ const EmptyCart: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#f0f0f5", // Ensure a background
   },
   header: {
     flexDirection: "row",
     alignItems: "center",
-    paddingVertical: 12, // py-3
-    paddingHorizontal: 8, // px-2
-    backgroundColor: "white", // bg-white
-    borderBottomWidth: 1, // border-b
-    borderBottomColor: "#e0e0e0", // border-e-black (approx, assuming a light border)
-    // sticky top-0 z-10 - handled by being outside ScrollView and its container
+    paddingVertical: 12,
+    paddingHorizontal: 8,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
@@ -69,48 +93,40 @@ const styles = StyleSheet.create({
     elevation: 4,
   },
   backButton: {
-    paddingRight: 8, // gap-2
+    paddingRight: 8,
   },
   headerTitle: {
-    flex: 1, // line-clamp-1 (text will truncate if flex-1 and numberOfLines)
-    fontSize: 18, // text-lg
-    lineHeight: 21, // leading-[21px]
-    fontWeight: "600", // font-semibold
-    letterSpacing: -0.4, // -tracking-[0.4px]
-    color: "rgba(2, 6, 12, 0.75)", // text-[#02060cbf]
+    flex: 1,
+    fontSize: 18,
+    lineHeight: 21,
+    fontWeight: "600",
+    letterSpacing: -0.4,
   },
   content: {
-    flex: 1, // flex-1
-    flexDirection: "column", // flex-col
-    alignItems: "center", // items-center
-    justifyContent: "center", // justify-center
-    paddingHorizontal: 16, // px-4
-    textAlign: "center", // text-center - not directly applicable to View, applies to Text
+    flex: 1,
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: 16,
   },
   emptyCartImage: {
-    marginBottom: 24, // mb-6
-    width: 128, // w-32
-    height: 128, // Add height to aspect-ratio if original image has intrinsic ratio
-    // md:w-48 - if you need responsive images, use Dimensions API
+    marginBottom: 24,
+    width: 128,
+    height: 128,
     resizeMode: "contain",
   },
   emptyCartTitle: {
-    marginBottom: 4, // mb-1
-    fontSize: 18, // text-lg
-    fontWeight: "600", // font-semibold
-    color: "#212121", // text-gray-800
+    marginBottom: 4,
+    fontSize: 18,
+    fontWeight: "600",
   },
   emptyCartMessage: {
-    marginBottom: 24, // mb-6
-    fontSize: 14, // text-sm
-    color: "#4b5563", // text-gray-600
+    marginBottom: 24,
+    fontSize: 14,
   },
   browseButton: {
-    // Button variant="outline" - custom styling
-    backgroundColor: "white",
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: "#ccc",
     paddingHorizontal: 20,
     paddingVertical: 10,
     shadowColor: "#000",
@@ -122,8 +138,6 @@ const styles = StyleSheet.create({
   browseButtonText: {
     fontSize: 16,
     fontWeight: "500",
-    color: "#333",
   },
 });
-
 export default EmptyCart;

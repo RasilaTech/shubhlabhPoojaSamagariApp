@@ -1,3 +1,4 @@
+import { router } from "expo-router";
 import React, { useCallback } from "react";
 import {
   ActivityIndicator,
@@ -8,8 +9,9 @@ import {
   View,
 } from "react-native";
 
+import { darkColors, lightColors } from "@/constants/ThemeColors";
+import { useTheme } from "@/hooks/useTheme";
 import type { Product } from "@/services/product/productApi.type";
-import { router } from "expo-router";
 import ProductItem2 from "./card/ProductItem2";
 import EmptyScreen from "./empty/EmptyScreen";
 import OrderDetailSkeleton from "./skeletons/OrderSkeleton";
@@ -25,11 +27,10 @@ export interface ProductSectionProps {
 const NoProductFoundIcon = require("../../assets/images/no-products.png");
 
 const screenWidth = Dimensions.get("window").width;
-const AVAILABLE_PRODUCT_WIDTH = screenWidth * 0.8 - 8; // 80% minus padding
-const ITEM_GAP = 8; // 2 * 4 = 8px total gap (4px on each side)
-const HORIZONTAL_PADDING = 12;
-const ITEM_WIDTH =
-  (AVAILABLE_PRODUCT_WIDTH - HORIZONTAL_PADDING * 2 - ITEM_GAP) / 2;
+const HORIZONTAL_PADDING = 16;
+const ITEM_GAP = 8;
+const AVAILABLE_PRODUCT_WIDTH = screenWidth * 0.8 - HORIZONTAL_PADDING * 2;
+const ITEM_WIDTH = (AVAILABLE_PRODUCT_WIDTH - ITEM_GAP) / 2;
 
 export const ProductSection = ({
   productData,
@@ -38,17 +39,12 @@ export const ProductSection = ({
   isFetching,
   isLoadingMore = false,
 }: ProductSectionProps) => {
+  const { theme } = useTheme();
+  const colors = theme === "dark" ? darkColors : lightColors;
+
   const renderProductItem = useCallback(
-    ({ item, index }: { item: Product; index: number }) => (
-      <View
-        style={[
-          styles.productItemWrapper,
-          {
-            marginRight: index % 2 === 0 ? ITEM_GAP / 2 : 0,
-            marginLeft: index % 2 === 1 ? ITEM_GAP / 2 : 0,
-          },
-        ]}
-      >
+    ({ item }: { item: Product }) => (
+      <View style={styles.productItemWrapper}>
         <ProductItem2 product={item} />
       </View>
     ),
@@ -59,13 +55,14 @@ export const ProductSection = ({
     if (!isLoadingMore) return null;
     return (
       <View style={styles.loadingFooter}>
-        <ActivityIndicator size="small" color="#ff5200" />
-        <Text style={styles.loadingText}>Loading more products...</Text>
+        <ActivityIndicator size="small" color={colors.accent} />
+        <Text style={[styles.loadingText, { color: colors.textSecondary }]}>
+          Loading more products...
+        </Text>
       </View>
     );
   };
 
-  // Condition for initial loading
   if (isFetching && !isLoadingMore && productData.length === 0) {
     return (
       <View style={styles.container}>
@@ -74,10 +71,11 @@ export const ProductSection = ({
     );
   }
 
-  // Condition for no products found
   if (productData.length === 0) {
     return (
-      <View style={styles.container}>
+      <View
+        style={[styles.container, { backgroundColor: colors.cardBackground }]}
+      >
         <EmptyScreen
           imageSrc={NoProductFoundIcon}
           title={"No Products Found"}
@@ -94,16 +92,32 @@ export const ProductSection = ({
 
   return (
     <View style={styles.container}>
-      {/* Product count header */}
-      <View style={styles.productCountHeader}>
-        <Text style={styles.productCountText}>
-          <Text style={styles.productCountBold}>{totalProuducts}{"items "} </Text>
+      <View
+        style={[
+          styles.productCountHeader,
+          {
+            backgroundColor: colors.cardBackground,
+            borderColor: colors.border,
+            shadowColor: colors.textSecondary,
+          },
+        ]}
+      >
+        <Text
+          style={[styles.productCountText, { color: colors.textSecondary }]}
+        >
+          <Text style={[styles.productCountBold, { color: colors.text }]}>
+            {totalProuducts} items{" "}
+          </Text>
           found
         </Text>
       </View>
 
-      {/* Product Grid */}
-      <View style={styles.productListContainer}>
+      <View
+        style={[
+          styles.productListContainer,
+          { backgroundColor: colors.background },
+        ]}
+      >
         <FlatList
           data={productData}
           renderItem={renderProductItem}
@@ -124,15 +138,11 @@ export const ProductSection = ({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "white",
   },
   productCountHeader: {
-    backgroundColor: "#fff",
     paddingHorizontal: 16,
     paddingVertical: 16,
     borderBottomWidth: 1,
-    borderColor: "rgba(40, 44, 63, 0.08)",
-    shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.05,
     shadowRadius: 3,
@@ -142,15 +152,12 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: "400",
     letterSpacing: -0.35,
-    color: "rgba(2, 6, 12, 0.75)",
   },
   productCountBold: {
     fontWeight: "600",
-    color: "rgba(2, 6, 12, 0.9)",
   },
   productListContainer: {
     flex: 1,
-    backgroundColor: "#f8f9fa",
   },
   flatList: {
     flex: 1,
@@ -158,11 +165,11 @@ const styles = StyleSheet.create({
   flatListContent: {
     paddingVertical: 12,
     paddingHorizontal: HORIZONTAL_PADDING,
-    gap: 8, // Vertical gap between rows
+    gap: 8,
   },
   productItemWrapper: {
     width: ITEM_WIDTH,
-    marginBottom: 8, // Consistent bottom margin for each item
+    marginBottom: 8,
   },
   loadingFooter: {
     flexDirection: "row",
@@ -173,7 +180,6 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     fontSize: 14,
-    color: "#666",
     fontWeight: "400",
   },
 });

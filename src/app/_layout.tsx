@@ -71,7 +71,7 @@ function AppWrapper() {
     <NavThemeProvider value={navigationTheme}>
       <Stack>
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="products" options={{ headerShown: false }} />
+        <Stack.Screen name="product" options={{ headerShown: false }} />
         <Stack.Screen name="address" options={{ headerShown: false }} />
         <Stack.Screen name="+not-found" />
       </Stack>

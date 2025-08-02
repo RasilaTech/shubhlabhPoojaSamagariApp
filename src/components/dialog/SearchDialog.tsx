@@ -1,13 +1,17 @@
-import { Product } from "@/services/product/productApi.type";
 import React from "react";
 import { FlatList, StyleSheet, Text, View } from "react-native";
 import Animated, { FadeInUp, FadeOutUp } from "react-native-reanimated";
+
+import { darkColors, lightColors } from "@/constants/ThemeColors";
+import { useTheme } from "@/hooks/useTheme";
+
+import type { Product } from "@/services/product/productApi.type";
 import ProductCardInSearchBox from "../card/ProductCardInSearchBox";
 
 interface SearchDialogProps {
   products: Product[];
   query: string;
-  onProductSelect?: () => void;
+  onProductSelect: () => void;
 }
 
 const SearchDialog = ({
@@ -15,11 +19,17 @@ const SearchDialog = ({
   query,
   onProductSelect,
 }: SearchDialogProps) => {
+  const { theme } = useTheme();
+  const colors = theme === "dark" ? darkColors : lightColors;
+
   return (
     <Animated.View
       entering={FadeInUp.duration(300)}
       exiting={FadeOutUp.duration(300)}
-      style={styles.container}
+      style={[
+        styles.container,
+        { backgroundColor: colors.cardBackground, shadowColor: colors.text },
+      ]}
     >
       {products.length > 0 ? (
         <FlatList
@@ -33,7 +43,7 @@ const SearchDialog = ({
         />
       ) : (
         <View style={styles.noResultContainer}>
-          <Text style={styles.noResultText}>
+          <Text style={[styles.noResultText, { color: colors.text }]}>
             No result found for &quot;{query}&quot;
           </Text>
         </View>
@@ -50,10 +60,8 @@ const styles = StyleSheet.create({
     top: 55,
     left: 16,
     right: 16,
-    backgroundColor: "#F8F8F8",
     borderRadius: 12,
     maxHeight: 350,
-    shadowColor: "#000",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.1,
     shadowRadius: 10,
@@ -63,16 +71,16 @@ const styles = StyleSheet.create({
     padding: 8,
   },
   card: {
+    // This style is not used in the component, but kept for reference
     paddingVertical: 12,
     paddingHorizontal: 8,
     borderBottomWidth: 1,
-    borderBottomColor: "#EEE",
   },
   noResultContainer: {
     padding: 16,
     alignItems: "center",
   },
   noResultText: {
-    color: "#6B7280",
+    fontSize: 14,
   },
 });

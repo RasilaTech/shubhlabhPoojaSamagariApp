@@ -1,5 +1,10 @@
-import OrderCard from "@/components/card/OrderCard"; // Make sure this path is correct and points to the React Native OrderCard
-import { useGetOrdersInfiniteQuery } from "@/services/orders/orderApi"; // Make sure this path is correct
+import OrderCard from "@/components/card/OrderCard";
+import OrderErrorScreen from "@/components/error/OrderErrorScree";
+import { darkColors, lightColors } from "@/constants/ThemeColors";
+import { useTheme } from "@/hooks/useTheme";
+import { useGetOrdersInfiniteQuery } from "@/services/orders/orderApi";
+import type { OrderDetail } from "@/services/orders/orderApi.type";
+import { useAppSelector } from "@/store/hook";
 import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
 import React, { useCallback } from "react";
 import {
@@ -10,11 +15,6 @@ import {
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-
-// Import types for clarity, adjust path if needed based on your project structure
-import OrderErrorScreen from "@/components/error/OrderErrorScree";
-import type { OrderDetail } from "@/services/orders/orderApi.type";
-import { useAppSelector } from "@/store/hook";
 
 const Orders = () => {
   const { isAuthenticated } = useAppSelector((state) => state.auth);
@@ -30,26 +30,26 @@ const Orders = () => {
     isLoading,
     isError,
     fetchNextPage,
-    hasNextPage, // Added to check if there are more pages to fetch
+    hasNextPage,
     isFetchingNextPage,
-    isFetching, // Indicates any fetching, including initial load
-  } = useGetOrdersInfiniteQuery({ limit: 30 }); // Adjusted limit for better pagination testing
+    isFetching,
+  } = useGetOrdersInfiniteQuery({ limit: 30 });
 
   const insets = useSafeAreaInsets();
   const tabBarHeight = useBottomTabBarHeight();
+  const { theme } = useTheme();
+  const colors = theme === "dark" ? darkColors : lightColors;
 
   const allOrders: OrderDetail[] = infiniteOrdersData.pages.flatMap(
     (page) => page.data
   );
 
-  // Function to load more data when the end of the list is reached
   const loadMoreOrders = useCallback(() => {
     if (!isFetchingNextPage && hasNextPage) {
       fetchNextPage();
     }
   }, [fetchNextPage, isFetchingNextPage, hasNextPage]);
 
-  // Render item for FlatList
   const renderOrderItem = useCallback(
     ({ item }: { item: OrderDetail }) => <OrderCard order={item} />,
     []
@@ -59,37 +59,64 @@ const Orders = () => {
     if (!isFetchingNextPage) return null;
     return (
       <View style={styles.loadingFooter}>
-        <ActivityIndicator size="small" color="#0000ff" />
-        <Text style={styles.loadingText}>Loading more orders...</Text>
+        <ActivityIndicator size="small" color={colors.accent} />
+        <Text style={[styles.loadingText, { color: colors.textSecondary }]}>
+          Loading more orders...
+        </Text>
       </View>
     );
   };
 
   if (isLoading && allOrders.length === 0) {
     return (
-      <View style={[styles.container, styles.centerContent]}>
-        <ActivityIndicator size="large" color="#0000ff" />
-        <Text style={styles.loadingText}>Loading your orders...</Text>
+      <View
+        style={[
+          styles.container,
+          styles.centerContent,
+          { backgroundColor: colors.background },
+        ]}
+      >
+        <ActivityIndicator size="large" color={colors.accent} />
+        <Text style={[styles.loadingText, { color: colors.textSecondary }]}>
+          Loading your orders...
+        </Text>
       </View>
     );
   }
 
   if (!isAuthenticated) {
     return (
-      <View style={[styles.container, styles.centerContent]}>
-        <Text style={styles.noOrdersText}>Please Login to View orders</Text>
+      <View
+        style={[
+          styles.container,
+          styles.centerContent,
+          { backgroundColor: colors.background },
+        ]}
+      >
+        <Text style={[styles.noOrdersText, { color: colors.textSecondary }]}>
+          Please Login to View orders
+        </Text>
       </View>
     );
   }
 
   if (isError) {
+    // You should probably pass the theme to your error screen as well
     return <OrderErrorScreen />;
   }
 
   if (allOrders.length === 0) {
     return (
-      <View style={[styles.container, styles.centerContent]}>
-        <Text style={styles.noOrdersText}>You dont have any orders yet.</Text>
+      <View
+        style={[
+          styles.container,
+          styles.centerContent,
+          { backgroundColor: colors.background },
+        ]}
+      >
+        <Text style={[styles.noOrdersText, { color: colors.textSecondary }]}>
+          You dont have any orders yet.
+        </Text>
       </View>
     );
   }
@@ -98,19 +125,32 @@ const Orders = () => {
     <View
       style={[
         styles.container,
-        { paddingTop: insets.top, paddingBottom: tabBarHeight },
+        {
+          paddingTop: insets.top,
+          paddingBottom: tabBarHeight,
+          backgroundColor: colors.background,
+        },
       ]}
     >
-      <Text style={styles.headingText}>My Orders</Text>
+      <View
+        style={[
+          styles.header,
+          { backgroundColor: colors.cardBackground, shadowColor: colors.text },
+        ]}
+      >
+        <Text style={[styles.headingText, { color: colors.text }]}>
+          My Orders
+        </Text>
+      </View>
       <FlatList
         data={allOrders}
         renderItem={renderOrderItem}
         keyExtractor={(item) => item.id}
-        onEndReached={loadMoreOrders} // Trigger when the end of the list is reached
-        onEndReachedThreshold={0.5} // When to trigger onEndReached (0.5 means when 50% of the list is visible)
-        ListFooterComponent={renderFooter} // Component to show at the bottom (e.g., loading indicator)
+        onEndReached={loadMoreOrders}
+        onEndReachedThreshold={0.5}
+        ListFooterComponent={renderFooter}
         contentContainerStyle={styles.flatListContent}
-        showsVerticalScrollIndicator={false} // Hide scroll indicator if desired
+        showsVerticalScrollIndicator={false}
       />
     </View>
   );
@@ -121,19 +161,23 @@ export default Orders;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "white",
+  },
+  header: {
+    paddingHorizontal: 20,
+    marginTop: 20,
+    marginBottom: 20,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 4,
   },
   headingText: {
     fontSize: 26,
     fontWeight: "bold",
-    color: "#1a202c", // Darker text for heading
-    paddingHorizontal: 20,
-    marginTop: 20,
-    marginBottom: 20,
   },
   flatListContent: {
     paddingHorizontal: 15,
-    paddingBottom: 20, // Add some padding at the bottom of the list
+    paddingBottom: 20,
   },
   loadingFooter: {
     flexDirection: "row",
@@ -144,20 +188,18 @@ const styles = StyleSheet.create({
   loadingText: {
     marginLeft: 10,
     fontSize: 16,
-    color: "#555",
   },
   centerContent: {
+    flex: 1,
     justifyContent: "center",
     alignItems: "center",
   },
   errorText: {
     fontSize: 16,
-    color: "red",
     textAlign: "center",
   },
   noOrdersText: {
     fontSize: 16,
-    color: "#555",
     textAlign: "center",
   },
 });

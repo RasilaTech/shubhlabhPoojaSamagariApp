@@ -1,27 +1,26 @@
 import { useLocalSearchParams } from "expo-router";
 import React, { useState } from "react";
-import { Dimensions, StyleSheet, View } from "react-native";
+import { StyleSheet, View } from "react-native";
 
 import OrderErrorScreen from "@/components/error/OrderErrorScree";
 import NavBar from "@/components/nav/NavBar";
 import { ProductSection } from "@/components/ProductSection";
-import OrderDetailSkeleton from "@/components/skeletons/OrderSkeleton";
+import { HomeSkeleteon } from "@/components/skeletons/HomeSkeleton";
 import { SubCategorySideBar } from "@/components/SubCategorySideBar";
+import { darkColors, lightColors } from "@/constants/ThemeColors";
+import { useTheme } from "@/hooks/useTheme";
 import { useGetCategoryByIdQuery } from "@/services/category/categoryApi";
 import { useGetProductsInfiniteQuery } from "@/services/product/productApi";
 import { useGetSubCategoriesInfiniteQuery } from "@/services/sub-category/subCategoryApi";
 import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { HomeSkeleteon } from "@/components/skeletons/HomeSkeleton";
-
-const { width, height } = Dimensions.get("window");
-const SIDEBAR_WIDTH = width * 0.2; // About 28% of screen width
-const PRODUCT_SECTION_WIDTH = width * 0.8; // About 72% of screen width
 
 export default function SubCategoriesWithProductScreen() {
   const { id: initialCategoryId = "" } = useLocalSearchParams<{ id: string }>();
   const [selectedCategoryId, setSelectedCategoryId] =
     useState<string>(initialCategoryId);
+  const { theme } = useTheme();
+  const colors = theme === "dark" ? darkColors : lightColors;
 
   // API Queries
   const {
@@ -103,13 +102,16 @@ export default function SubCategoriesWithProductScreen() {
         {
           paddingTop: insets.top,
           paddingBottom: tabBarHeight,
+          backgroundColor: colors.background, // Apply background color from theme
         },
       ]}
     >
       <NavBar />
 
       <View style={styles.contentLayout}>
-        <View style={styles.sidebar}>
+        <View
+          style={[styles.sidebar, { backgroundColor: colors.cardBackground }]}
+        >
           <SubCategorySideBar
             selectedCategoryId={selectedCategoryId}
             categoryData={categoryData.data}

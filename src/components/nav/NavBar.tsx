@@ -1,3 +1,5 @@
+import { darkColors, lightColors } from "@/constants/ThemeColors";
+import { useTheme } from "@/hooks/useTheme";
 import { useGetProductsInfiniteQuery } from "@/services/product/productApi";
 import { useAppSelector } from "@/store/hook";
 import { router } from "expo-router";
@@ -21,7 +23,8 @@ const NavBar = () => {
   const [query, setQuery] = useState("");
   const blurTimeoutRef = useRef<number | null>(null);
   const { isAuthenticated } = useAppSelector((state) => state.auth);
-
+  const { theme } = useTheme();
+  const colors = theme === "dark" ? darkColors : lightColors;
   const {
     data: productsData = {
       pages: [
@@ -70,7 +73,15 @@ const NavBar = () => {
 
   return (
     <View style={styles.outerContainer}>
-      <View style={styles.container}>
+      <View
+        style={[
+          styles.container,
+          {
+            backgroundColor: colors.cardBackground,
+            borderBottomColor: colors.border,
+          },
+        ]}
+      >
         <TouchableOpacity onPress={handleLogoPress}>
           <Image
             source={require("../../../assets/images/navbar-logo.png")}
@@ -79,17 +90,35 @@ const NavBar = () => {
         </TouchableOpacity>
 
         <View style={styles.searchContainer}>
-          <View style={styles.inputContainer}>
-            <Search size={18} strokeWidth={2.5} />
+          <View
+            style={[
+              styles.inputContainer,
+              {
+                backgroundColor: colors.background,
+                borderColor: colors.border,
+              },
+            ]}
+          >
+            <Search size={18} strokeWidth={2.5} color={colors.textSecondary} />
             {!isFocused && !query && (
               <View style={styles.placeholderContainer}>
-                <Text style={styles.placeholderText}>Search </Text>
+                <Text
+                  style={[
+                    styles.placeholderText,
+                    { color: colors.text },
+                  ]}
+                >
+                  Search{" "}
+                </Text>
                 <RotatingText
                   texts={['"Coconut"', '"Oil"', '"Agarbatti"', '"Diyas"']}
                   staggerFrom={"last"}
                   staggerDuration={0.025}
                   rotationInterval={2000}
-                  textStyle={styles.rotatingTextStyle}
+                  textStyle={[
+                    styles.rotatingTextStyle,
+                    { color: colors.text },
+                  ]}
                   initial={{ translateY: "100%" }}
                   animate={{ translateY: 0 }}
                   exit={{ translateY: "-120%" }}
@@ -98,7 +127,7 @@ const NavBar = () => {
               </View>
             )}
             <TextInput
-              style={styles.input}
+              style={[styles.input, { color: colors.text, fontWeight: "300" }]}
               onChangeText={setQuery}
               onFocus={handleFocus}
               onBlur={handleBlur}

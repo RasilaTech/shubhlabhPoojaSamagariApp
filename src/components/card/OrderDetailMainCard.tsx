@@ -1,20 +1,32 @@
-// src/components/card/OrderDetailMainCard.tsx
-import { BadgeCheck, BadgeX, Download, LifeBuoy } from "lucide-react-native"; // Assuming lucide-react-native
-import React, { useState } from "react";
-import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
-// Adjust paths for RTK Query hook and types
 import { useDownloadInvoiceMutation } from "@/services/orders/orderApi";
+import { BadgeCheck, BadgeX, Download, LifeBuoy } from "lucide-react-native";
+import React, { useState } from "react";
+import {
+  Alert,
+  Image,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
-// Import your custom dialog components
 import { OrderDetailMainCardProps } from "@/services/orders/orderApi.type";
 import CancelOrderDialog from "../dialog/CancelOrderDialog";
 import NeedHelpInfoDialog from "../dialog/NeedHelpInfoDialog";
 
-const OrderDetailMainCard = ({ orderDetails }: OrderDetailMainCardProps) => {
+import { darkColors, lightColors } from "@/constants/ThemeColors";
+import { useTheme } from "@/hooks/useTheme";
+
+export const OrderDetailMainCard = ({
+  orderDetails,
+}: OrderDetailMainCardProps) => {
   const firstItemName = orderDetails.order_items[0].product_variant.name;
   const noOfItems = orderDetails.order_items.length;
-  const [cancelDialogVisible, setCancelDialogVisible] = useState(false); // State for custom dialog visibility
+  const [cancelDialogVisible, setCancelDialogVisible] = useState(false);
   const [needHelpDialogVisible, setNeedHelpDialogVisible] = useState(false);
+
+  const { theme } = useTheme();
+  const colors = theme === "dark" ? darkColors : lightColors;
 
   const statusTextMap: { [key: string]: string } = {
     pending: "Order Placed",
@@ -31,26 +43,27 @@ const OrderDetailMainCard = ({ orderDetails }: OrderDetailMainCardProps) => {
   };
 
   const getStatusStyles = (status: string) => {
+    // FIX: Get colors from the theme
     switch (status) {
       case "pending":
       case "accepted":
-        return { color: "#fbbf24", backgroundColor: "#fffbeb" }; // amber-600, amber-100
+        return { color: colors.accent, backgroundColor: "#fffbeb" };
       case "processing":
-        return { color: "#2563eb", backgroundColor: "#eff6ff" }; // blue-600, blue-100
+        return { color: "#2563eb", backgroundColor: "#eff6ff" };
       case "packed":
-        return { color: "#4f46e5", backgroundColor: "#eef2ff" }; // indigo-600, indigo-100
+        return { color: "#4f46e5", backgroundColor: "#eef2ff" };
       case "shipped":
-        return { color: "#9333ea", backgroundColor: "#f3e8ff" }; // purple-600, purple-100
+        return { color: "#9333ea", backgroundColor: "#f3e8ff" };
       case "out_for_delivery":
-        return { color: "#0ea5e9", backgroundColor: "#f0f9ff" }; // sky-600, sky-100
+        return { color: "#0ea5e9", backgroundColor: "#f0f9ff" };
       case "delivered":
-        return { color: "#15803d", backgroundColor: "#f0fdf4" }; // green-700, green-100
+        return { color: colors.success, backgroundColor: "#f0fdf4" };
       case "cancelled":
       case "rejected":
-        return { color: "#b91c1c", backgroundColor: "#fef2f2" }; // red-700, red-100
+        return { color: colors.destructive, backgroundColor: "#fef2f2" };
       case "returned":
       case "refunded":
-        return { color: "#475569", backgroundColor: "#f8fafc" }; // slate-600, slate-100
+        return { color: colors.textSecondary, backgroundColor: "#f8fafc" };
       default:
         return {};
     }
@@ -64,23 +77,18 @@ const OrderDetailMainCard = ({ orderDetails }: OrderDetailMainCardProps) => {
 
   const handleDownloadInvoice = async () => {
     try {
-      const result = await downloadInvoice(orderDetails.id).unwrap();
-      // Success is now handled in the transformResponse,
-      // but you can check result.success if needed
-      if (result.success) {
-        console.log("Invoice download completed successfully");
-      }
+      await downloadInvoice(orderDetails.id).unwrap();
+      Alert.alert("Success", "Invoice download initiated.");
     } catch (error) {
       console.error("Failed to download invoice:", error);
-      // Error handling is done in transformResponse,
-      // but you can add additional handling here if needed
+      Alert.alert("Error", "Failed to download invoice.");
     }
   };
 
   return (
-    <View style={styles.card}>
-      <View style={styles.header}>
-        <Text style={styles.orderIdText}>
+    <View style={[styles.card, { backgroundColor: colors.cardBackground }]}>
+      <View style={[styles.header, { borderBottomColor: colors.border }]}>
+        <Text style={[styles.orderIdText, { color: colors.textSecondary }]}>
           Order ID: {orderDetails.order_number + 1000}
         </Text>
         <View
@@ -94,7 +102,15 @@ const OrderDetailMainCard = ({ orderDetails }: OrderDetailMainCardProps) => {
         </View>
       </View>
 
-      <View style={styles.summarySection}>
+      <View
+        style={[
+          styles.summarySection,
+          {
+            borderBottomColor: colors.border,
+            backgroundColor: colors.cardBackground,
+          },
+        ]}
+      >
         <View style={styles.productImagesAndInfo}>
           <View style={styles.productImageStack}>
             {orderDetails.order_items.slice(0, 3).map((item, index) => (
@@ -102,13 +118,31 @@ const OrderDetailMainCard = ({ orderDetails }: OrderDetailMainCardProps) => {
                 key={index}
                 source={{ uri: item.product_variant.images[0] }}
                 alt={item.product_variant.name}
-                style={[styles.productImage, { zIndex: 3 - index }]}
+                style={[
+                  styles.productImage,
+                  { zIndex: 3 - index, borderColor: colors.cardBackground },
+                ]}
                 resizeMode="cover"
               />
             ))}
             {noOfItems > 3 && (
-              <View style={styles.moreItemsBadge}>
-                <Text style={styles.moreItemsText}>+{noOfItems - 3}</Text>
+              <View
+                style={[
+                  styles.moreItemsBadge,
+                  {
+                    backgroundColor: colors.background,
+                    borderColor: colors.cardBackground,
+                  },
+                ]}
+              >
+                <Text
+                  style={[
+                    styles.moreItemsText,
+                    { color: colors.textSecondary },
+                  ]}
+                >
+                  +{noOfItems - 3}
+                </Text>
               </View>
             )}
           </View>
@@ -116,35 +150,41 @@ const OrderDetailMainCard = ({ orderDetails }: OrderDetailMainCardProps) => {
             <Text
               numberOfLines={1}
               ellipsizeMode="tail"
-              style={styles.firstItemName}
+              style={[styles.firstItemName, { color: colors.text }]}
             >
               {firstItemName}
             </Text>
-            <Text style={styles.numberOfItems}>
+            <Text
+              style={[styles.numberOfItems, { color: colors.textSecondary }]}
+            >
               {noOfItems} {noOfItems > 1 ? "items" : "item"}
             </Text>
           </View>
         </View>
 
         <View style={styles.priceContainer}>
-          <Text style={styles.totalPrice}>
+          <Text style={[styles.totalPrice, { color: colors.text }]}>
             ₹{orderDetails.payment_details.amount.toLocaleString("en-IN")}
           </Text>
         </View>
       </View>
 
-      <View style={styles.historySection}>
+      <View
+        style={[styles.historySection, { borderBottomColor: colors.border }]}
+      >
         <View style={styles.timeline}>
           {orderDetails.order_histories.map((item, index) => (
             <View key={index} style={styles.historyItem}>
               <View style={styles.historyDateTime}>
-                <Text style={styles.historyDate}>
+                <Text style={[styles.historyDate, { color: colors.text }]}>
                   {new Date(item.createdAt).toLocaleDateString("en-US", {
                     day: "2-digit",
                     month: "short",
                   })}
                 </Text>
-                <Text style={styles.historyTime}>
+                <Text
+                  style={[styles.historyTime, { color: colors.textSecondary }]}
+                >
                   {new Date(item.createdAt).toLocaleTimeString("en-US", {
                     hour: "2-digit",
                     minute: "2-digit",
@@ -163,18 +203,24 @@ const OrderDetailMainCard = ({ orderDetails }: OrderDetailMainCardProps) => {
                   "out_for_delivery",
                   "delivered",
                 ].includes(item.status) ? (
-                  <BadgeCheck size={20} color="white" fill="green" />
+                  <BadgeCheck size={20} color="white" fill={colors.success} />
                 ) : (
-                  <BadgeX size={20} color="white" fill="red" />
+                  <BadgeX size={20} color="white" fill={colors.destructive} />
                 )}
 
-                {/* Vertical line connector */}
                 {index < orderDetails.order_histories.length - 1 && (
-                  <View style={styles.connectorLine}></View>
+                  <View
+                    style={[
+                      styles.connectorLine,
+                      { backgroundColor: colors.success },
+                    ]}
+                  ></View>
                 )}
               </View>
               <View style={styles.historyStatusTextContainer}>
-                <Text style={styles.historyStatusText}>
+                <Text
+                  style={[styles.historyStatusText, { color: colors.text }]}
+                >
                   {statusTextMap[item.status]}
                 </Text>
               </View>
@@ -187,34 +233,56 @@ const OrderDetailMainCard = ({ orderDetails }: OrderDetailMainCardProps) => {
         {orderDetails.status === "delivered" && (
           <TouchableOpacity
             onPress={handleDownloadInvoice}
-            style={[styles.actionButton, styles.invoiceButton]}
+            style={[
+              styles.actionButton,
+              styles.invoiceButton,
+              {
+                borderColor: "#2563eb",
+                backgroundColor: colors.cardBackground,
+              },
+            ]}
           >
-            <Download size={16} color="#2563eb" />
-            <Text style={styles.invoiceButtonText}>Invoice</Text>
+            <Download size={16} color={colors.text} />
+            <Text style={[styles.invoiceButtonText, { color: colors.text }]}>
+              Invoice
+            </Text>
           </TouchableOpacity>
         )}
 
         {orderDetails.status === "pending" && (
           <TouchableOpacity
             onPress={() => setCancelDialogVisible(true)}
-            style={[styles.actionButton, styles.cancelButton]}
+            style={[
+              styles.actionButton,
+              styles.cancelButton,
+              {
+                borderColor: colors.destructive,
+                backgroundColor: colors.cardBackground,
+              },
+            ]}
           >
-            <BadgeX size={16} color="#dc2626" />
-            <Text style={styles.cancelButtonText}>Cancel Order</Text>
+            <BadgeX size={16} color={colors.destructive} />
+            <Text
+              style={[styles.cancelButtonText, { color: colors.destructive }]}
+            >
+              Cancel Order
+            </Text>
           </TouchableOpacity>
         )}
 
-        {/* This triggers the Alert for Need Help */}
         <TouchableOpacity
           onPress={() => setNeedHelpDialogVisible(true)}
-          style={[styles.actionButton, styles.needHelpButton]}
+          style={[
+            styles.actionButton,
+            styles.needHelpButton,
+            { backgroundColor: colors.success },
+          ]}
         >
-          <LifeBuoy size={16} color="#fff" />
+          <LifeBuoy size={16} color="white" />
           <Text style={styles.needHelpButtonText}>Need Help?</Text>
         </TouchableOpacity>
       </View>
 
-      {/* Conditional rendering for custom dialogs */}
       {cancelDialogVisible && (
         <CancelOrderDialog
           orderId={orderDetails.id}
@@ -232,21 +300,20 @@ const OrderDetailMainCard = ({ orderDetails }: OrderDetailMainCardProps) => {
 const styles = StyleSheet.create({
   card: {
     borderRadius: 12,
-    backgroundColor: "#fff",
-    overflow: "hidden", // Ensures content stays within rounded corners
+    borderWidth: 1,
+    marginBottom: 10,
+    overflow: "hidden",
   },
   header: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
     borderBottomWidth: 1,
-    borderBottomColor: "#E9E9EB",
     paddingHorizontal: 16,
     paddingVertical: 12,
   },
   orderIdText: {
     fontSize: 16,
-    color: "#02060c73",
   },
   statusBadge: {
     borderRadius: 6,
@@ -265,46 +332,37 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     gap: 16,
     borderBottomWidth: 1,
-    borderBottomColor: "#E9E9EB",
-    backgroundColor: "#fff",
     padding: 16,
   },
   productImagesAndInfo: {
     flexDirection: "row",
     alignItems: "center",
     gap: 16,
-    flexShrink: 1, // Allow this section to shrink
+    flexShrink: 1,
   },
   productImageStack: {
     flexDirection: "row",
-    // To create overlapping effect, use negative margin or absolute positioning
-    // Negative margin is simpler for a fixed number of items
-    marginLeft: 11 * 2, // Compensate for negative margin of first item
+    marginLeft: 11 * 2,
   },
   productImage: {
     height: 44,
     width: 44,
-    borderRadius: 22, // Half of height/width for full circle
+    borderRadius: 22,
     resizeMode: "cover",
     borderWidth: 1,
-    borderColor: "#fff", // White border for separation
-    marginLeft: -11, // Negative margin for overlap
   },
   moreItemsBadge: {
     height: 44,
     width: 44,
     borderRadius: 22,
-    backgroundColor: "#f1f5f9", // slate-100
     justifyContent: "center",
     alignItems: "center",
-    marginLeft: -11, // Overlap
+    marginLeft: -11,
     borderWidth: 1,
-    borderColor: "#fff",
   },
   moreItemsText: {
     fontSize: 14,
     fontWeight: "600",
-    color: "#475569", // slate-600
   },
   productTextInfo: {
     flexDirection: "column",
@@ -313,72 +371,64 @@ const styles = StyleSheet.create({
   firstItemName: {
     fontSize: 16,
     fontWeight: "600",
-    color: "#1e293b", // slate-800
   },
   numberOfItems: {
     fontSize: 14,
     fontWeight: "500",
-    color: "#64748b", // slate-500
   },
   priceContainer: {
-    alignItems: "flex-end", // Align price to the right
+    alignItems: "flex-end",
   },
   totalPrice: {
     fontSize: 18,
     fontWeight: "bold",
-    color: "#0f172a", // slate-900
   },
 
   historySection: {
     borderBottomWidth: 1,
-    borderBottomColor: "#E9E9EB",
     paddingHorizontal: 16,
     paddingTop: 16,
     paddingBottom: 20,
   },
   timeline: {
     flexDirection: "column",
-    gap: 20, // Space between history items
+    gap: 20,
   },
   historyItem: {
     flexDirection: "row",
-    alignItems: "flex-start", // Align items to the top if text wraps
-    gap: 16, // Space between time, icon, and status text
+    alignItems: "flex-start",
+    gap: 16,
   },
   historyDateTime: {
-    alignItems: "flex-end", // Align time to the right
-    minWidth: 50, // Ensure enough space for time/date
+    alignItems: "flex-end",
+    minWidth: 50,
   },
   historyDate: {
     fontSize: 14,
     fontWeight: "600",
-    color: "#374151", // gray-800
   },
   historyTime: {
     fontSize: 12,
-    color: "#6b7280", // gray-500
   },
   historyIconContainer: {
     position: "relative",
     flexDirection: "column",
     alignItems: "center",
-    width: 20, // Match icon size
+    width: 20,
   },
   connectorLine: {
     position: "absolute",
-    top: 20, // Below the icon
-    bottom: -20, // Extend downwards, adjust based on gap
+    top: 20,
+    bottom: -20,
     width: 2,
-    backgroundColor: "green", // green-700
-    zIndex: -1, // Behind the icon
+    zIndex: -1,
   },
   historyStatusTextContainer: {
-    flex: 1, // Take remaining space
-    paddingTop: 2, // Align with text after icon
+    flex: 1,
+    paddingTop: 2,
   },
   historyStatusText: {
     fontWeight: "500",
-    color: "#374151", // gray-800
   },
 
   actionButtonsContainer: {
@@ -388,7 +438,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
   },
   actionButton: {
-    flex: 1, // Distribute space evenly
+    flex: 1,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
@@ -401,26 +451,20 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   invoiceButton: {
-    borderColor: "#2563eb", // blue-600
     borderWidth: 1,
-    backgroundColor: "#fff",
   },
   invoiceButtonText: {
     marginLeft: 8,
     fontSize: 14,
     fontWeight: "500",
-    color: "#2563eb", // blue-700
   },
   cancelButton: {
-    borderColor: "#dc2626", // red-600
     borderWidth: 1,
-    backgroundColor: "#fff",
   },
   cancelButtonText: {
     marginLeft: 8,
     fontSize: 14,
     fontWeight: "500",
-    color: "#dc2626", // red-700
   },
   needHelpButton: {
     backgroundColor: "#1aa672",
@@ -432,5 +476,3 @@ const styles = StyleSheet.create({
     color: "#fff",
   },
 });
-
-export default OrderDetailMainCard;

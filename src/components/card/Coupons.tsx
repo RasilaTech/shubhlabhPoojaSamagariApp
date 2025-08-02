@@ -1,13 +1,14 @@
-// src/components/card/Coupons.tsx
+import { darkColors, lightColors } from "@/constants/ThemeColors";
+import { useTheme } from "@/hooks/useTheme";
 import { Coupon } from "@/services/coupon/couponApi.type";
 import { ChevronRight, Trash2 } from "lucide-react-native";
 import React, { useState } from "react";
 import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
-// Adjust paths for your SVG assets (assuming they are converted to PNG/JPG or handled by react-native-svg-transformer)
-const priceTagSvg = require("../../../assets/images/priceTag.png"); // Adjust path and extension
-const percentageIcon = require("../../../assets/images/percentoff.png"); // Adjust path and extension
-const flatIcon = require("../../../assets/images/flatoff.png"); // Adjust path and extension
+// Adjust paths for your SVG assets
+const priceTagSvg = require("../../../assets/images/priceTag.png");
+const percentageIcon = require("../../../assets/images/percentoff.png");
+const flatIcon = require("../../../assets/images/flatoff.png");
 
 export interface CouponsProps {
   couponsData: Coupon[];
@@ -25,10 +26,13 @@ const Coupons = ({
   handleCouponChange,
 }: CouponsProps) => {
   const [isExpanded, setIsExpanded] = useState(false);
-  const totalAmount = itemsTotal - discount; // Amount before promo discount
+  const totalAmount = itemsTotal - discount;
+
+  const { theme } = useTheme();
+  const colors = theme === "dark" ? darkColors : lightColors;
 
   const filterCoupons = couponsData.filter(
-    (coupon) => !selectedCoupon || coupon.id !== selectedCoupon.id // Filter out already selected coupon
+    (coupon) => !selectedCoupon || coupon.id !== selectedCoupon.id
   );
 
   const calculatePromoDiscountPreview = (coupon: Coupon): number => {
@@ -46,12 +50,16 @@ const Coupons = ({
     } else if (coupon.discount_type === "fixed") {
       promoDiscount = coupon.discount_value;
     }
-    return Math.min(promoDiscount, currentSubtotal); // Discount cannot exceed subtotal
+    return Math.min(promoDiscount, currentSubtotal);
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.sectionHeader}>SAVING CORNER</Text>
+    <View
+      style={[styles.container, { backgroundColor: colors.cardBackground }]}
+    >
+      <Text style={[styles.sectionHeader, { color: colors.textSecondary }]}>
+        SAVING CORNER
+      </Text>
 
       <View style={styles.applyCouponRow}>
         <TouchableOpacity
@@ -59,28 +67,52 @@ const Coupons = ({
           style={styles.applyCouponButton}
         >
           <View style={styles.applyCouponLeft}>
-            <View style={styles.iconWrapper}>
+            <View
+              style={[styles.iconWrapper, { backgroundColor: colors.accent }]}
+            >
               <Image source={priceTagSvg} style={styles.iconImage} />
             </View>
-            <Text style={styles.applyCouponText}>Apply Coupon</Text>
+            <Text
+              style={[styles.applyCouponText, { color: colors.textSecondary }]}
+            >
+              Apply Coupon
+            </Text>
           </View>
           <ChevronRight
             size={20}
-            color="#02060c73"
+            color={colors.textSecondary}
             style={isExpanded ? styles.rotate90 : styles.rotate0}
           />
         </TouchableOpacity>
 
         {selectedCoupon && (
-          <View style={styles.selectedCouponContainer}>
-            <Text style={styles.selectedCouponText}>
+          <View
+            style={[
+              styles.selectedCouponContainer,
+              {
+                backgroundColor: colors.background,
+                borderColor: colors.border,
+              },
+            ]}
+          >
+            <Text
+              style={[
+                styles.selectedCouponText,
+                { color: colors.textSecondary },
+              ]}
+            >
               {"Coupon Code: "}
-              <Text style={styles.selectedCouponCode}>
+              <Text style={[styles.selectedCouponCode, { color: colors.text }]}>
                 {selectedCoupon.offer_code}
               </Text>
             </Text>
             <View style={styles.selectedCouponRight}>
-              <Text style={styles.selectedCouponDiscount}>
+              <Text
+                style={[
+                  styles.selectedCouponDiscount,
+                  { color: colors.textSecondary },
+                ]}
+              >
                 {selectedCoupon.discount_type === "percentage"
                   ? `${selectedCoupon.discount_value}% off`
                   : `₹${new Intl.NumberFormat("en-IN", {
@@ -92,7 +124,7 @@ const Coupons = ({
                 onPress={() => handleCouponChange(null)}
                 style={styles.removeCouponButton}
               >
-                <Trash2 size={16} color="#FF5200" />
+                <Trash2 size={16} color={colors.destructive} />
               </TouchableOpacity>
             </View>
           </View>
@@ -101,18 +133,27 @@ const Coupons = ({
         <View
           style={[
             styles.couponListContainer,
+            { backgroundColor: colors.background },
             isExpanded ? styles.couponListExpanded : styles.couponListCollapsed,
           ]}
         >
           {filterCoupons.length === 0 ? (
             <View style={styles.noCouponsMessage}>
-              <Text style={styles.noCouponsText}>
+              <Text
+                style={[styles.noCouponsText, { color: colors.textSecondary }]}
+              >
                 No{selectedCoupon ? " more " : " "}coupons available.
               </Text>
             </View>
           ) : (
             filterCoupons.map((coupon) => (
-              <View key={coupon.id} style={styles.couponItem}>
+              <View
+                key={coupon.id}
+                style={[
+                  styles.couponItem,
+                  { backgroundColor: colors.cardBackground },
+                ]}
+              >
                 <View style={styles.couponItemHeader}>
                   <View style={styles.couponItemLeft}>
                     <Image
@@ -121,9 +162,17 @@ const Coupons = ({
                           ? percentageIcon
                           : flatIcon
                       }
-                      style={styles.couponIcon}
+                      style={[
+                        styles.couponIcon,
+                        { backgroundColor: colors.accent },
+                      ]}
                     />
-                    <Text style={styles.couponCodeText}>
+                    <Text
+                      style={[
+                        styles.couponCodeText,
+                        { color: colors.textSecondary },
+                      ]}
+                    >
                       {coupon.offer_code}
                     </Text>
                   </View>
@@ -139,9 +188,9 @@ const Coupons = ({
                     <Text
                       style={[
                         styles.applyButtonText,
-                        //TODO
-                        // totalAmount < coupon.min_order_value &&
-                        //   styles.applyButtonTextDisabled,
+                        { color: colors.accent },
+                        totalAmount < coupon.min_order_value &&
+                          styles.applyButtonTextDisabled,
                       ]}
                     >
                       APPLY
@@ -149,13 +198,25 @@ const Coupons = ({
                   </TouchableOpacity>
                 </View>
                 {totalAmount < coupon.min_order_value && (
-                  <Text style={styles.minOrderWarning}>
+                  <Text
+                    style={[
+                      styles.minOrderWarning,
+                      { color: colors.destructive },
+                    ]}
+                  >
                     Add items worth ₹{coupon.min_order_value} or more to avail{" "}
                     this offer.
                   </Text>
                 )}
-                <View style={styles.couponSeparator} />
-                <Text style={styles.couponDescription}>
+                <View
+                  style={[
+                    styles.couponSeparator,
+                    { borderColor: colors.border },
+                  ]}
+                />
+                <Text
+                  style={[styles.couponDescription, { color: colors.text }]}
+                >
                   {coupon.description}
                 </Text>
               </View>
@@ -169,49 +230,44 @@ const Coupons = ({
 
 const styles = StyleSheet.create({
   container: {
-    // shadow-cart-card conversion
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
     shadowRadius: 2,
     elevation: 3,
-    marginBottom: 4, // mb-1
-    flexDirection: "column", // flex w-full flex-col
-    gap: 16, // gap-4
-    borderRadius: 8, // rounded-lg
-    backgroundColor: "white", // bg-white
-    padding: 16, // p-4
+    marginBottom: 4,
+    flexDirection: "column",
+    gap: 16,
+    borderRadius: 8,
+    padding: 16,
   },
   sectionHeader: {
-    fontSize: 12, // text-[12px]
-    lineHeight: 16, // leading-4
-    fontWeight: "600", // font-semibold
-    letterSpacing: 1.5, // tracking-[1.5px]
-    color: "rgba(2, 6, 12, 0.45)", // text-[#02060c73]
+    fontSize: 12,
+    lineHeight: 16,
+    fontWeight: "600",
+    letterSpacing: 1.5,
   },
   applyCouponRow: {
-    flexDirection: "column", // flex flex-col
+    flexDirection: "column",
   },
   applyCouponButton: {
-    flexDirection: "row", // flex
-    alignItems: "center", // items-center
-    justifyContent: "space-between", // justify-between
-    // cursor-pointer - not applicable
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
   },
   applyCouponLeft: {
-    flexDirection: "row", // flex
-    gap: 12, // gap-3
+    flexDirection: "row",
+    gap: 12,
     alignItems: "center",
   },
   iconWrapper: {
     flexDirection: "row",
-    aspectRatio: 1, // aspect-square
-    width: 20, // w-[20px]
-    alignItems: "center", // items-center
-    justifyContent: "center", // justify-center
-    borderRadius: 4, // rounded-sm
-    backgroundColor: "#fbbf24", // bg-amber-400
-    padding: 3, // p-[3px]
+    aspectRatio: 1,
+    width: 20,
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: 4,
+    padding: 3,
   },
   iconImage: {
     width: "100%",
@@ -219,11 +275,14 @@ const styles = StyleSheet.create({
     resizeMode: "contain",
   },
   applyCouponText: {
-    fontSize: 14, // text-sm
-    lineHeight: 18, // leading-4.5
-    fontWeight: "400", // font-normal
-    letterSpacing: -0.35, // -tracking-[0.35px]
-    color: "rgba(2, 6, 12, 0.75)", // text-[#02060cbf]
+    fontSize: 14,
+    lineHeight: 18,
+    fontWeight: "400",
+    letterSpacing: -0.35,
+  },
+  applyButtonTextDisabled: {
+    // FIX: The missing style
+    color: "#e2e2e7",
   },
   rotate90: {
     transform: [{ rotate: "90deg" }],
@@ -232,140 +291,117 @@ const styles = StyleSheet.create({
     transform: [{ rotate: "0deg" }],
   },
   selectedCouponContainer: {
-    // animate-coupon-appear - not directly applicable, will appear/disappear instantly
-    marginTop: 16, // mt-4
-    flexDirection: "row", // flex
-    alignItems: "center", // items-center
-    justifyContent: "space-between", // justify-between
-    borderRadius: 8, // rounded-lg
-    borderWidth: 1, // border
-    borderColor: "#e2e8f0", // border-[#f0f0f5] (slate-200 equivalent)
-    backgroundColor: "#f1f5f9", // bg-[#f0f0f5] (slate-100 equivalent)
-    paddingHorizontal: 12, // px-3
-    paddingVertical: 8, // py-2
-    // transition-all duration-200 ease-in-out - handled by appearance/disappearance
+    marginTop: 16,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    borderRadius: 8,
+    borderWidth: 1,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
   },
   selectedCouponText: {
-    fontSize: 14, // text-sm
-    fontWeight: "400", // font-normal
-    color: "rgba(2, 6, 12, 0.45)", // text-[#02060c73]
+    fontSize: 14,
+    fontWeight: "400",
   },
   selectedCouponCode: {
-    fontWeight: "600", // font-semibold
+    fontWeight: "600",
   },
   selectedCouponRight: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 12, // gap-3
+    gap: 12,
   },
   selectedCouponDiscount: {
-    fontSize: 14, // text-sm
-    fontWeight: "600", // font-semibold
-    color: "rgba(2, 6, 12, 0.45)", // text-[#02060c73]
+    fontSize: 14,
+    fontWeight: "600",
   },
-  removeCouponButton: {
-    // cursor-pointer - not applicable
-  },
+  removeCouponButton: {},
   couponListContainer: {
-    flexDirection: "column", // flex flex-col
-    gap: 12, // gap-3
-    borderRadius: 8, // rounded-lg
-    backgroundColor: "#f1f5f9", // bg-[#f0f0f5]
-    // overflow-y-auto - handled by ScrollView if this list gets very long
+    flexDirection: "column",
+    gap: 12,
+    borderRadius: 8,
   },
   couponListExpanded: {
-    maxHeight: 320, // max-h-80 (approx)
-    marginTop: 16, // mt-4
-    padding: 12, // p-3
-    opacity: 1, // opacity-100
-    transform: [{ scale: 1 }], // scale-100
-    // transition-all duration-300 ease-in-out - not directly applicable for direct style changes
+    maxHeight: 320,
+    marginTop: 16,
+    padding: 12,
+    opacity: 1,
+    transform: [{ scale: 1 }],
   },
   couponListCollapsed: {
-    maxHeight: 0, // max-h-0
-    opacity: 0, // opacity-0
-    transform: [{ scale: 0.95 }], // scale-95
-    overflow: "hidden", // Hide content when collapsed
+    maxHeight: 0,
+    opacity: 0,
+    transform: [{ scale: 0.95 }],
+    overflow: "hidden",
     marginTop: 0,
     padding: 0,
   },
   noCouponsMessage: {
-    flexDirection: "column", // flex flex-col
-    alignItems: "center", // items-center
-    justifyContent: "center", // justify-center
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "center",
   },
   noCouponsText: {
-    fontSize: 14, // text-sm
-    lineHeight: 18, // leading-4.5
-    fontWeight: "400", // font-normal
-    letterSpacing: -0.35, // -tracking-[0.35px]
-    color: "rgba(2, 6, 12, 0.45)", // text-[#02060c73]
+    fontSize: 14,
+    lineHeight: 18,
+    fontWeight: "400",
+    letterSpacing: -0.35,
   },
   couponItem: {
-    flexDirection: "column", // flex flex-col
-    gap: 16, // gap-4
-    borderRadius: 8, // rounded-lg
-    backgroundColor: "white", // bg-white
-    padding: 16, // p-4
+    flexDirection: "column",
+    gap: 16,
+    borderRadius: 8,
+    padding: 16,
   },
   couponItemHeader: {
-    flexDirection: "row", // flex
-    justifyContent: "space-between", // justify-between
+    flexDirection: "row",
+    justifyContent: "space-between",
     alignItems: "center",
   },
   couponItemLeft: {
-    flexDirection: "row", // flex
-    alignItems: "center", // items-center
-    gap: 8, // gap-2
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
   },
   couponIcon: {
-    width: 23, // w-[23px]
-    aspectRatio: 1, // aspect-square
-    borderRadius: 8, // rounded-[8px]
-    backgroundColor: "#FF5200", // bg-[#FF5200]
-    padding: 3, // p-[3px]
+    width: 23,
+    aspectRatio: 1,
+    borderRadius: 8,
+    padding: 3,
     resizeMode: "contain",
   },
   couponCodeText: {
-    fontSize: 18, // text-lg
-    lineHeight: 22, // leading-5.5 (approx)
-    fontWeight: "400", // font-normal
-    letterSpacing: -0.45, // tracking-[-0.45px]
-    color: "rgba(2, 6, 12, 0.75)", // text-[#02060cbf]
+    fontSize: 18,
+    lineHeight: 22,
+    fontWeight: "400",
+    letterSpacing: -0.45,
   },
-  applyButton: {
-    // cursor-pointer - not applicable
-  },
+  applyButton: {},
   applyButtonText: {
-    fontSize: 14, // text-sm
-    lineHeight: 18, // leading-4.5
-    fontWeight: "600", // font-semibold
-    letterSpacing: -0.35, // tracking-[-0.35px]
-    color: "#FF5200", // text-[#FF5200]
+    fontSize: 14,
+    lineHeight: 18,
+    fontWeight: "600",
+    letterSpacing: -0.35,
   },
   applyButtonDisabled: {
-    // color: "#e2e2e7"
-    opacity: 0.5, // Reduced opacity for disabled visual
+    opacity: 0.5,
   },
   minOrderWarning: {
-    // line-clamp-2 - handled by numberOfLines on parent Text component if needed
-    fontSize: 14, // text-sm
-    lineHeight: 18, // leading-4.5
-    fontWeight: "400", // font-normal
-    letterSpacing: -0.35, // -tracking-[0.35px]
-    color: "#fa3c5a", // text-[#fa3c5a]
+    fontSize: 14,
+    lineHeight: 18,
+    fontWeight: "400",
+    letterSpacing: -0.35,
   },
   couponSeparator: {
-    borderTopWidth: 1, // border-t
-    borderStyle: "dashed", // border-dashed
-    borderColor: "rgba(2, 6, 12, 0.15)", // border-[rgba(2,6,12,0.15)]
+    borderTopWidth: 1,
+    borderStyle: "dashed",
   },
   couponDescription: {
-    fontSize: 14, // text-sm
-    lineHeight: 18, // leading-4.5
-    fontWeight: "400", // font-normal
-    letterSpacing: 0.35, // tracking-[0.35px]
-    color: "rgba(2, 6, 12, 0.92)", // text-[#02060ceb]
+    fontSize: 14,
+    lineHeight: 18,
+    fontWeight: "400",
+    letterSpacing: 0.35,
   },
 });
 

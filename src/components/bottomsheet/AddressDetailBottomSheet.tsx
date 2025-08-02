@@ -14,8 +14,11 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context"; // For bottom safe area
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { z } from "zod";
+
+import { darkColors, lightColors } from "@/constants/ThemeColors";
+import { useTheme } from "@/hooks/useTheme";
 
 export interface CompleteAddressProps {
   address_line1: string;
@@ -50,6 +53,9 @@ export const AddressDetailBottomSheet = ({
   onSave,
 }: AddressDetailBottomSheetProps) => {
   const insets = useSafeAreaInsets();
+  const { theme } = useTheme();
+  const colors = theme === "dark" ? darkColors : lightColors;
+
   const form = useForm<AddressFormData>({
     resolver: zodResolver(addressSchema),
     defaultValues: {
@@ -67,12 +73,11 @@ export const AddressDetailBottomSheet = ({
   } = form;
 
   const onSubmit = (data: AddressFormData) => {
-    // Call the onSave prop with the data
     onSave({
       ...data,
       address_line2: data.address_line2 ?? "",
       landmark: data.landmark ?? "",
-      phone_number: `+91${data.phone_number}`, // Append +91 prefix
+      phone_number: `+91${data.phone_number}`,
     });
   };
 
@@ -89,16 +94,25 @@ export const AddressDetailBottomSheet = ({
           style={styles.keyboardAvoidingView}
         >
           <Pressable
-            style={styles.bottomSheetContent}
+            style={[
+              styles.bottomSheetContent,
+              { backgroundColor: colors.cardBackground },
+            ]}
             onPress={(e) => e.stopPropagation()}
           >
             <View style={styles.header}>
               <View style={styles.headerTitleContainer}>
-                <Text style={styles.headerTitle}>
+                <Text style={[styles.headerTitle, { color: colors.text }]}>
                   Choose a delivery address
                 </Text>
-                <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-                  <X size={24} color="white" />
+                <TouchableOpacity
+                  onPress={onClose}
+                  style={[
+                    styles.closeButton,
+                    { backgroundColor: colors.background },
+                  ]}
+                >
+                  <X size={24} color={colors.textSecondary} />
                 </TouchableOpacity>
               </View>
             </View>
@@ -112,8 +126,12 @@ export const AddressDetailBottomSheet = ({
                     name="address_line1"
                     render={({ field: { onChange, onBlur, value } }) => (
                       <TextInput
-                        style={styles.textInput}
+                        style={[
+                          styles.textInput,
+                          { borderColor: colors.border, color: colors.text },
+                        ]}
                         placeholder="HOUSE / FLAT / FLOOR NO."
+                        placeholderTextColor={colors.textSecondary}
                         onBlur={onBlur}
                         onChangeText={onChange}
                         value={value}
@@ -121,7 +139,9 @@ export const AddressDetailBottomSheet = ({
                     )}
                   />
                   {errors.address_line1 && (
-                    <Text style={styles.errorText}>
+                    <Text
+                      style={[styles.errorText, { color: colors.destructive }]}
+                    >
                       {errors.address_line1.message}
                     </Text>
                   )}
@@ -134,8 +154,12 @@ export const AddressDetailBottomSheet = ({
                     name="address_line2"
                     render={({ field: { onChange, onBlur, value } }) => (
                       <TextInput
-                        style={styles.textInput}
+                        style={[
+                          styles.textInput,
+                          { borderColor: colors.border, color: colors.text },
+                        ]}
                         placeholder="APARTMENT / ROAD / AREA"
+                        placeholderTextColor={colors.textSecondary}
                         onBlur={onBlur}
                         onChangeText={onChange}
                         value={value}
@@ -151,8 +175,12 @@ export const AddressDetailBottomSheet = ({
                     name="landmark"
                     render={({ field: { onChange, onBlur, value } }) => (
                       <TextInput
-                        style={styles.textInput}
+                        style={[
+                          styles.textInput,
+                          { borderColor: colors.border, color: colors.text },
+                        ]}
                         placeholder="LANDMARK, ADDITIONAL INFO, ETC. (OPTIONAL)"
+                        placeholderTextColor={colors.textSecondary}
                         onBlur={onBlur}
                         onChangeText={onChange}
                         value={value}
@@ -168,8 +196,12 @@ export const AddressDetailBottomSheet = ({
                     name="name"
                     render={({ field: { onChange, onBlur, value } }) => (
                       <TextInput
-                        style={styles.textInput}
+                        style={[
+                          styles.textInput,
+                          { borderColor: colors.border, color: colors.text },
+                        ]}
                         placeholder="Receiver's Name"
+                        placeholderTextColor={colors.textSecondary}
                         onBlur={onBlur}
                         onChangeText={onChange}
                         value={value}
@@ -177,7 +209,11 @@ export const AddressDetailBottomSheet = ({
                     )}
                   />
                   {errors.name && (
-                    <Text style={styles.errorText}>{errors.name.message}</Text>
+                    <Text
+                      style={[styles.errorText, { color: colors.destructive }]}
+                    >
+                      {errors.name.message}
+                    </Text>
                   )}
                 </View>
 
@@ -188,8 +224,12 @@ export const AddressDetailBottomSheet = ({
                     name="phone_number"
                     render={({ field: { onChange, onBlur, value } }) => (
                       <TextInput
-                        style={styles.textInput}
+                        style={[
+                          styles.textInput,
+                          { borderColor: colors.border, color: colors.text },
+                        ]}
                         placeholder="Receiver's Number e.g 9876543210"
+                        placeholderTextColor={colors.textSecondary}
                         onBlur={onBlur}
                         onChangeText={onChange}
                         value={value}
@@ -199,7 +239,9 @@ export const AddressDetailBottomSheet = ({
                     )}
                   />
                   {errors.phone_number && (
-                    <Text style={styles.errorText}>
+                    <Text
+                      style={[styles.errorText, { color: colors.destructive }]}
+                    >
                       {errors.phone_number.message}
                     </Text>
                   )}
@@ -207,13 +249,12 @@ export const AddressDetailBottomSheet = ({
               </View>
             </ScrollView>
 
-            {/* Footer */}
             <View
               style={[styles.footer, { paddingBottom: insets.bottom + 16 }]}
             >
               <TouchableOpacity
                 onPress={handleSubmit(onSubmit)}
-                style={styles.saveButton}
+                style={[styles.saveButton, { backgroundColor: colors.accent }]}
               >
                 <Text style={styles.saveButtonText}>SAVE AND PROCEED</Text>
               </TouchableOpacity>
@@ -229,23 +270,23 @@ const styles = StyleSheet.create({
   modalOverlay: {
     flex: 1,
     backgroundColor: "rgba(0, 0, 0, 0.5)",
-    justifyContent: "flex-end", // Align content to the bottom
-  },
-  keyboardAvoidingView: {
-    flex: 1, // Fill available space to allow padding to push content
     justifyContent: "flex-end",
   },
+  keyboardAvoidingView: {
+    flex: 1,
+    justifyContent: "flex-end",
+    alignItems: "center",
+    width: "100%",
+  },
   bottomSheetContent: {
-    backgroundColor: "white",
     borderTopLeftRadius: 12,
     borderTopRightRadius: 12,
     flexDirection: "column",
-    paddingHorizontal: 16, // px-4
-    paddingTop: 16, // pt-4
-    // pb-24 is handled by footer paddingBottom
+    paddingHorizontal: 16,
+    paddingTop: 16,
   },
   header: {
-    marginBottom: 16, // mb-4
+    marginBottom: 16,
     padding: 0,
   },
   headerTitleContainer: {
@@ -256,56 +297,46 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 18,
     fontWeight: "600",
-    color: "#02060C",
   },
   closeButton: {
-    backgroundColor: "rgba(2, 6, 12, 0.15)", // bg-[#02060c26]
-    borderRadius: 8, // rounded-lg
-    padding: 4, // p-[4px]
+    borderRadius: 8,
+    padding: 4,
   },
   formScrollViewContent: {
     flexGrow: 1,
-    gap: 16, // gap-4
+    gap: 16,
   },
   formContainer: {
     flexDirection: "column",
-    gap: 16, // gap-4
+    gap: 16,
   },
   textInput: {
     width: "100%",
-    borderBottomWidth: 1, // border-b
-    borderBottomColor: "#ccc", // border-gray-300
+    borderBottomWidth: 1,
     backgroundColor: "transparent",
-    padding: 8, // p-2
-    fontSize: 14, // text-sm
-    color: "#333",
+    padding: 8,
+    fontSize: 14,
   },
   errorText: {
-    marginTop: 4, // mt-1
-    fontSize: 12, // text-xs
-    color: "red",
+    marginTop: 4,
+    fontSize: 12,
   },
   footer: {
-    // fixed bottom-4 left-0 w-full px-4
     width: "100%",
-    paddingHorizontal: 16, // px-4
-    paddingTop: 16, // pt-4
-    // paddingBottom: insets.bottom + 16, // Add safe area and extra padding
+    paddingHorizontal: 16,
+    paddingTop: 16,
   },
   saveButton: {
     width: "100%",
     borderRadius: 8,
-    backgroundColor: "#ff5200",
-    paddingVertical: 12, // py-3
+    paddingVertical: 12,
     alignItems: "center",
     justifyContent: "center",
   },
   saveButtonText: {
     fontSize: 14,
-    fontWeight: "bold", // font-bold
-    letterSpacing: 1, // tracking-wide
+    fontWeight: "bold",
+    letterSpacing: 1,
     color: "white",
   },
 });
-
-export default AddressDetailBottomSheet;

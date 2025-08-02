@@ -1,19 +1,28 @@
-// src/components/common/AddMoreItems.tsx
+import { darkColors, lightColors } from "@/constants/ThemeColors";
+import { useTheme } from "@/hooks/useTheme";
 import { router } from "expo-router"; // For navigation
 import React from "react";
 import { StyleSheet, Text, View } from "react-native";
 
 const AddMoreItems: React.FC = () => {
+  const { theme } = useTheme();
+  const colors = theme === "dark" ? darkColors : lightColors;
+
   const handleAddMoreItems = () => {
     console.log("Add more items clicked");
-    router.replace("/"); // Navigates to the home screen (or wherever your main product Browse page is)
+    router.replace("/");
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.text}>
+    <View
+      style={[styles.container, { backgroundColor: colors.cardBackground }]}
+    >
+      <Text style={[styles.text, { color: colors.textSecondary }]}>
         {"Missed Something? "}
-        <Text onPress={handleAddMoreItems} style={styles.linkText}>
+        <Text
+          onPress={handleAddMoreItems}
+          style={[styles.linkText, { color: colors.accent }]}
+        >
           Add more items
         </Text>
       </Text>
@@ -23,28 +32,25 @@ const AddMoreItems: React.FC = () => {
 
 const styles = StyleSheet.create({
   container: {
-    // shadow-cart-card conversion
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
     shadowRadius: 2,
     elevation: 3,
-    marginBottom: 4, // mb-1
-    flexDirection: "row", // flex
-    justifyContent: "center", // justify-center
-    borderRadius: 8, // rounded-lg
-    backgroundColor: "white", // bg-white
-    padding: 16, // p-4
+    marginBottom: 4,
+    flexDirection: "row",
+    justifyContent: "center",
+    borderRadius: 8,
+    padding: 16,
   },
   text: {
-    fontSize: 13, // text-[13px]
-    lineHeight: 17, // leading-[17px]
-    fontWeight: "600", // font-semibold
-    letterSpacing: -0.33, // -tracking-[0.33px]
-    color: "#02060cbf", // text-[#02060cbf]
+    fontSize: 13,
+    lineHeight: 17,
+    fontWeight: "600",
+    letterSpacing: -0.33,
   },
   linkText: {
-    color: "#ff5200", // text-[#ff5200]
+    fontWeight: "600", // Ensure link text is bold
     // cursor-pointer - not applicable in RN
   },
 });

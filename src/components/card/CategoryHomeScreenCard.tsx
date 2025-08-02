@@ -3,11 +3,17 @@ import { router } from "expo-router";
 import React from "react";
 import { Image, StyleSheet, Text, TouchableOpacity } from "react-native";
 
+import { darkColors, lightColors } from "@/constants/ThemeColors";
+import { useTheme } from "@/hooks/useTheme";
+
 interface CategoryHomeScreenCardProps {
   category: Category;
 }
 
 const CategoryHomeScreenCard = ({ category }: CategoryHomeScreenCardProps) => {
+  const { theme } = useTheme();
+  const colors = theme === "dark" ? darkColors : lightColors;
+
   return (
     <TouchableOpacity
       style={styles.container}
@@ -23,7 +29,10 @@ const CategoryHomeScreenCard = ({ category }: CategoryHomeScreenCardProps) => {
         style={styles.image}
         resizeMode="cover"
       />
-      <Text numberOfLines={2} style={styles.text}>
+      <Text
+        numberOfLines={2}
+        style={[styles.text, { color: colors.textSecondary }]}
+      >
         {category.name}
       </Text>
     </TouchableOpacity>
@@ -45,8 +54,7 @@ const styles = StyleSheet.create({
   text: {
     maxWidth: 75,
     fontSize: 13,
-    fontFamily: "outfit-medim",
-    color: "#323232",
+    fontFamily: "outfit-medium",
     textAlign: "center",
   },
 });

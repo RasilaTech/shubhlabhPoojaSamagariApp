@@ -1,11 +1,10 @@
-// src/components/card/BillDetails.tsx
-import { Coupon } from "@/services/coupon/couponApi.type";
+import { darkColors, lightColors } from "@/constants/ThemeColors";
+import { useTheme } from "@/hooks/useTheme";
+import type { Coupon } from "@/services/coupon/couponApi.type";
 import React from "react";
 import { Image, StyleSheet, Text, View } from "react-native";
-// Adjust path
 
-// Assuming guardIcon.svg is placed in assets/images/guardIcon.png or .jpg after conversion
-// For SVG directly, you'd need react-native-svg-transformer
+// Assuming guardIcon.png is placed in assets/images/
 const guartIcon = require("../../../assets/images/guardIcon.png"); // Adjust path and extension
 
 export interface BillDetailProps {
@@ -19,13 +18,13 @@ const BillDetails = ({
   discount,
   selectedCoupon,
 }: BillDetailProps) => {
-  const gstCharges: number = 0; // Hardcoded as 0 in original
+  const { theme } = useTheme();
+  const colors = theme === "dark" ? darkColors : lightColors;
+
+  const gstCharges: number = 0;
+  const deliveryCharges: number = 0; // The original code has this hardcoded to 0 for some reason, even though there's a `configState`
   let promoCodeDiscount = 0;
 
-  // const configState = useAppSelector(selectConfiguration);
-  const deliveryCharges: number = 0;
-
-  // Recalculate promoCodeDiscount as per the original logic
   if (selectedCoupon) {
     if (selectedCoupon.discount_type === "percentage") {
       promoCodeDiscount =
@@ -45,23 +44,12 @@ const BillDetails = ({
     } else if (selectedCoupon.discount_type === "fixed") {
       promoCodeDiscount = selectedCoupon.discount_value;
     }
-
-    if (
-      selectedCoupon.max_discount_value &&
-      promoCodeDiscount > selectedCoupon.max_discount_value
-    ) {
-      promoCodeDiscount = selectedCoupon.max_discount_value;
-    }
-  }
-
-  if (promoCodeDiscount > itemsTotal - discount) {
-    promoCodeDiscount = itemsTotal - discount;
+    promoCodeDiscount = Math.min(promoCodeDiscount, itemsTotal - discount);
   }
 
   const totalAmount =
     itemsTotal - discount - promoCodeDiscount + deliveryCharges + gstCharges;
 
-  // Helper for formatting currency
   const formatCurrency = (amount: number) =>
     new Intl.NumberFormat("en-IN", {
       minimumFractionDigits: 2,
@@ -70,66 +58,105 @@ const BillDetails = ({
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Bill Details</Text>
-      <View style={styles.card}>
+      <Text style={[styles.title, { color: colors.text }]}>Bill Details</Text>
+      <View
+        style={[
+          styles.card,
+          { backgroundColor: colors.cardBackground, shadowColor: colors.text },
+        ]}
+      >
         <View style={styles.row}>
-          <Text style={styles.label}>Item Total</Text>
-          <Text style={styles.value}>₹{formatCurrency(itemsTotal)}</Text>
+          <Text style={[styles.label, { color: colors.textSecondary }]}>
+            Item Total
+          </Text>
+          <Text style={[styles.value, { color: colors.text }]}>
+            ₹{formatCurrency(itemsTotal)}
+          </Text>
         </View>
 
         <View style={styles.row}>
-          <Text style={styles.label}>Discount</Text>
-          <Text style={[styles.value, styles.discountValue]}>
+          <Text style={[styles.label, { color: colors.textSecondary }]}>
+            Discount
+          </Text>
+          <Text
+            style={[
+              styles.value,
+              styles.discountValue,
+              { color: colors.success },
+            ]}
+          >
             - ₹{formatCurrency(discount)}
           </Text>
         </View>
 
         {selectedCoupon && (
           <View style={styles.row}>
-            <Text style={styles.label}>Promo Code Discount</Text>
-            <Text style={[styles.value, styles.discountValue]}>
+            <Text style={[styles.label, { color: colors.textSecondary }]}>
+              Promo Code Discount
+            </Text>
+            <Text
+              style={[
+                styles.value,
+                styles.discountValue,
+                { color: colors.success },
+              ]}
+            >
               - ₹{formatCurrency(promoCodeDiscount)}
             </Text>
           </View>
         )}
 
-        <View style={styles.dashedSeparator} />
+        <View
+          style={[styles.dashedSeparator, { borderColor: colors.border }]}
+        />
 
         <View style={styles.row}>
-          <Text style={styles.label}>Delivery Partner Fee</Text>
+          <Text style={[styles.label, { color: colors.textSecondary }]}>
+            Delivery Partner Fee
+          </Text>
           {deliveryCharges === 0 ? (
-            <Text style={[styles.value, styles.freeValue]}>FREE</Text>
+            <Text
+              style={[
+                styles.value,
+                styles.freeValue,
+                { color: colors.success },
+              ]}
+            >
+              FREE
+            </Text>
           ) : (
-            <Text style={styles.value}>₹{formatCurrency(deliveryCharges)}</Text>
+            <Text style={[styles.value, { color: colors.text }]}>
+              ₹{formatCurrency(deliveryCharges)}
+            </Text>
           )}
         </View>
 
-        <View style={styles.dashedSeparator} />
-
-        {/* GST and Charges section (commented out in original) */}
-        {/* <View style={styles.row}>
-          <Text style={styles.label}>GST and Charges</Text>
-          {gstCharges === 0 ? (
-            <Text style={[styles.value, styles.freeValue]}>FREE</Text>
-          ) : (
-            <Text style={styles.value}>₹{formatCurrency(gstCharges)}</Text>
-          )}
-        </View>
-        <View style={styles.dashedSeparator} /> */}
+        <View
+          style={[styles.dashedSeparator, { borderColor: colors.border }]}
+        />
 
         <View style={styles.totalRow}>
-          <Text style={styles.totalLabel}>To Pay</Text>
-          <Text style={styles.totalValue}>₹{formatCurrency(totalAmount)}</Text>
+          <Text style={[styles.totalLabel, { color: colors.text }]}>
+            To Pay
+          </Text>
+          <Text style={[styles.totalValue, { color: colors.text }]}>
+            ₹{formatCurrency(totalAmount)}
+          </Text>
         </View>
-        <View style={styles.guardInfoContainer}>
+        <View
+          style={[
+            styles.guardInfoContainer,
+            { backgroundColor: colors.success },
+          ]}
+        >
           <View style={styles.guardIconWrapper}>
             <Image
               source={guartIcon}
               alt="Guard Icon"
-              style={styles.guardIcon}
+              style={[styles.guardIcon, { tintColor: colors.cardBackground }]} // Use tintColor for monochrome SVGs/PNGs
             />
           </View>
-          <Text style={styles.guardText}>
+          <Text style={[styles.guardText, { color: colors.cardBackground }]}>
             Trusted, authentic, safe, easy returns
           </Text>
         </View>
@@ -140,107 +167,91 @@ const BillDetails = ({
 
 const styles = StyleSheet.create({
   container: {
-    flexDirection: "column", // flex flex-col
-    gap: 12, // gap-3
+    flexDirection: "column",
+    gap: 12,
   },
   title: {
-    marginLeft: 4, // ml-1
-    fontSize: 16, // text-[16px]
-    fontWeight: "600", // font-semibold
-    letterSpacing: -0.4, // -tracking-[0.4px]
-    color: "#02060cbf",
-    // whitespace-nowrap - handled by flexShrink on other elements if needed
+    marginLeft: 4,
+    fontSize: 16,
+    fontWeight: "600",
+    letterSpacing: -0.4,
   },
   card: {
-    // shadow-cart-card conversion
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
     shadowRadius: 2,
     elevation: 3,
-    marginBottom: 4, // mb-1
-    flexDirection: "column", // flex w-full flex-col
-    gap: 8, // gap-2
-    borderRadius: 8, // rounded-lg
-    backgroundColor: "white", // bg-white
-    padding: 16, // p-4
+    marginBottom: 4,
+    flexDirection: "column",
+    gap: 8,
+    borderRadius: 8,
+    padding: 16,
   },
   row: {
-    flexDirection: "row", // flex
-    alignItems: "center", // items-center
-    justifyContent: "space-between", // justify-between
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
   },
   label: {
-    // line-clamp-1 - not directly applicable, rely on flexShrink/ellipsizeMode for parents if needed
-    fontSize: 14, // text-sm
-    lineHeight: 18, // leading-4.5
-    fontWeight: "300", // font-extralight
-    letterSpacing: -0.35, // -tracking-[0.35px]
-    color: "rgba(2, 6, 12, 0.6)", // text-[#02060c99]
+    fontSize: 14,
+    lineHeight: 18,
+    fontWeight: "300",
+    letterSpacing: -0.35,
   },
   value: {
-    fontSize: 14, // text-sm
-    lineHeight: 18, // leading-4.5
-    fontWeight: "400", // font-normal
-    letterSpacing: -0.35, // -tracking-[0.35px]
-    color: "rgba(2, 6, 12, 0.75)", // text-[#02060cbf]
-    // whitespace-nowrap - handled by flexShrink/ellipsizeMode for parents if needed
+    fontSize: 14,
+    lineHeight: 18,
+    fontWeight: "400",
+    letterSpacing: -0.35,
+    flexShrink: 1,
+    textAlign: "right",
   },
-  discountValue: {
-    color: "#1ba672", // text-[#1ba672]
-  },
+  discountValue: {},
   freeValue: {
-    color: "#1ba672", // text-[#1ba672]
-    fontWeight: "400", // font-normal
+    fontWeight: "500",
   },
   dashedSeparator: {
-    marginVertical: 8, // my-2
-    borderTopWidth: 1, // border-t
-    borderStyle: "dashed", // border-dashed
-    borderColor: "rgba(2, 6, 12, 0.15)", // border-[#02060c26]
+    marginVertical: 8,
+    borderTopWidth: 1,
+    borderStyle: "dashed",
   },
   totalRow: {
-    flexDirection: "row", // flex
-    alignItems: "center", // items-center
-    justifyContent: "space-between", // justify-between
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
   },
   totalLabel: {
-    fontSize: 14, // text-sm
-    lineHeight: 18, // leading-4.5
-    fontWeight: "600", // font-semibold
-    letterSpacing: -0.35, // -tracking-[0.35px]
-    color: "rgba(2, 6, 12, 0.92)", // text-[#02060ceb]
+    fontSize: 14,
+    lineHeight: 18,
+    fontWeight: "600",
+    letterSpacing: -0.35,
   },
   totalValue: {
-    fontSize: 14, // text-sm
-    lineHeight: 18, // leading-4.5
-    fontWeight: "600", // font-semibold
-    letterSpacing: -0.35, // -tracking-[0.35px]
-    color: "rgba(2, 6, 12, 0.92)", // text-[#02060ceb]
+    fontSize: 14,
+    lineHeight: 18,
+    fontWeight: "600",
+    letterSpacing: -0.35,
   },
   guardInfoContainer: {
-    // -mx-4 -mb-4 - handled by padding on card and margin here
-    flexDirection: "row", // flex
-    justifyContent: "center", // justify-center
-    gap: 8, // gap-2
-    borderBottomLeftRadius: 8, // rounded-b-lg (partially, relies on container radius)
+    flexDirection: "row",
+    justifyContent: "center",
+    gap: 8,
+    borderBottomLeftRadius: 8,
     borderBottomRightRadius: 8,
-    backgroundColor: "rgba(27, 166, 114, 0.75)", // bg-[#1ba672bf]
-    paddingHorizontal: 8, // px-2
-    paddingVertical: 6, // py-1.5
-    // Note: To truly extend -mx-4 -mb-4, you might need absolute positioning or negative margins.
-    // This example uses padding within the card.
-    marginHorizontal: -16, // Negative margin to align with card edges
-    marginBottom: -16, // Negative margin to align with card bottom edge
-    marginTop: 16, // Ensure space from previous content
+    paddingHorizontal: 8,
+    paddingVertical: 6,
+    marginHorizontal: -16,
+    marginBottom: -16,
+    marginTop: 16,
   },
   guardIconWrapper: {
     flexDirection: "row",
-    aspectRatio: 1, // aspect-square
-    width: 20, // w-[20px]
-    alignItems: "center", // items-center
-    justifyContent: "center", // justify-center
-    padding: 3, // p-[1px]
+    aspectRatio: 1,
+    width: 20,
+    alignItems: "center",
+    justifyContent: "center",
+    padding: 3,
   },
   guardIcon: {
     width: "100%",
@@ -248,12 +259,10 @@ const styles = StyleSheet.create({
     resizeMode: "contain",
   },
   guardText: {
-    // line-clamp-1
-    fontSize: 14, // text-sm
-    lineHeight: 18, // leading-4.5
-    fontWeight: "400", // font-normal
-    letterSpacing: -0.35, // -tracking-[0.35px]
-    color: "rgba(255, 255, 255, 0.92)", // text-[#ffffffeb]
+    fontSize: 14,
+    lineHeight: 18,
+    fontWeight: "400",
+    letterSpacing: -0.35,
   },
 });
 

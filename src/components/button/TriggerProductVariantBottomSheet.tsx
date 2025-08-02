@@ -1,3 +1,4 @@
+import { Minus, Plus } from "lucide-react-native";
 import React, { useState } from "react";
 import {
   ActivityIndicator,
@@ -8,28 +9,30 @@ import {
   View,
 } from "react-native";
 
-// Adjust paths for RTK Query and Redux hooks
 import {
   useGetCartItemsQuery,
   useUpdateCartItemMutation,
-} from "@/services/cart/cartAPI"; // Adjust path
-
-// Import your converted components and types
-import { LoginDialog } from "@/components/dialog/LoginDialog"; // Adjust path
-import { Product } from "@/services/product/productApi.type";
+} from "@/services/cart/cartAPI";
 import { useAppSelector } from "@/store/hook";
-import { Minus, Plus } from "lucide-react-native";
+
+import { darkColors, lightColors } from "@/constants/ThemeColors";
+import { useTheme } from "@/hooks/useTheme";
+import { Product } from "@/services/product/productApi.type";
 import ProductVariantBottomSheet from "../bottomsheet/ProductVariantBottomSheet";
+import { LoginDialog } from "../dialog/LoginDialog";
 
 export interface TriggerProductVariantBottomSheetProps {
   product: Product;
 }
+
 const TriggerProductVariantBottomSheet = ({
   product,
 }: TriggerProductVariantBottomSheetProps) => {
-  const [isBottomSheetOpen, setIsBottomSheetOpen] = useState(false); // State to control ProductVariantBottomSheet visibility
-  const [isLoginDialogOpen, setIsLoginDialogOpen] = useState(false); // State to control LoginDialog visibility
+  const [isBottomSheetOpen, setIsBottomSheetOpen] = useState(false);
+  const [isLoginDialogOpen, setIsLoginDialogOpen] = useState(false);
 
+  const { theme } = useTheme();
+  const colors = theme === "dark" ? darkColors : lightColors;
   const { isAuthenticated } = useAppSelector((state) => state.auth);
 
   const { data: cartData = { data: [] } } = useGetCartItemsQuery(undefined, {
@@ -39,9 +42,8 @@ const TriggerProductVariantBottomSheet = ({
   const [updateCartItem, { isLoading: isUpdatingCart }] =
     useUpdateCartItemMutation();
 
-  // Calculate total quantity of THIS specific product (across all its variants) in the cart
   let totalProductsInCart = 0;
-  let variantsOfThisProductInCart = 0; // Number of *unique variants* of this product in cart
+  let variantsOfThisProductInCart = 0;
 
   product.product_variants.forEach((variant) => {
     const itemInCart = cartData.data.find(
@@ -58,7 +60,6 @@ const TriggerProductVariantBottomSheet = ({
   const hasMultipleVariantsInCart = variantsOfThisProductInCart > 1;
 
   const handleDecreaseProductQuantity = async (productId: string) => {
-    // This function is only called when quantity is > 0 and only ONE variant is in cart
     const variantInCart = cartData.data.find(
       (item) =>
         item.variant.product_id === productId && !item.variant.out_of_stock
@@ -79,26 +80,23 @@ const TriggerProductVariantBottomSheet = ({
     }
   };
 
-  // Common button base style
-  const buttonBaseStyle = [
-    styles.counterButtonBase,
-    styles.addOutlineButton, // Includes shadow and border
-  ];
+  const buttonBaseStyle = [styles.counterButtonBase, styles.addOutlineButton];
   const buttonTextStyle = styles.addOutlineButtonText;
 
-  // --- Render Functions for Buttons ---
   const AddButton = () => (
     <TouchableOpacity
-      style={buttonBaseStyle}
+      style={[
+        buttonBaseStyle,
+        { borderColor: colors.border, backgroundColor: colors.cardBackground },
+      ]}
       onPress={() => setIsBottomSheetOpen(true)}
     >
-      <Text style={buttonTextStyle}>Add</Text>
+      <Text style={[buttonTextStyle, { color: colors.accent }]}>Add</Text>
     </TouchableOpacity>
   );
 
   const MinusButton = () => (
     <TouchableOpacity
-      // Only directly decrease if only one variant of this product is in cart
       onPress={
         hasMultipleVariantsInCart
           ? () => setIsBottomSheetOpen(true)
@@ -106,54 +104,63 @@ const TriggerProductVariantBottomSheet = ({
       }
       style={[
         styles.counterButtonSide,
-        styles.leftRounded, // Apply specific border radius
+        styles.leftRounded,
         isUpdatingCart && styles.disabledCounterButton,
+        { backgroundColor: colors.cardBackground },
       ]}
       disabled={isUpdatingCart}
     >
       {isUpdatingCart ? (
-        <ActivityIndicator size="small" color="#1ba672" />
+        <ActivityIndicator size="small" color={colors.success} />
       ) : (
-        <Minus size={16} color="#1ba672" />
+        <Minus size={16} color={colors.success} />
       )}
     </TouchableOpacity>
   );
 
   const PlusButton = () => (
     <TouchableOpacity
-      onPress={() => setIsBottomSheetOpen(true)} // Always open bottom sheet for plus
+      onPress={() => setIsBottomSheetOpen(true)}
       style={[
         styles.counterButtonSide,
-        styles.rightRounded, // Apply specific border radius
+        styles.rightRounded,
         isUpdatingCart && styles.disabledCounterButton,
+        { backgroundColor: colors.cardBackground },
       ]}
       disabled={isUpdatingCart}
     >
       {isUpdatingCart ? (
-        <ActivityIndicator size="small" color="#1ba672" />
+        <ActivityIndicator size="small" color={colors.success} />
       ) : (
-        <Plus size={16} color="#1ba672" />
+        <Plus size={16} color={colors.success} />
       )}
     </TouchableOpacity>
   );
 
   const QuantityDisplay = () => (
     <TouchableOpacity
-      onPress={() => setIsBottomSheetOpen(true)} // Always open bottom sheet for quantity display
+      onPress={() => setIsBottomSheetOpen(true)}
       style={styles.quantityDisplayContainer}
     >
-      <Text style={styles.quantityDisplayText}>{totalProductsInCart}</Text>
+      <Text style={[styles.quantityDisplayText, { color: colors.success }]}>
+        {totalProductsInCart}
+      </Text>
     </TouchableOpacity>
   );
 
-  // --- Main Render Logic ---
   if (!isAuthenticated) {
     return (
       <TouchableOpacity
-        style={buttonBaseStyle}
-        onPress={() => setIsLoginDialogOpen(true)} // Open Login Dialog
+        style={[
+          buttonBaseStyle,
+          {
+            borderColor: colors.border,
+            backgroundColor: colors.cardBackground,
+          },
+        ]}
+        onPress={() => setIsLoginDialogOpen(true)}
       >
-        <Text style={buttonTextStyle}>Add</Text>
+        <Text style={[buttonTextStyle, { color: colors.accent }]}>Add</Text>
         <LoginDialog
           isVisible={isLoginDialogOpen}
           onClose={() => setIsLoginDialogOpen(false)}
@@ -167,14 +174,13 @@ const TriggerProductVariantBottomSheet = ({
       {totalProductsInCart === 0 ? (
         <AddButton />
       ) : (
-        <View style={styles.counterGroup}>
+        <View style={[styles.counterGroup, { borderColor: colors.border }]}>
           <MinusButton />
           <QuantityDisplay />
           <PlusButton />
         </View>
       )}
 
-      {/* Product Variant Selection Bottom Sheet */}
       <ProductVariantBottomSheet
         productVariants={product.product_variants}
         isVisible={isBottomSheetOpen}
@@ -186,89 +192,76 @@ const TriggerProductVariantBottomSheet = ({
 
 const styles = StyleSheet.create({
   outerContainer: {
-    // This wrapper is mainly for organization
-    width: "100%", // Ensure it takes full width of its parent if needed
-    alignItems: "center", // Center content if button isn't full width
+    width: "100%",
+    alignItems: "center",
   },
   counterButtonBase: {
-    height: "auto", // h-fit
-    width: "100%", // Set explicit width for button/counter
-    borderRadius: 8, // rounded-[8px]
-    paddingVertical: 8, // py-1.5
+    height: "auto",
+    width: "100%",
+    borderRadius: 8,
+    paddingVertical: 8,
     alignItems: "center",
     justifyContent: "center",
   },
-  // Add button (outline variant)
   addOutlineButton: {
     borderWidth: 1,
-    borderColor: "rgba(2, 6, 12, 0.15)", // border-[#02060c26]
-    backgroundColor: "white",
-    shadowColor: "#000", // shadow-button-shadow
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
     shadowRadius: 2,
+    elevation: 2,
   },
   addOutlineButtonText: {
-    fontSize: 14, // text-sm
-    lineHeight: 18, // leading-[18px]
-    fontWeight: "600", // font-semibold
-    letterSpacing: -0.35, // -tracking-[0.35px]
-    color: "#ff5200", // text-[#ff5200]
+    fontSize: 14,
+    lineHeight: 18,
+    fontWeight: "600",
+    letterSpacing: -0.35,
   },
-  // Counter group (when quantity > 0)
   counterGroup: {
     flexDirection: "row",
-    height: "auto", // h-fit
-    width: "100%", // Set explicit width for button/counter
+    height: "auto",
+    width: "100%",
     alignItems: "center",
     justifyContent: "space-between",
-    borderRadius: 8, // rounded-lg
+    borderRadius: 8,
     borderWidth: 1,
-    borderColor: "rgba(2, 6, 12, 0.15)",
-    overflow: "hidden", // Ensures border radius clips content
+    overflow: "hidden",
   },
   counterButtonSide: {
-    height: "100%", // Take full height of counterGroup
-    paddingHorizontal: 8, // px-2
-    paddingVertical: 2, // py-1.5
+    height: "100%",
+    paddingHorizontal: 8,
+    paddingVertical: 2,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "white", // Default background
   },
   leftRounded: {
     borderTopLeftRadius: 8,
     borderBottomLeftRadius: 8,
-    // border-none rounded-r-none are implicit
   },
   rightRounded: {
     borderTopRightRadius: 8,
     borderBottomRightRadius: 8,
-    // border-none rounded-l-none are implicit
   },
   counterButtonText: {
-    fontSize: 18, // leading-[1.125rem] font-semibold tracking-[-0.35px]
+    fontSize: 18,
     fontWeight: "600",
     letterSpacing: -0.35,
-    color: "#1ba672", // text-[#1ba672]
   },
   quantityDisplayContainer: {
-    flex: 1, // flex-1
+    flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    // hover:bg-[#02060c26] not applicable
   },
   quantityDisplayText: {
     paddingHorizontal: 8,
     paddingVertical: 6,
-    fontSize: 14, // text-sm
-    lineHeight: 18, // leading-[1.125rem]
-    fontWeight: "600", // font-semibold
-    letterSpacing: 0.35, // tracking-[0.35px]
-    color: "#1ba672",
-    // shadow-none not applicable
+    fontSize: 14,
+    lineHeight: 18,
+    fontWeight: "600",
+    letterSpacing: 0.35,
   },
   disabledCounterButton: {
-    opacity: 0.5, // Visual for disabled state
+    opacity: 0.5,
   },
 });
 

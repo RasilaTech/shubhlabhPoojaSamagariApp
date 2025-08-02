@@ -1,21 +1,25 @@
 import React from "react";
 import {
-  Dimensions, // For screen dimensions
-  Image, // For images
-  Modal, // For the bottom sheet overlay
-  Pressable, // For the dismissable overlay and non-closable content
-  ScrollView, // For scrollable variants list
+  Dimensions,
+  Image,
+  Modal,
+  Pressable,
+  ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
 } from "react-native";
 
-import { useGetCartItemsQuery } from "@/services/cart/cartAPI"; // Adjust path
-import type { ProductVariant } from "@/services/product/productApi.type"; // Adjust path
-import { useAppSelector } from "@/store/hook"; // Corrected hook path, ensure it's accurate for your project (e.g., "@/store/hooks")
-import AddToCartCounter from "../button/AddToCartCounter"; // Adjust path for your component
-import SoldOutBadge from "../button/SoldButton"; // Adjust path for your component
+import { useGetCartItemsQuery } from "@/services/cart/cartAPI";
+import type { ProductVariant } from "@/services/product/productApi.type";
+import { useAppSelector } from "@/store/hook";
+import AddToCartCounter from "../button/AddToCartCounter";
+import SoldOutBadge from "../button/SoldButton";
+
+import { darkColors, lightColors } from "@/constants/ThemeColors";
+import { useTheme } from "@/hooks/useTheme";
+import { X } from "lucide-react-native";
 
 const screenHeight = Dimensions.get("window").height;
 
@@ -31,12 +35,13 @@ const ProductVariantBottomSheet = ({
   onClose,
 }: ProductVaraintBottomSheetProps) => {
   const { isAuthenticated } = useAppSelector((state) => state.auth);
+  const { theme } = useTheme();
+  const colors = theme === "dark" ? darkColors : lightColors;
 
   const { data: cartData = { data: [] } } = useGetCartItemsQuery(undefined, {
-    // skip: !isAuthenticated,
+    skip: !isAuthenticated,
   });
 
-  // Ensure we have at least one variant before trying to access properties
   const mainProductName = productVariants[0]?.name || "Select Variant";
   const productId = productVariants[0]?.product_id;
 
@@ -56,18 +61,30 @@ const ProductVariantBottomSheet = ({
     >
       <Pressable style={styles.modalOverlay} onPress={onClose}>
         <Pressable
-          style={styles.bottomSheetContent}
+          style={[
+            styles.bottomSheetContent,
+            { backgroundColor: colors.cardBackground },
+          ]}
           onPress={(e) => e.stopPropagation()}
         >
           {/* Header */}
-          <View style={styles.header}>
+          <View style={[styles.header, { borderBottomColor: colors.border }]}>
             <Text
-              style={styles.headerTitle}
-              numberOfLines={1} // Ensures single line and truncation
-              ellipsizeMode="tail" // Adds "..." at the end if it overflows
+              style={[styles.headerTitle, { color: colors.text }]}
+              numberOfLines={1}
+              ellipsizeMode="tail"
             >
               {mainProductName}
             </Text>
+            <TouchableOpacity
+              onPress={onClose}
+              style={[
+                styles.closeButton,
+                { backgroundColor: colors.background },
+              ]}
+            >
+              <X size={24} color={colors.textSecondary} />
+            </TouchableOpacity>
           </View>
 
           {/* Variants List */}
@@ -81,6 +98,11 @@ const ProductVariantBottomSheet = ({
                 style={[
                   styles.variantItem,
                   variant.out_of_stock === true && styles.outOfStockOpacity,
+                  {
+                    backgroundColor: colors.cardBackground,
+                    borderColor: colors.border,
+                    shadowColor: colors.text,
+                  },
                 ]}
               >
                 {/* Left section with image and label */}
@@ -88,30 +110,46 @@ const ProductVariantBottomSheet = ({
                   <Image
                     source={{ uri: variant.images[0] }}
                     alt={variant.name}
-                    style={styles.variantImage}
+                    style={[
+                      styles.variantImage,
+                      { borderColor: colors.border },
+                    ]}
                     resizeMode="cover"
                   />
                   <Text
                     numberOfLines={2}
                     ellipsizeMode="tail"
-                    style={styles.variantLabel}
+                    style={[
+                      styles.variantLabel,
+                      { color: colors.textSecondary },
+                    ]}
                   >
                     {variant.display_label}
                   </Text>
                 </View>
 
                 {/* Vertical Separator */}
-                <View style={styles.verticalSeparator} />
+                <View
+                  style={[
+                    styles.verticalSeparator,
+                    { backgroundColor: colors.border },
+                  ]}
+                />
 
                 {/* Right section with price and button */}
                 <View style={styles.variantItemRight}>
                   {/* Price Group (Price & MRP) */}
                   <View style={styles.variantPriceGroup}>
-                    <Text style={styles.variantPrice}>
+                    <Text style={[styles.variantPrice, { color: colors.text }]}>
                       ₹{variant.price.toLocaleString("en-IN")}
                     </Text>
                     {variant.price < variant.mrp && (
-                      <Text style={styles.variantMrp}>
+                      <Text
+                        style={[
+                          styles.variantMrp,
+                          { color: colors.textSecondary },
+                        ]}
+                      >
                         ₹{variant.mrp.toLocaleString("en-IN")}
                       </Text>
                     )}
@@ -132,7 +170,13 @@ const ProductVariantBottomSheet = ({
 
           {/* Footer */}
           <View style={styles.footer}>
-            <TouchableOpacity onPress={onClose} style={styles.confirmButton}>
+            <TouchableOpacity
+              onPress={onClose}
+              style={[
+                styles.confirmButton,
+                { backgroundColor: colors.success },
+              ]}
+            >
               <View style={styles.confirmButtonLeft}>
                 <Text style={styles.totalText}>item total :</Text>
                 <Text style={styles.totalValue}>
@@ -155,7 +199,6 @@ const styles = StyleSheet.create({
     justifyContent: "flex-end",
   },
   bottomSheetContent: {
-    backgroundColor: "#fff",
     borderTopLeftRadius: 12,
     borderTopRightRadius: 12,
     flexDirection: "column",
@@ -170,16 +213,26 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     paddingBottom: 8,
+    borderBottomWidth: 1,
   },
   headerTitle: {
     fontSize: 18,
     lineHeight: 22,
     fontWeight: "600",
     letterSpacing: -0.45,
-    color: "rgba(2, 6, 12, 0.75)",
-    flexShrink: 1, // Allow text to shrink
-    minWidth: 0, // Crucial for flexShrink to work
+    flexShrink: 1,
+    minWidth: 0,
     textAlign: "center",
+  },
+  closeButton: {
+    position: "absolute",
+    right: 0,
+    borderRadius: 12,
+    padding: 4,
+    width: 32,
+    height: 32,
+    justifyContent: "center",
+    alignItems: "center",
   },
   variantsScrollView: {
     maxHeight: 350,
@@ -191,19 +244,17 @@ const styles = StyleSheet.create({
   },
   variantItem: {
     flexDirection: "row",
-    alignItems: "center", // Vertically center items in the row
-    justifyContent: "space-between", // Space between left, separator, and right
+    alignItems: "center",
+    justifyContent: "space-between",
     paddingHorizontal: 12,
     paddingVertical: 8,
-    backgroundColor: "#fff",
     borderRadius: 8,
-    shadowColor: "#000",
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.05,
     shadowRadius: 2,
     elevation: 1,
     minHeight: 60,
-    overflow: "hidden", // Prevent content from overflowing
+    overflow: "hidden",
   },
   outOfStockOpacity: {
     opacity: 0.5,
@@ -211,71 +262,65 @@ const styles = StyleSheet.create({
   variantItemLeft: {
     flexDirection: "row",
     alignItems: "center",
-    flex: 1, // Allow this section to take available space
+    flex: 1,
     gap: 8,
-    minWidth: 0, // Allow text to truncate
-    // height: 80, // Removed fixed height, let content define height
-    // maxWidth: 140, // Removed, let flex handle distribution
+    minWidth: 0,
   },
   variantImage: {
     width: 40,
     height: 40,
     borderRadius: 6,
     resizeMode: "cover",
-    flexShrink: 0, // Don't let image shrink
+    flexShrink: 0,
   },
   variantLabel: {
-    flex: 1, // Allow text to take remaining space and truncate
+    flex: 1,
     fontSize: 14,
     lineHeight: 16,
     fontWeight: "400",
     letterSpacing: -0.2,
-    color: "rgba(2, 6, 12, 0.75)",
-    minWidth: 0, // Essential for `flex: 1` text wrapping/truncation
+    minWidth: 0,
   },
   verticalSeparator: {
     width: 1,
-    height: "100%", // Take full height of the parent variantItem
-    backgroundColor: "#eee", // Light gray separator
-    marginHorizontal: 12, // Space on both sides of the separator
-    flexShrink: 0, // Prevent separator from shrinking
+    height: "100%",
+    marginHorizontal: 12,
+    flexShrink: 0,
   },
   variantItemRight: {
-    flexDirection: "row", // Keep price and button in a row
-    alignItems: "center", // Vertically center price and button
-    justifyContent: "flex-end", // Push items to the right
-    gap: 8, // Gap between price group and action button
-    flexShrink: 0, // Prevent this section from shrinking too much
-    flexGrow: 0, // Prevent this section from growing unnecessarily
-    minWidth: 0, // Allows content within it to potentially wrap if needed
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "flex-end",
+    gap: 8,
+    flexShrink: 0,
+    flexGrow: 0,
+    minWidth: 0,
   },
   variantPriceGroup: {
-    flexDirection: "column", // Stack price and MRP
-    alignItems: "flex-end", // Align prices to the right
-    flexShrink: 0, // Prevent prices from shrinking
-    flexGrow: 0, // Prevent prices from growing
-    minWidth: 50, // Ensure minimum width for prices
+    flexDirection: "column",
+    alignItems: "flex-end",
+    flexShrink: 0,
+    flexGrow: 0,
+    minWidth: 50,
   },
   variantPrice: {
     fontSize: 14,
     lineHeight: 16,
     fontWeight: "600",
     letterSpacing: -0.2,
-    color: "rgba(2, 6, 12, 0.75)",
   },
   variantMrp: {
     fontSize: 12,
     lineHeight: 14,
     letterSpacing: -0.2,
-    color: "rgba(2, 6, 12, 0.4)",
     textDecorationLine: "line-through",
     marginTop: 2,
   },
   variantActionButtonWrapper: {
-    width: 80, // Fixed width for the button/counter area
-    height: 30, // Fixed height to ensure consistent sizing for AddToCartCounter/SoldOutBadge
-    justifyContent: "center", // Center content vertically
-    alignItems: "center", // Center content horizontally
+    width: 80,
+    height: 30,
+    justifyContent: "center",
+    alignItems: "center",
     flexShrink: 0,
     flexGrow: 0,
   },
@@ -287,7 +332,6 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
     borderRadius: 12,
-    backgroundColor: "#1ba672",
     paddingHorizontal: 16,
     paddingVertical: 12,
   },
