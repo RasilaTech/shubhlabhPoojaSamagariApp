@@ -132,12 +132,7 @@ const Orders = () => {
         },
       ]}
     >
-      <View
-        style={[
-          styles.header,
-          { backgroundColor: colors.cardBackground, shadowColor: colors.text },
-        ]}
-      >
+      <View style={[styles.header, { shadowColor: colors.text }]}>
         <Text style={[styles.headingText, { color: colors.text }]}>
           My Orders
         </Text>
@@ -166,10 +161,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     marginTop: 20,
     marginBottom: 20,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
-    elevation: 4,
   },
   headingText: {
     fontSize: 26,

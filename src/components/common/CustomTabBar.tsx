@@ -15,6 +15,7 @@ import Animated, {
   useSharedValue,
   withTiming,
 } from "react-native-reanimated";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { darkColors, lightColors } from "@/constants/ThemeColors";
 import { useTheme } from "@/hooks/useTheme";
@@ -28,11 +29,10 @@ const tabIcons = {
 };
 
 const windowWidth = Dimensions.get("window").width;
-const TAB_BAR_HEIGHT = 60;
-const TAB_BAR_MARGIN_BOTTOM = 20;
-const PILL_PADDING = 8;
-const TAB_BAR_WIDTH = windowWidth * 0.9;
+const TAB_BAR_HEIGHT = 50;
 const NUMBER_OF_TABS = 5;
+const INDICATOR_SIZE = 40; // Consistent size for the circular indicator
+const HORIZONTAL_PADDING = 12; // Match the container padding
 
 export const CustomTabBar = ({
   state,
@@ -40,23 +40,22 @@ export const CustomTabBar = ({
   navigation,
 }: BottomTabBarProps) => {
   const translateX = useSharedValue(0);
+  const insets = useSafeAreaInsets();
 
   const { theme } = useTheme();
   const colors = theme === "dark" ? darkColors : lightColors;
 
   useEffect(() => {
-    // FIX: Simple calculation - divide the available width by number of tabs
-    // The available width is the total width minus padding on both sides
-    const availableWidth = TAB_BAR_WIDTH - PILL_PADDING * 2;
+    // Calculate the available width for tabs (excluding horizontal padding)
+    const availableWidth = windowWidth - HORIZONTAL_PADDING * 2;
     const tabWidth = availableWidth / NUMBER_OF_TABS;
-    const indicatorWidth = tabWidth * 0.7; // Make indicator 70% of tab width
-    const indicatorOffset = (tabWidth - indicatorWidth) / 2; // Center the indicator
 
-    // Position is: tab index * tab width + offset to center indicator
+    // Center the indicator within each tab
+    const indicatorOffset = (tabWidth - INDICATOR_SIZE) / 2;
     const targetPosition = state.index * tabWidth + indicatorOffset;
 
     translateX.value = withTiming(targetPosition, {
-      duration: 250,
+      duration: 300,
     });
   }, [state.index, translateX]);
 
@@ -66,25 +65,33 @@ export const CustomTabBar = ({
     };
   });
 
-  // Calculate these values for consistent use
-  const availableWidth = TAB_BAR_WIDTH - PILL_PADDING * 2;
+  // Calculate tab width based on available space
+  const availableWidth = windowWidth - HORIZONTAL_PADDING * 2;
   const tabWidth = availableWidth / NUMBER_OF_TABS;
-  const indicatorWidth = tabWidth * 0.7;
 
   return (
-    <View style={styles.container}>
-      <View
-        style={[
-          styles.tabBarWrapper,
-          { backgroundColor: colors.cardBackground, shadowColor: colors.text },
-        ]}
-      >
+    <View
+      style={[
+        styles.container,
+        {
+          backgroundColor: colors.cardBackground,
+          paddingBottom: insets.bottom,
+          shadowColor: colors.text,
+          borderTopColor:
+            theme === "dark" ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)",
+        },
+      ]}
+    >
+      <View style={styles.tabBarWrapper}>
+        {/* Circular indicator */}
         <Animated.View
           style={[
             styles.indicator,
             {
-              width: indicatorWidth,
+              width: INDICATOR_SIZE,
+              height: INDICATOR_SIZE,
               backgroundColor: colors.accent,
+              borderRadius: INDICATOR_SIZE / 2, // Perfect circle
             },
             indicatorStyle,
           ]}
@@ -115,13 +122,31 @@ export const CustomTabBar = ({
             <TouchableOpacity
               key={route.key}
               onPress={onPress}
-              style={[styles.tabButton, { width: tabWidth }]}
+              style={[
+                styles.tabButton,
+                {
+                  width: tabWidth,
+                },
+              ]}
+              activeOpacity={0.7}
             >
-              <View style={styles.iconWrapper}>
+              <View
+                style={[
+                  styles.iconWrapper,
+                  isFocused && { transform: [{ scale: 1.1 }] },
+                ]}
+              >
                 {IconComponent && (
                   <IconComponent
-                    color={isFocused ? colors.cardBackground : colors.text}
-                    size={24}
+                    color={
+                      isFocused
+                        ? theme === "dark"
+                          ? "#FFFFFF"
+                          : colors.cardBackground
+                        : colors.text
+                    }
+                    size={26}
+                    strokeWidth={isFocused ? 2.5 : 2}
                   />
                 )}
               </View>
@@ -136,45 +161,40 @@ export const CustomTabBar = ({
 const styles = StyleSheet.create({
   container: {
     position: "absolute",
-    bottom: TAB_BAR_MARGIN_BOTTOM,
+    bottom: 0,
     left: 0,
     right: 0,
-    alignItems: "center",
+    paddingHorizontal: HORIZONTAL_PADDING,
+    paddingTop: 2,
+    shadowOffset: { width: 0, height: -2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 4,
+    borderTopWidth: 1,
   },
   tabBarWrapper: {
     flexDirection: "row",
     height: TAB_BAR_HEIGHT,
-    borderRadius: 9999,
-    width: TAB_BAR_WIDTH,
-    paddingHorizontal: PILL_PADDING,
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.1,
-    shadowRadius: 15,
-    elevation: 8,
     alignItems: "center",
+    position: "relative", // Ensure proper positioning context
   },
   indicator: {
     position: "absolute",
-    height: TAB_BAR_HEIGHT - PILL_PADDING * 2,
-    backgroundColor: "#3b82f6",
-    borderRadius: 9999,
-    top: PILL_PADDING,
-    left: PILL_PADDING, // Start from the padded area
+    top: "50%",
+    marginTop: -(INDICATOR_SIZE / 2), // Center vertically
+    zIndex: 0,
   },
   tabButton: {
     alignItems: "center",
     justifyContent: "center",
     height: "100%",
+    paddingVertical: 4,
     zIndex: 1,
   },
   iconWrapper: {
-    flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    gap: 8,
-  },
-  tabLabel: {
-    fontSize: 14,
-    fontWeight: "bold",
+    width: INDICATOR_SIZE, // Match indicator size for perfect alignment
+    height: INDICATOR_SIZE,
   },
 });

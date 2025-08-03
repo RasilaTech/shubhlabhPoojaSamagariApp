@@ -49,6 +49,7 @@ export default function HomeScreen() {
   } = useGetAppConfigurationsQuery();
 
   const categories = categoriesData.pages.flatMap((page) => page.data);
+  const topSixCategories = categories.slice(0, 6); // Changed to 6 categories
   const topFiveCategories = categories.slice(0, 5);
 
   const insets = useSafeAreaInsets();
@@ -139,16 +140,12 @@ export default function HomeScreen() {
                 <ChevronRight size={13} color={colors.accent} strokeWidth={3} />
               </TouchableOpacity>
             </View>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-              <View style={styles.categoryScrollView}>
-                {categories.map((category) => (
-                  <CategoryHomeScreenCard
-                    key={category.id}
-                    category={category}
-                  />
-                ))}
-              </View>
-            </ScrollView>
+            {/* Updated to grid layout */}
+            <View style={styles.categoryGridContainer}>
+              {topSixCategories.map((category) => (
+                <CategoryHomeScreenCard key={category.id} category={category} />
+              ))}
+            </View>
           </View>
           {adBanners && adBanners.length > 0 && (
             <ImageCarousel items={adBanners} />
@@ -196,12 +193,15 @@ const styles = StyleSheet.create({
     gap: 1,
     alignItems: "center",
   },
-  categoryScrollView: {
-    display: "flex",
+  // Updated styles for grid layout
+  categoryGridContainer: {
     flexDirection: "row",
-    gap: 16,
+    flexWrap: "wrap",
+    justifyContent: "space-around",
     paddingHorizontal: 16,
     paddingTop: 4,
     paddingBottom: 10,
+    gap: 16,
   },
+  // Removed the old categoryScrollView style
 });
