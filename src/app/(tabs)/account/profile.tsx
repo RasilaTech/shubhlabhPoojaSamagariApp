@@ -557,6 +557,7 @@ export default function UserProfileForm() {
 const styles = StyleSheet.create({
   keyboardAvoidingView: {
     flex: 1,
+    marginBottom: 24,
   },
   scrollContent: {
     flexGrow: 1,

@@ -9,7 +9,13 @@ import {
   User,
 } from "lucide-react-native";
 import React, { useEffect } from "react";
-import { Dimensions, StyleSheet, TouchableOpacity, View } from "react-native";
+import {
+  Dimensions,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -19,6 +25,8 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { darkColors, lightColors } from "@/constants/ThemeColors";
 import { useTheme } from "@/hooks/useTheme";
+import { useGetCartItemsQuery } from "@/services/cart/cartAPI";
+import { useAppSelector } from "@/store/hook";
 
 const tabIcons = {
   index: Home,
@@ -44,6 +52,22 @@ export const CustomTabBar = ({
 
   const { theme } = useTheme();
   const colors = theme === "dark" ? darkColors : lightColors;
+
+  // Get authentication status and cart data
+  const { isAuthenticated } = useAppSelector((state) => state.auth);
+  const {
+    data: cartData = { data: [] },
+    isLoading,
+    isError,
+  } = useGetCartItemsQuery(undefined, {
+    skip: !isAuthenticated,
+  });
+
+  // Calculate total cart items count
+  const cartItemsCount =
+    cartData.data?.reduce((total: number, item: any) => {
+      return total + (item.quantity || 0);
+    }, 0) || 0;
 
   useEffect(() => {
     // Calculate the available width for tabs (excluding horizontal padding)
@@ -99,6 +123,7 @@ export const CustomTabBar = ({
         {state.routes.map((route: Route<string>, index: number) => {
           const isFocused = state.index === index;
           const IconComponent = tabIcons[route.name as keyof typeof tabIcons];
+          const isCartTab = route.name === "cart";
 
           const onPress = () => {
             const event = navigation.emit({
@@ -137,17 +162,43 @@ export const CustomTabBar = ({
                 ]}
               >
                 {IconComponent && (
-                  <IconComponent
-                    color={
-                      isFocused
-                        ? theme === "dark"
-                          ? "#FFFFFF"
-                          : colors.cardBackground
-                        : colors.text
-                    }
-                    size={26}
-                    strokeWidth={isFocused ? 2.5 : 2}
-                  />
+                  <>
+                    <IconComponent
+                      color={
+                        isFocused
+                          ? theme === "dark"
+                            ? "#FFFFFF"
+                            : colors.cardBackground
+                          : colors.text
+                      }
+                      size={26}
+                      strokeWidth={isFocused ? 2.5 : 2}
+                    />
+                    {/* Cart Badge */}
+                    {isCartTab && isAuthenticated && cartItemsCount > 0 && (
+                      <View
+                        style={[
+                          styles.badge,
+                          {
+                            backgroundColor: colors.destructive || "#FF3B30",
+                          },
+                        ]}
+                      >
+                        <Text
+                          style={[
+                            styles.badgeText,
+                            {
+                              color: "#FFFFFF",
+                            },
+                          ]}
+                        >
+                          {cartItemsCount > 99
+                            ? "99+"
+                            : cartItemsCount.toString()}
+                        </Text>
+                      </View>
+                    )}
+                  </>
                 )}
               </View>
             </TouchableOpacity>
@@ -196,5 +247,23 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     width: INDICATOR_SIZE, // Match indicator size for perfect alignment
     height: INDICATOR_SIZE,
+    position: "relative",
+  },
+  badge: {
+    position: "absolute",
+    top: -2,
+    right: -2,
+    minWidth: 18,
+    height: 18,
+    borderRadius: 9,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: 4,
+    zIndex: 2,
+  },
+  badgeText: {
+    fontSize: 10,
+    fontWeight: "600",
+    textAlign: "center",
   },
 });

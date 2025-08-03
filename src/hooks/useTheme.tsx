@@ -2,8 +2,6 @@ import * as SecureStore from "expo-secure-store";
 import { createContext, useContext, useEffect, useState } from "react";
 import { useColorScheme as useDeviceColorScheme } from "react-native";
 
-type ColorScheme = "light" | "dark" | "system";
-
 interface ThemeContextType {
   theme: "light" | "dark";
   toggleTheme: () => void;

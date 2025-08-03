@@ -1,3 +1,5 @@
+import { router } from "expo-router";
+import { ChevronLeft } from "lucide-react-native";
 import React from "react";
 import {
   ActivityIndicator,
@@ -8,16 +10,13 @@ import {
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { router } from "expo-router";
-import { ChevronLeft } from "lucide-react-native";
 
 import { useGetUserAddressListQuery } from "@/services/address/AddresssAPI"; // Adjust path
 import type { UserAddressPayload } from "@/services/address/addressApi.type"; // Adjust path
 import UserAddressCard from "../../../../src/components/card/UserAddressCard"; // Adjust path
 
-import { useTheme } from "@/hooks/useTheme"; // <-- Import useTheme hook
 import { darkColors, lightColors } from "@/constants/ThemeColors"; // <-- Import color palettes
-
+import { useTheme } from "@/hooks/useTheme"; // <-- Import useTheme hook
 
 const UserAddress = () => {
   const {
@@ -26,7 +25,7 @@ const UserAddress = () => {
     isError,
   } = useGetUserAddressListQuery();
   const insets = useSafeAreaInsets();
-  
+
   const { theme } = useTheme(); // Get the current theme
   const colors = theme === "dark" ? darkColors : lightColors; // Select color palette
 
@@ -43,17 +42,25 @@ const UserAddress = () => {
 
   if (isLoading) {
     return (
-      <View style={[styles.centerContent, { backgroundColor: colors.background }]}>
+      <View
+        style={[styles.centerContent, { backgroundColor: colors.background }]}
+      >
         <ActivityIndicator size="large" color={colors.accent} />
-        <Text style={[styles.loadingText, { color: colors.textSecondary }]}>Loading addresses...</Text>
+        <Text style={[styles.loadingText, { color: colors.textSecondary }]}>
+          Loading addresses...
+        </Text>
       </View>
     );
   }
 
   if (isError || addressData.data.length === 0) {
     return (
-      <View style={[styles.centerContent, { backgroundColor: colors.background }]}>
-        <Text style={[styles.noAddressText, { color: colors.textSecondary }]}>No addresses found.</Text>
+      <View
+        style={[styles.centerContent, { backgroundColor: colors.background }]}
+      >
+        <Text style={[styles.noAddressText, { color: colors.textSecondary }]}>
+          No addresses found.
+        </Text>
       </View>
     );
   }
@@ -69,11 +76,20 @@ const UserAddress = () => {
         },
       ]}
     >
-      <View style={[styles.header, { backgroundColor: colors.cardBackground, shadowColor: colors.text }]}>
+      <View
+        style={[
+          styles.header,
+          { backgroundColor: colors.cardBackground, shadowColor: colors.text },
+        ]}
+      >
         <TouchableOpacity onPress={handleGoBack} style={styles.backButton}>
           <ChevronLeft size={24} color={colors.text} />
         </TouchableOpacity>
-        <Text numberOfLines={1} ellipsizeMode="tail" style={[styles.headerTitle, { color: colors.text }]}>
+        <Text
+          numberOfLines={1}
+          ellipsizeMode="tail"
+          style={[styles.headerTitle, { color: colors.text }]}
+        >
           My Addresses
         </Text>
       </View>
@@ -94,6 +110,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     paddingVertical: 10,
+    marginBottom: 24,
   },
   flatListContent: {
     paddingHorizontal: 16,

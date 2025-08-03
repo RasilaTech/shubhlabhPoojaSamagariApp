@@ -219,7 +219,7 @@ export const LoginDialog: React.FC<LoginDialogProps> = ({
       form.reset();
       otpForm.reset();
     }
-  }, [isVisible]);
+  }, [isVisible,form,otpForm]);
 
   return (
     <Modal

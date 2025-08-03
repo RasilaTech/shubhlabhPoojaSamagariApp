@@ -15,7 +15,8 @@ import {
   View,
 } from "react-native";
 import RotatingText from "../animated/RotatingText";
-import LoginButton from "../button/LoginButton";
+import ChatIcon from "../button/ChatIcon";
+import { LoginButton } from "../button/LoginButton";
 import SearchDialog from "../dialog/SearchDialog";
 
 const NavBar = () => {
@@ -82,13 +83,29 @@ const NavBar = () => {
           },
         ]}
       >
-        <TouchableOpacity onPress={handleLogoPress}>
-          <Image
-            source={require("../../../assets/images/navbar-logo.png")}
-            style={[styles.image, isFocused ? { height: 0 } : { height: 45 }]}
-          />
-        </TouchableOpacity>
+        {/* Header with Logo and Chat Icon */}
+        <View style={styles.headerContainer}>
+          {/* Left spacer for centering logo */}
+          <View style={styles.leftSpacer} />
 
+          {/* Centered Logo */}
+          <TouchableOpacity
+            onPress={handleLogoPress}
+            style={styles.logoWrapper}
+          >
+            <Image
+              source={require("../../../assets/images/navbar-logo.png")}
+              style={[styles.image, isFocused ? { height: 0 } : { height: 45 }]}
+            />
+          </TouchableOpacity>
+
+          {/* Right side with Chat Icon */}
+          <View style={styles.rightContainer}>
+            <ChatIcon />
+          </View>
+        </View>
+
+        {/* Search Container */}
         <View style={styles.searchContainer}>
           <View
             style={[
@@ -102,12 +119,7 @@ const NavBar = () => {
             <Search size={18} strokeWidth={2.5} color={colors.textSecondary} />
             {!isFocused && !query && (
               <View style={styles.placeholderContainer}>
-                <Text
-                  style={[
-                    styles.placeholderText,
-                    { color: colors.text },
-                  ]}
-                >
+                <Text style={[styles.placeholderText, { color: colors.text }]}>
                   Search{" "}
                 </Text>
                 <RotatingText
@@ -115,10 +127,7 @@ const NavBar = () => {
                   staggerFrom={"last"}
                   staggerDuration={0.025}
                   rotationInterval={2000}
-                  textStyle={[
-                    styles.rotatingTextStyle,
-                    { color: colors.text },
-                  ]}
+                  textStyle={[styles.rotatingTextStyle, { color: colors.text }]}
                   initial={{ translateY: "100%" }}
                   animate={{ translateY: 0 }}
                   exit={{ translateY: "-120%" }}
@@ -164,6 +173,24 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     paddingVertical: 8,
     gap: 8,
+  },
+  headerContainer: {
+    width: "100%",
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 16,
+    justifyContent: "space-between",
+  },
+  leftSpacer: {
+    width: 40, // Same width as the chat icon area to balance centering
+  },
+  logoWrapper: {
+    flex: 1,
+    alignItems: "center",
+  },
+  rightContainer: {
+    width: 40,
+    alignItems: "flex-end",
   },
   image: {
     resizeMode: "contain",
