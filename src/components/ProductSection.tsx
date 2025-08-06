@@ -163,13 +163,14 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   flatListContent: {
-    paddingVertical: 12,
+    paddingVertical: 8,
     paddingHorizontal: HORIZONTAL_PADDING,
-    gap: 8,
+    gap: 4,
   },
   productItemWrapper: {
     width: ITEM_WIDTH,
     marginBottom: 8,
+    marginRight: 5,
   },
   loadingFooter: {
     flexDirection: "row",
