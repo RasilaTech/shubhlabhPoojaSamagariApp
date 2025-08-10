@@ -14,7 +14,8 @@ import { StatusBar } from "expo-status-bar";
 import React, { useEffect } from "react";
 import "react-native-reanimated";
 import { Provider } from "react-redux";
-import { ThemeProvider, useTheme } from "../hooks/useTheme"; // <--- Import new ThemeProvider and useTheme
+import { ThemeProvider, useTheme } from "../hooks/useTheme";
+import expoNotificationService from "../services/notifications/notificationService"; // Import Expo notification service
 
 SplashScreen.preventAutoHideAsync();
 
@@ -38,7 +39,39 @@ function AppWrapper() {
   const { isLoading: isAppConfigLoading, isError: isAppConfigError } =
     useGetAppConfigurationsQuery();
 
-  const { theme, isReady: isThemeReady } = useTheme(); // Get theme state from our hook
+  const { theme, isReady: isThemeReady } = useTheme();
+
+  // Initialize Expo notifications
+  useEffect(() => {
+    const initializeNotifications = async () => {
+      try {
+        console.log("Initializing Expo notifications...");
+        await expoNotificationService.initialize();
+
+        // Get push token
+        const token = await expoNotificationService.getToken();
+        if (token) {
+          console.log("Expo Push Token for backend:", token);
+
+          // TODO: Send token to your backend when ready
+          // await sendTokenToBackend(token);
+        }
+      } catch (error) {
+        console.error("Error initializing notifications:", error);
+      }
+    };
+
+    // Initialize notifications when app is ready
+    if (fontsLoaded && !isAppConfigLoading && isThemeReady) {
+      initializeNotifications();
+    }
+
+    // Cleanup function
+    return () => {
+      console.log("Cleaning up notification service...");
+      expoNotificationService.cleanup();
+    };
+  }, [fontsLoaded, isAppConfigLoading, isThemeReady]);
 
   useEffect(() => {
     const hideSplash = async () => {
@@ -73,6 +106,10 @@ function AppWrapper() {
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="product" options={{ headerShown: false }} />
         <Stack.Screen name="address" options={{ headerShown: false }} />
+        <Stack.Screen
+          name="notifications"
+          options={{ title: "Notifications" }}
+        />
         <Stack.Screen name="+not-found" />
       </Stack>
       <StatusBar style={theme === "dark" ? "light" : "dark"} />

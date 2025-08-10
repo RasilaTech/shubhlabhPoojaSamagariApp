@@ -2,7 +2,7 @@ export interface AdBanner {
   id: string;
   image: string;
   action: string;
-  type: "home" | "category";
+  type: "mobileHome" | "mobileCategory";
 }
 
 export interface ConfigurationModel {

@@ -148,7 +148,7 @@ export default function HomeScreen() {
             </View>
           </View>
           {adBanners && adBanners.length > 0 && (
-            <ImageCarousel items={adBanners} />
+            <ImageCarousel items={adBanners} type="mobileHome" />
           )}
 
           {topFiveCategories.length > 0 &&

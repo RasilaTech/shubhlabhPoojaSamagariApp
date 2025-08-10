@@ -20,9 +20,10 @@ import { AdBanner } from "@/services/configuration/configurationApi.type";
 
 interface ImageCarouselProps {
   items: AdBanner[];
+  type: string;
 }
 
-const ImageCarousel: React.FC<ImageCarouselProps> = ({ items }) => {
+const ImageCarousel: React.FC<ImageCarouselProps> = ({ items, type }) => {
   const { width } = useWindowDimensions();
   const { theme } = useTheme();
   const colors = theme === "dark" ? darkColors : lightColors;
@@ -31,6 +32,7 @@ const ImageCarousel: React.FC<ImageCarouselProps> = ({ items }) => {
   const ref = useRef<ICarouselInstance>(null);
 
   const progress = useSharedValue(0);
+  const filteredItems = items.filter((item) => item.type === type);
 
   const animatedDotStyle = useAnimatedStyle(() => {
     return {
@@ -62,7 +64,7 @@ const ImageCarousel: React.FC<ImageCarouselProps> = ({ items }) => {
         loop
         autoPlay
         autoPlayInterval={3000}
-        data={items}
+        data={filteredItems}
         ref={ref}
         width={width}
         height={width / 2}
@@ -79,7 +81,7 @@ const ImageCarousel: React.FC<ImageCarouselProps> = ({ items }) => {
       />
 
       <View style={styles.dotsContainer}>
-        {Array.from({ length: items.length }).map((_, index) => (
+        {Array.from({ length: filteredItems.length }).map((_, index) => (
           <Pressable
             key={index}
             hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}

@@ -32,13 +32,7 @@ export default ChatIcon;
 const styles = StyleSheet.create({
   button: {
     borderRadius: 20, // Changed from 9999 to a reasonable value
-    elevation: 4, // Reduced elevation for better performance
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
+
     padding: 2, // Added padding to make the button more touchable
     alignItems: "center",
     justifyContent: "center",
