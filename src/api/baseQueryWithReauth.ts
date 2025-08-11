@@ -45,10 +45,15 @@ const baseQueryWithReauth: BaseQueryFn<
     }
 
     if (!mutex.isLocked()) {
+      console.log("Toekn not");
+
       const release = await mutex.acquire();
       try {
         const refreshToken = getAuthState().auth.refreshToken;
+        console.log("Toekn not", refreshToken);
+
         if (!refreshToken) {
+          console.log("Toekn not present");
           api.dispatch(logout());
           return { error: { status: 401, data: "Session expired." } };
         }
@@ -58,19 +63,18 @@ const baseQueryWithReauth: BaseQueryFn<
         });
 
         if (refreshResult.data) {
-          const newTokens = refreshResult.data as {
-            accessToken: string;
-            refreshToken: string;
-          };
           api.dispatch(
             setCredentials({
-              access_token: newTokens.accessToken,
-              refresh_token: newTokens.refreshToken,
+              access_token: refreshResult.data.data.access_token,
+              refresh_token: refreshResult.data.data.access_token,
             })
           );
 
-          headers["Authorization"] = `Bearer ${newTokens.accessToken}`;
+          headers[
+            "Authorization"
+          ] = `Bearer ${refreshResult.data.data.access_token}`;
           const retryResult = await axiosInstance({ ...args, headers });
+
           return { data: retryResult.data };
         } else {
           api.dispatch(logout());

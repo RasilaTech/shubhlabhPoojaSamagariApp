@@ -30,8 +30,8 @@ export interface CompleteAddressProps {
 
 // --- Zod Schema ---
 export const addressSchema = z.object({
-  address_line1: z.string().min(10, "Address Line 1 is required"),
-  address_line2: z.string().min(10, "Address Line 2 is required"),
+  address_line1: z.string().min(1, "Address Line 1 is required"),
+  address_line2: z.string().min(1, "Address Line 2 is required"),
   landmark: z.string().optional(),
   name: z.string().min(1, "Receiver's name is required"),
   phone_number: z
@@ -117,7 +117,10 @@ export const AddressDetailBottomSheet = ({
               </View>
             </View>
 
-            <ScrollView contentContainerStyle={styles.formScrollViewContent}>
+            <ScrollView
+              contentContainerStyle={styles.formScrollViewContent}
+              showsVerticalScrollIndicator={false}
+            >
               <View style={styles.formContainer}>
                 {/* Address Line 1 */}
                 <View>
@@ -273,21 +276,19 @@ const styles = StyleSheet.create({
     justifyContent: "flex-end",
   },
   keyboardAvoidingView: {
-    flex: 1,
     justifyContent: "flex-end",
-    alignItems: "center",
-    width: "100%",
   },
   bottomSheetContent: {
-    borderTopLeftRadius: 12,
-    borderTopRightRadius: 12,
-    flexDirection: "column",
-    paddingHorizontal: 16,
-    paddingTop: 16,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    // Set minimum height for content
   },
   header: {
-    marginBottom: 16,
-    padding: 0,
+    paddingHorizontal: 20,
+    paddingTop: 20,
+    paddingBottom: 6,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: "rgba(0,0,0,0.1)",
   },
   headerTitleContainer: {
     flexDirection: "row",
@@ -297,46 +298,58 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 18,
     fontWeight: "600",
+    flex: 1,
   },
   closeButton: {
-    borderRadius: 8,
-    padding: 4,
+    borderRadius: 20,
+    padding: 8,
+    marginLeft: 12,
   },
   formScrollViewContent: {
-    flexGrow: 1,
-    gap: 16,
+    paddingHorizontal: 20,
+    paddingBottom: 10,
   },
   formContainer: {
-    flexDirection: "column",
-    gap: 16,
+    gap: 10,
   },
   textInput: {
-    width: "100%",
-    borderBottomWidth: 1,
+    borderBottomWidth: 1.5,
     backgroundColor: "transparent",
-    padding: 8,
-    fontSize: 14,
+    paddingVertical: 12,
+    paddingHorizontal: 4,
+    fontSize: 15,
+    lineHeight: 20,
   },
   errorText: {
-    marginTop: 4,
+    marginTop: 6,
     fontSize: 12,
+    fontWeight: "500",
   },
   footer: {
-    width: "100%",
-    paddingHorizontal: 16,
-    paddingTop: 16,
+    paddingHorizontal: 20,
+    paddingTop: 20,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: "rgba(0,0,0,0.1)",
   },
   saveButton: {
-    width: "100%",
-    borderRadius: 8,
-    paddingVertical: 12,
+    borderRadius: 12,
+    paddingVertical: 16,
+    paddingHorizontal: 24,
     alignItems: "center",
     justifyContent: "center",
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
   saveButtonText: {
-    fontSize: 14,
-    fontWeight: "bold",
-    letterSpacing: 1,
+    fontSize: 16,
+    fontWeight: "600",
+    letterSpacing: 0.5,
     color: "white",
   },
 });

@@ -107,10 +107,6 @@ function AppWrapper() {
         <Stack.Screen name="product" options={{ headerShown: false }} />
         <Stack.Screen name="address" options={{ headerShown: false }} />
         <Stack.Screen name="payment" options={{ headerShown: false }} />
-        <Stack.Screen
-          name="notifications"
-          options={{ title: "Notifications" }}
-        />
         <Stack.Screen name="+not-found" />
       </Stack>
       <StatusBar style={theme === "dark" ? "light" : "dark"} />

@@ -1,20 +1,13 @@
 import type { CreateUserAddressPayload } from "@/services/address/addressApi.type"; // Adjust path
 import { useAddUserAddressMutation } from "@/services/address/AddresssAPI"; // Adjust path
+import { AddressComponent } from "@/services/maps/MapApi.type";
 import { useGetAddressFromLatLngQuery } from "@/services/maps/MapsApi"; // Adjust path
 import { router } from "expo-router"; // Use router for navigation
 import { ChevronLeft, MapPin } from "lucide-react-native"; // Lucide icons
 import React, { useState } from "react";
-import {
-  Alert,
-  Dimensions,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { Alert, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import MapView, { Marker, PROVIDER_GOOGLE } from "react-native-maps"; // Import MapView and Marker
-import AddressDetailBottomSheet from "../bottomsheet/AddressDetailBottomSheet";
-import { AddressComponent } from "@/services/maps/MapApi.type";
+import { AddressDetailBottomSheet } from "../bottomsheet/AddressDetailBottomSheet";
 
 export interface CompleteAddressProps {
   address_line1: string;
@@ -23,8 +16,6 @@ export interface CompleteAddressProps {
   phone_number: string;
   name: string;
 }
-
-const screenWidth = Dimensions.get("window").width;
 
 interface AddressPageProps {
   onChange: () => void;
