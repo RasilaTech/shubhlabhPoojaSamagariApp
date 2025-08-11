@@ -19,12 +19,20 @@
       "googleServicesFile": "./GoogleService-Info.plist",
       "infoPlist": {
         "NSLocationWhenInUseUsageDescription": "We need access to your location to provide you with a list of nearby stores and services."
+      },
+      "config": {
+        "googleMapsApiKey": "AIzaSyDnxdR14ni_GJGMOClN8gScZmbOH88i8g0"
       }
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/playstore-icon.png",
         "backgroundColor": "#3e0f11"
+      },
+      "config": {
+        "googleMaps": {
+          "apiKey": "AIzaSyDnxdR14ni_GJGMOClN8gScZmbOH88i8g0"
+        }
       },
       "permissions": [
         "ACCESS_COARSE_LOCATION",

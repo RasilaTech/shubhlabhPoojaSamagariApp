@@ -7,8 +7,6 @@ export default function AddressStackLayout() {
     <Stack>
       {/* 'index' corresponds to app/(tabs)/account/index.tsx */}
       <Stack.Screen name="index" options={{ headerShown: false }} />
-
-      {/* Other screens in the account stack */}
     </Stack>
   );
 }
