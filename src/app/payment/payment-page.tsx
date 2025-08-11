@@ -78,15 +78,15 @@ const PaymentPage = () => {
       if (verificationResult.success) {
         Alert.alert("Success", "Payment was successful!");
         // Use router.replace to navigate to a success page
-     //   router.replace("/payment-success"); // Adjust route as needed
+       router.replace("/payment/payment-success"); // Adjust route as needed
       } else {
         Alert.alert("Error", "Payment verification failed.");
-       // router.replace("/payment-failure"); // Adjust route as needed
+        router.replace("/payment/payment-failure"); // Adjust route as needed
       }
     } catch (error) {
       console.error("Payment verification failed:", error);
       Alert.alert("Error", "Payment verification failed.");
-      //router.replace("");
+      router.replace("/payment/payment-failure");
     }
   };
 
@@ -94,7 +94,7 @@ const PaymentPage = () => {
     console.error("Payment failed:", error);
     Alert.alert("Payment Failed", "The payment was canceled or failed.");
     // Use router.replace to navigate back or to a failure page
-   // router.replace("/payment-failure");
+    router.replace("/payment/payment-failure");
   };
 
   const initiatePayment = () => {

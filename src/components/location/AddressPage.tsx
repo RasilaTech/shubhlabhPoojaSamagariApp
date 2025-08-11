@@ -7,7 +7,7 @@ import { ChevronLeft, MapPin } from "lucide-react-native"; // Lucide icons
 import React, { useState } from "react";
 import { Alert, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import MapView, { Marker, PROVIDER_GOOGLE } from "react-native-maps"; // Import MapView and Marker
-import { AddressDetailBottomSheet } from "../bottomsheet/AddressDetailBottomSheet";
+import  {AddressDetailBottomSheet}  from "../bottomsheet/AddressDetailBottomSheet";
 
 export interface CompleteAddressProps {
   address_line1: string;
