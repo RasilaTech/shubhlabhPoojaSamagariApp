@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "947674688978",
+    "project_id": "shubhlabhpoojasamagri",
+    "storage_bucket": "shubhlabhpoojasamagri.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:947674688978:android:87fa8565f6cefd72742c0b",
+        "android_client_info": {
+          "package_name": "com.shubhlabh.poojasamagri"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC-QO5jsVYbsKhd-2PPtX4cStetHjoUKUY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

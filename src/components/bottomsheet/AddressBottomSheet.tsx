@@ -16,12 +16,14 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { darkColors, lightColors } from "@/constants/ThemeColors";
 import { useTheme } from "@/hooks/useTheme";
 import type { UserAddressPayload } from "@/services/address/addressApi.type";
+
 export interface TriggerAddressBottomSheetProps {
   addresses: UserAddressPayload[];
   handleAddressChange: (address: UserAddressPayload) => void;
   isVisible: boolean;
   onClose: () => void;
 }
+
 const screenHeight = Dimensions.get("window").height;
 
 export const AddressBottomSheet = ({
@@ -40,6 +42,9 @@ export const AddressBottomSheet = ({
       pathname: "/address",
     });
   };
+
+  // Calculate the footer height to use for padding
+  const footerHeight = 48 + 24 + insets.bottom; // button height + padding + safe area
 
   return (
     <Modal
@@ -74,7 +79,18 @@ export const AddressBottomSheet = ({
             </View>
           </View>
 
-          <ScrollView contentContainerStyle={[styles.addressList, { gap: 12 }]}>
+          {/* Address List with proper bottom padding */}
+          <ScrollView
+            style={styles.scrollContainer}
+            contentContainerStyle={[
+              styles.addressList,
+              {
+                gap: 12,
+                paddingBottom: footerHeight, // Add padding to prevent overlap
+              },
+            ]}
+            showsVerticalScrollIndicator={false}
+          >
             {addresses.map((address) => (
               <TouchableOpacity
                 key={address.id}
@@ -118,6 +134,7 @@ export const AddressBottomSheet = ({
             ))}
           </ScrollView>
 
+          {/* Footer */}
           <View style={[styles.footer, { paddingBottom: insets.bottom + 16 }]}>
             <TouchableOpacity
               onPress={handleAddAddressPress}
@@ -164,6 +181,9 @@ const styles = StyleSheet.create({
   closeButton: {
     borderRadius: 12,
     padding: 4,
+  },
+  scrollContainer: {
+    flex: 1, // Allow the scroll view to take available space
   },
   addressList: {
     flexDirection: "column",
@@ -212,7 +232,8 @@ const styles = StyleSheet.create({
     right: 0,
     width: "100%",
     paddingHorizontal: 12,
-    marginTop: "auto",
+    paddingTop: 16, // Add some padding at the top of footer
+    backgroundColor: "transparent", // Make sure footer background doesn't interfere
   },
   addButton: {
     width: "100%",

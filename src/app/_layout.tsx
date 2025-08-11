@@ -15,7 +15,7 @@ import React, { useEffect } from "react";
 import "react-native-reanimated";
 import { Provider } from "react-redux";
 import { ThemeProvider, useTheme } from "../hooks/useTheme";
-import expoNotificationService from "../services/notifications/notificationService"; // Import Expo notification service
+// import expoNotificationService from "../services/notifications/notificationService"; // Import Expo notification service
 
 SplashScreen.preventAutoHideAsync();
 
@@ -46,16 +46,16 @@ function AppWrapper() {
     const initializeNotifications = async () => {
       try {
         console.log("Initializing Expo notifications...");
-        await expoNotificationService.initialize();
+        // await expoNotificationService.initialize();
 
-        // Get push token
-        const token = await expoNotificationService.getToken();
-        if (token) {
-          console.log("Expo Push Token for backend:", token);
+        // // Get push token
+        // const token = await expoNotificationService.getToken();
+        // if (token) {
+        //   console.log("Expo Push Token for backend:", token);
 
-          // TODO: Send token to your backend when ready
-          // await sendTokenToBackend(token);
-        }
+        //   // TODO: Send token to your backend when ready
+        //   // await sendTokenToBackend(token);
+        // }
       } catch (error) {
         console.error("Error initializing notifications:", error);
       }
@@ -69,7 +69,7 @@ function AppWrapper() {
     // Cleanup function
     return () => {
       console.log("Cleaning up notification service...");
-      expoNotificationService.cleanup();
+      // expoNotificationService.cleanup();
     };
   }, [fontsLoaded, isAppConfigLoading, isThemeReady]);
 
@@ -106,6 +106,7 @@ function AppWrapper() {
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="product" options={{ headerShown: false }} />
         <Stack.Screen name="address" options={{ headerShown: false }} />
+        <Stack.Screen name="payment" options={{ headerShown: false }} />
         <Stack.Screen
           name="notifications"
           options={{ title: "Notifications" }}

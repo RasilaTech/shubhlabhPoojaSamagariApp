@@ -9,6 +9,8 @@ import { ConfirmationDialog } from "@/components/dialog/ConfirmationDialog";
 import EmptyCart from "@/components/empty/EmptyCart";
 import OrderErrorScreen from "@/components/error/OrderErrorScree";
 import OrderDetailSkeleton from "@/components/skeletons/OrderSkeleton";
+import { darkColors, lightColors } from "@/constants/ThemeColors";
+import { useTheme } from "@/hooks/useTheme";
 import { UserAddressPayload } from "@/services/address/addressApi.type";
 import { useGetUserAddressListQuery } from "@/services/address/AddresssAPI";
 import {
@@ -18,11 +20,10 @@ import {
 import { CartItem } from "@/services/cart/cartApi.type";
 import { useGetAppConfigurationsQuery } from "@/services/configuration/configurationApi";
 import { useGetCouponsQuery } from "@/services/coupon/couponAPI";
+import { Coupon } from "@/services/coupon/couponApi.type";
 import { useCreateOrderMutation } from "@/services/orders/orderApi";
 import { CreateOrders } from "@/services/orders/orderApi.type";
 import { useAppSelector } from "@/store/hook";
-import { darkColors, lightColors } from "@/constants/ThemeColors";
-import { useTheme } from "@/hooks/useTheme";
 import { router } from "expo-router";
 import { ChevronLeft, EllipsisVertical } from "lucide-react-native";
 import React, { useEffect, useState } from "react";
@@ -36,7 +37,6 @@ import {
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Coupon } from "@/services/coupon/couponApi.type";
 
 export default function Cart() {
   const insets = useSafeAreaInsets();
@@ -199,6 +199,23 @@ export default function Cart() {
     try {
       const result = await createOrder(orderPayload).unwrap();
       console.log("Order creation result:", result);
+      if (result.success) {
+        if (result.data) {
+          // FIX: Use router.replace with params to pass orderData
+          router.replace({
+            pathname: "/payment/payment-page",
+            params: { orderData: JSON.stringify(result.data) },
+          });
+        } else {
+          router.replace("/payment/payment-success"); // FIX: Use router.replace
+        }
+      } else {
+        // FIX: Use router.replace with params to pass error message
+        router.replace({
+          pathname: "/payment/payment-failure",
+          params: { message: result.message },
+        });
+      }
     } catch (error: any) {
       console.error("Order creation failed:", error);
       Alert.alert(
@@ -220,11 +237,15 @@ export default function Cart() {
           },
         ]}
       >
-        <View style={[styles.header, { backgroundColor: colors.cardBackground }]}>
+        <View
+          style={[styles.header, { backgroundColor: colors.cardBackground }]}
+        >
           <TouchableOpacity onPress={router.back} style={styles.backButton}>
             <ChevronLeft size={24} color={colors.text} />
           </TouchableOpacity>
-          <Text style={[styles.headerTitle, { color: colors.text }]}>Your Cart</Text>
+          <Text style={[styles.headerTitle, { color: colors.text }]}>
+            Your Cart
+          </Text>
         </View>
         <OrderDetailSkeleton />
       </View>
@@ -243,11 +264,15 @@ export default function Cart() {
           },
         ]}
       >
-        <View style={[styles.header, { backgroundColor: colors.cardBackground }]}>
+        <View
+          style={[styles.header, { backgroundColor: colors.cardBackground }]}
+        >
           <TouchableOpacity onPress={router.back} style={styles.backButton}>
             <ChevronLeft size={24} color={colors.text} />
           </TouchableOpacity>
-          <Text style={[styles.headerTitle, { color: colors.text }]}>Your Cart</Text>
+          <Text style={[styles.headerTitle, { color: colors.text }]}>
+            Your Cart
+          </Text>
         </View>
         <OrderErrorScreen />
       </View>
@@ -286,7 +311,11 @@ export default function Cart() {
         <TouchableOpacity onPress={router.back} style={styles.backButton}>
           <ChevronLeft size={24} color={colors.text} />
         </TouchableOpacity>
-        <Text numberOfLines={1} ellipsizeMode="tail" style={[styles.headerTitle, { color: colors.text }]}>
+        <Text
+          numberOfLines={1}
+          ellipsizeMode="tail"
+          style={[styles.headerTitle, { color: colors.text }]}
+        >
           Your Cart
         </Text>
         <TouchableOpacity
@@ -300,7 +329,9 @@ export default function Cart() {
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.mainContentLayout}>
           <View style={styles.leftColumn}>
-            <Text style={[styles.sectionHeading, { color: colors.text }]}>Review Your Order</Text>
+            <Text style={[styles.sectionHeading, { color: colors.text }]}>
+              Review Your Order
+            </Text>
             <ReviewOrder cartData={cartData.data} />
             <AddMoreItems />
             <Coupons
@@ -325,7 +356,12 @@ export default function Cart() {
         </View>
       </ScrollView>
 
-      <View style={[styles.bottomFixedArea, { backgroundColor: colors.cardBackground }]}>
+      <View
+        style={[
+          styles.bottomFixedArea,
+          { backgroundColor: colors.cardBackground },
+        ]}
+      >
         {selectedAddress || defaultAddress ? (
           <TouchableOpacity
             style={[styles.payButton, { backgroundColor: colors.accent }]}
@@ -346,7 +382,11 @@ export default function Cart() {
           </TouchableOpacity>
         ) : (
           <TouchableOpacity
-            style={[styles.payButton, styles.selectAddressButton, { backgroundColor: colors.accent }]}
+            style={[
+              styles.payButton,
+              styles.selectAddressButton,
+              { backgroundColor: colors.accent },
+            ]}
             onPress={handleAddressDrawerOpen}
           >
             <Text style={styles.payButtonText}>Select Address</Text>
@@ -380,6 +420,7 @@ export default function Cart() {
         isVisible={openPaymentSheet}
         onClose={() => setOpenPaymentSheet(false)}
         onSelectPaymentMethod={(method) => {
+          console.log("Payment clicked");
           placeOrder(method);
           setOpenPaymentSheet(false);
         }}
@@ -391,7 +432,7 @@ export default function Cart() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    marginBottom:10
+    marginBottom: 10,
   },
   header: {
     flexDirection: "row",
