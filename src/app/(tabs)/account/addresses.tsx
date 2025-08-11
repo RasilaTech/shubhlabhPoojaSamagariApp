@@ -32,6 +32,11 @@ const UserAddress = () => {
   const handleGoBack = () => {
     router.back();
   };
+  const handleAddAddressPress = () => {
+    router.push({
+      pathname: "/address",
+    });
+  };
 
   const renderAddressItem = ({ item }: { item: UserAddressPayload }) => (
     <View style={styles.addressCardWrapper}>
@@ -55,13 +60,47 @@ const UserAddress = () => {
 
   if (isError || addressData.data.length === 0) {
     return (
+         <View
+      style={[
+        styles.container,
+        {
+          paddingTop: insets.top,
+          paddingBottom: insets.bottom,
+          backgroundColor: colors.background, // Apply background color
+        },
+      ]}
+    >
+      <View
+        style={[
+          styles.header,
+          { backgroundColor: colors.cardBackground, shadowColor: colors.text },
+        ]}
+      >
+        <TouchableOpacity onPress={handleGoBack} style={styles.backButton}>
+          <ChevronLeft size={24} color={colors.text} />
+        </TouchableOpacity>
+        <Text
+          numberOfLines={1}
+          ellipsizeMode="tail"
+          style={[styles.headerTitle, { color: colors.text }]}
+        >
+          My Addresses
+        </Text>
+      </View>
+      
       <View
         style={[styles.centerContent, { backgroundColor: colors.background }]}
       >
-        <Text style={[styles.noAddressText, { color: colors.textSecondary }]}>
-          No addresses found.
-        </Text>
+        
+        <TouchableOpacity
+          onPress={handleAddAddressPress}
+          style={[styles.addButton, { backgroundColor: colors.accent }]}
+        >
+          <Text style={styles.addButtonText}>Add Address</Text>
+        </TouchableOpacity>
       </View>
+      </View>
+      
     );
   }
 
@@ -150,5 +189,18 @@ const styles = StyleSheet.create({
   },
   noAddressText: {
     fontSize: 16,
+  },
+  addButton: {
+    width: "80%",
+    borderRadius: 12,
+    paddingVertical: 12,
+    paddingHorizontal: 50,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  addButtonText: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: "white",
   },
 });

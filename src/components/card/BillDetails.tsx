@@ -1,5 +1,6 @@
 import { darkColors, lightColors } from "@/constants/ThemeColors";
 import { useTheme } from "@/hooks/useTheme";
+import { useGetAppConfigurationsQuery } from "@/services/configuration/configurationApi";
 import type { Coupon } from "@/services/coupon/couponApi.type";
 import React from "react";
 import { Image, StyleSheet, Text, View } from "react-native";
@@ -21,8 +22,14 @@ const BillDetails = ({
   const { theme } = useTheme();
   const colors = theme === "dark" ? darkColors : lightColors;
 
+  const {
+    isLoading: isAppConfigLoading,
+    data: appConfigData,
+    isError: isAppConfigError,
+  } = useGetAppConfigurationsQuery();
+
   const gstCharges: number = 0;
-  const deliveryCharges: number = 0; // The original code has this hardcoded to 0 for some reason, even though there's a `configState`
+  const deliveryCharges: number = appConfigData?.data.delivery_charge ?? 0; // The original code has this hardcoded to 0 for some reason, even though there's a `configState`
   let promoCodeDiscount = 0;
 
   if (selectedCoupon) {
