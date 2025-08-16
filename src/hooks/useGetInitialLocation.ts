@@ -2,7 +2,7 @@ import {
   setError,
   setLoading,
   setLocation,
-} from "@/services/address/addressSlice"; // Adjust path
+} from "@/services/address/addressSlice";
 import * as Location from "expo-location";
 import { useEffect } from "react";
 import { useDispatch } from "react-redux";
@@ -11,19 +11,33 @@ export const useGetInitialLocation = () => {
   const dispatch = useDispatch();
 
   useEffect(() => {
-    (async () => {
-      // 1. Request foreground location permissions
-      const { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== "granted") {
-        dispatch(setError("Permission to access location was denied."));
-        return;
-      }
+    const getInitialLocation = async () => {
+      dispatch(setLoading(true));
 
       try {
-        // 2. Get the current position
-        const location = await Location.getCurrentPositionAsync({});
+        // First check if we already have permission
+        const { status: existingStatus } =
+          await Location.getForegroundPermissionsAsync();
 
-        // 3. Dispatch the action to save the location to the Redux store
+        let finalStatus = existingStatus;
+
+        // If we don't have permission, request it
+        if (existingStatus !== "granted") {
+          const { status } = await Location.requestForegroundPermissionsAsync();
+          finalStatus = status;
+        }
+
+        if (finalStatus !== "granted") {
+          dispatch(setError("Permission to access location was denied."));
+          return;
+        }
+
+        // Get the current position
+        const location = await Location.getCurrentPositionAsync({
+          accuracy: Location.Accuracy.Balanced,
+        });
+
+        // Dispatch the action to save the location to the Redux store
         dispatch(
           setLocation({
             lat: location.coords.latitude,
@@ -34,8 +48,10 @@ export const useGetInitialLocation = () => {
         console.error("Error fetching location:", err);
         dispatch(setError(err.message || "Failed to get current location."));
       } finally {
-        dispatch(setLoading(false)); // Ensure loading state is set to false regardless of outcome
+        dispatch(setLoading(false));
       }
-    })();
-  }, [dispatch]); // The dispatch function is stable and won't cause re-renders
+    };
+
+    getInitialLocation();
+  }, [dispatch]);
 };

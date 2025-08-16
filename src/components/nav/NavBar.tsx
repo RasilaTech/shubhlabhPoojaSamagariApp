@@ -36,7 +36,7 @@ const NavBar = () => {
     },
     // isLoading,
     // isError,
-  } = useGetProductsInfiniteQuery({ q: query, limit: 5 });
+  } = useGetProductsInfiniteQuery({ q: query, limit: 7 });
   const products = productsData.pages.flatMap((page) => page.data);
 
   const handleLogoPress = () => {

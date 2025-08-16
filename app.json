@@ -8,14 +8,20 @@
     "scheme": "shubhlabhpoojasamagariapp",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
-    "splash": {
-      "image": "./assets/images/playstore-icon.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#3e0f11"
-    },
+"splash": {
+  "image": "./assets/images/splash-logo.png",
+  "resizeMode": "contain",
+  "backgroundColor": "#3e0f11",
+  "android": {
+    "image": "./assets/images/splash-logo.png"
+  },
+  "ios": {
+    "image": "./assets/images/splash-logo.png"
+  }
+},
     "ios": {
       "supportsTablet": true,
-           "bundleIdentifier": "com.shubhlabh.poojasamagri",
+      "bundleIdentifier": "com.shubhlabh.poojasamagri",
       "googleServicesFile": "./GoogleService-Info.plist",
       "infoPlist": {
         "NSLocationWhenInUseUsageDescription": "We need access to your location to provide you with a list of nearby stores and services."
@@ -29,6 +35,9 @@
         "foregroundImage": "./assets/images/playstore-icon.png",
         "backgroundColor": "#3e0f11"
       },
+      "proguardObfuscate": true,
+      "enableProguardInReleaseBuilds": true,
+      "minifyEnabled": true,
       "config": {
         "googleMaps": {
           "apiKey": "AIzaSyDnxdR14ni_GJGMOClN8gScZmbOH88i8g0"
@@ -50,7 +59,22 @@
     "plugins": [
       "expo-router",
       "expo-splash-screen",
-      "expo-secure-store"
+      "expo-secure-store",
+       [
+        "expo-build-properties",
+        {
+          "android": {
+            "compileSdkVersion": 35,
+            "targetSdkVersion": 35,
+            "buildToolsVersion": "35.0.0",
+            "enableProguardInReleaseBuilds":true,
+            "enableShrinkResourcesInReleaseBuilds":true
+          },
+          "ios": {
+            "deploymentTarget": "15.1"
+          }
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true

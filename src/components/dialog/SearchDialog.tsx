@@ -57,11 +57,10 @@ export default SearchDialog;
 const styles = StyleSheet.create({
   container: {
     position: "absolute",
-    top: 55,
+    top: 95,
     left: 16,
     right: 16,
     borderRadius: 12,
-    maxHeight: 350,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.1,
     shadowRadius: 10,

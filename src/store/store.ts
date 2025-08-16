@@ -5,6 +5,7 @@ import { cartAPI } from "@/services/cart/cartAPI";
 import { categoryApi } from "@/services/category/categoryApi";
 import { configurationApi } from "@/services/configuration/configurationApi";
 import { couponAPI } from "@/services/coupon/couponAPI";
+import { deviceAPI } from "@/services/device/devices";
 import { mapsAPI } from "@/services/maps/MapsApi";
 import { orderApi } from "@/services/orders/orderApi";
 import { productAPI } from "@/services/product/productApi";
@@ -28,6 +29,7 @@ export const store = configureStore({
     [authAPI.reducerPath]: authAPI.reducer,
     [subCategoryAPI.reducerPath]: subCategoryAPI.reducer,
     [mapsAPI.reducerPath]: mapsAPI.reducer,
+    [deviceAPI.reducerPath]: deviceAPI.reducer,
     location: locationReducer,
   },
   middleware: (getDefaultMiddleware) =>
@@ -42,7 +44,8 @@ export const store = configureStore({
       configurationApi.middleware,
       authAPI.middleware,
       subCategoryAPI.middleware,
-      mapsAPI.middleware
+      mapsAPI.middleware,
+      deviceAPI.middleware
     ),
 });
 

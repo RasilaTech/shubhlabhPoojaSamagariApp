@@ -1,6 +1,7 @@
 import { useCheckAuthOnLaunch } from "@/hooks/useCheckAuthOnLaunch";
 import { useGetInitialLocation } from "@/hooks/useGetInitialLocation";
 import { useGetAppConfigurationsQuery } from "@/services/configuration/configurationApi";
+import { useAppSelector } from "@/store/hook";
 import { store } from "@/store/store";
 import {
   DarkTheme as NavDarkTheme,
@@ -15,7 +16,7 @@ import React, { useEffect } from "react";
 import "react-native-reanimated";
 import { Provider } from "react-redux";
 import { ThemeProvider, useTheme } from "../hooks/useTheme";
-// import expoNotificationService from "../services/notifications/notificationService"; // Import Expo notification service
+import expoNotificationService from "../services/notifications/notificationService"; // Import Expo notification service
 
 SplashScreen.preventAutoHideAsync();
 
@@ -38,6 +39,7 @@ function AppWrapper() {
 
   const { isLoading: isAppConfigLoading, isError: isAppConfigError } =
     useGetAppConfigurationsQuery();
+  const { isAuthenticated } = useAppSelector((state) => state.auth);
 
   const { theme, isReady: isThemeReady } = useTheme();
 
@@ -46,32 +48,32 @@ function AppWrapper() {
     const initializeNotifications = async () => {
       try {
         console.log("Initializing Expo notifications...");
-        // await expoNotificationService.initialize();
+        await expoNotificationService.initialize();
 
-        // // Get push token
-        // const token = await expoNotificationService.getToken();
-        // if (token) {
-        //   console.log("Expo Push Token for backend:", token);
+        // Get push token
+        const token = await expoNotificationService.getToken();
+        if (token) {
+          console.log("Expo Push Token for backend:", token);
 
-        //   // TODO: Send token to your backend when ready
-        //   // await sendTokenToBackend(token);
-        // }
+          // TODO: Send token to your backend when ready
+          //  await sendTokenToBackend(token);
+        }
       } catch (error) {
         console.error("Error initializing notifications:", error);
       }
     };
 
     // Initialize notifications when app is ready
-    if (fontsLoaded && !isAppConfigLoading && isThemeReady) {
+    if (fontsLoaded && !isAppConfigLoading && isThemeReady && isAuthenticated) {
       initializeNotifications();
     }
 
     // Cleanup function
     return () => {
       console.log("Cleaning up notification service...");
-      // expoNotificationService.cleanup();
+      expoNotificationService.cleanup();
     };
-  }, [fontsLoaded, isAppConfigLoading, isThemeReady]);
+  }, [fontsLoaded, isAppConfigLoading, isThemeReady, isAuthenticated]);
 
   useEffect(() => {
     const hideSplash = async () => {

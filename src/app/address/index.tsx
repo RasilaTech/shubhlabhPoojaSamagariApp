@@ -1,17 +1,64 @@
 import AddressPage from "@/components/location/AddressPage";
 import SearchAddressPage from "@/components/location/SearchAddressPage";
+import {
+  setError,
+  setLoading,
+  setLocation,
+} from "@/services/address/addressSlice";
 import { useAppSelector } from "@/store/hook";
+import * as Location from "expo-location";
 import React, { useEffect, useState } from "react";
-import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
+import {
+  ActivityIndicator,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useDispatch } from "react-redux";
 
 const Address = () => {
   const [searchPage, setSearchPage] = useState(false);
+  const dispatch = useDispatch();
 
-  const location = useAppSelector((state) => state.location); // Assuming Redux location slice
+  const location = useAppSelector((state) => state.location);
   const [lat, setLat] = useState<number | null>(null);
   const [lng, setLng] = useState<number | null>(null);
   const insets = useSafeAreaInsets();
+
+  // Function to request location permission and get location
+  const requestLocationPermission = async () => {
+    dispatch(setLoading(true));
+    dispatch(setError("error")); // Clear any previous errors
+
+    try {
+      // Request foreground location permissions
+      const { status } = await Location.requestForegroundPermissionsAsync();
+
+      if (status !== "granted") {
+        dispatch(setError("Permission to access location was denied."));
+        dispatch(setLoading(false));
+        return;
+      }
+
+      // Get the current position
+      const locationResult = await Location.getCurrentPositionAsync({});
+
+      // Dispatch the action to save the location to the Redux store
+      dispatch(
+        setLocation({
+          lat: locationResult.coords.latitude,
+          lng: locationResult.coords.longitude,
+        })
+      );
+    } catch (err: any) {
+      console.error("Error fetching location:", err);
+      dispatch(setError(err.message || "Failed to get current location."));
+    } finally {
+      dispatch(setLoading(false));
+    }
+  };
 
   useEffect(() => {
     if (location.lat !== null && location.lng !== null) {
@@ -35,6 +82,12 @@ const Address = () => {
         <Text style={styles.errorText}>
           Failed to load location: {location.error}
         </Text>
+        <TouchableOpacity
+          style={styles.retryButton}
+          onPress={requestLocationPermission}
+        >
+          <Text style={styles.retryButtonText}>Retry Location Permission</Text>
+        </TouchableOpacity>
       </View>
     );
   }
@@ -44,6 +97,12 @@ const Address = () => {
     return (
       <View style={styles.centerContainer}>
         <Text style={styles.loadingText}>Location not available</Text>
+        <TouchableOpacity
+          style={styles.retryButton}
+          onPress={requestLocationPermission}
+        >
+          <Text style={styles.retryButtonText}>Request Location</Text>
+        </TouchableOpacity>
       </View>
     );
   }
@@ -88,15 +147,31 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     backgroundColor: "white",
+    paddingHorizontal: 20,
   },
   loadingText: {
     fontSize: 14,
     color: "#666",
     marginTop: 10,
+    textAlign: "center",
   },
   errorText: {
     fontSize: 14,
     color: "red",
+    textAlign: "center",
+    marginBottom: 20,
+  },
+  retryButton: {
+    backgroundColor: "#007AFF",
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    borderRadius: 8,
+    marginTop: 10,
+  },
+  retryButtonText: {
+    color: "white",
+    fontSize: 16,
+    fontWeight: "600",
     textAlign: "center",
   },
 });

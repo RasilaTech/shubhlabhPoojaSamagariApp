@@ -113,7 +113,7 @@ export const OrderDetailMainCard = ({
       >
         <View style={styles.productImagesAndInfo}>
           <View style={styles.productImageStack}>
-            {orderDetails.order_items.slice(0, 3).map((item, index) => (
+            {orderDetails.order_items.slice(0, 2).map((item, index) => (
               <Image
                 key={index}
                 source={{ uri: item.product_variant.images[0] }}
@@ -332,17 +332,18 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     gap: 16,
     borderBottomWidth: 1,
-    padding: 16,
+    paddingVertical: 16,
+    paddingHorizontal: 8,
   },
   productImagesAndInfo: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 16,
+    gap: 12,
     flexShrink: 1,
   },
   productImageStack: {
     flexDirection: "row",
-    marginLeft: 11 * 2,
+    marginLeft: 11,
   },
   productImage: {
     height: 44,
@@ -378,9 +379,10 @@ const styles = StyleSheet.create({
   },
   priceContainer: {
     alignItems: "flex-end",
+    marginRight: 4,
   },
   totalPrice: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: "bold",
   },
 

@@ -8,7 +8,7 @@ import {
   ShoppingCart,
   User,
 } from "lucide-react-native";
-import React, { useEffect } from "react";
+import React, { useCallback, useMemo } from "react";
 import {
   Dimensions,
   StyleSheet,
@@ -19,7 +19,7 @@ import {
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
-  withTiming,
+  withSpring
 } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -34,13 +34,87 @@ const tabIcons = {
   cart: ShoppingCart,
   orders: Package,
   account: User,
-};
+} as const;
 
-const windowWidth = Dimensions.get("window").width;
+const { width: windowWidth } = Dimensions.get("window");
 const TAB_BAR_HEIGHT = 50;
 const NUMBER_OF_TABS = 5;
-const INDICATOR_SIZE = 40; // Consistent size for the circular indicator
-const HORIZONTAL_PADDING = 12; // Match the container padding
+const INDICATOR_SIZE = 40;
+const HORIZONTAL_PADDING = 12;
+
+// Memoized tab button component to prevent unnecessary re-renders
+const TabButton = React.memo(({
+  route,
+  index,
+  isFocused,
+  tabWidth,
+  colors,
+  theme,
+  cartItemsCount,
+  isAuthenticated,
+  onPress,
+}: {
+  route: Route<string>;
+  index: number;
+  isFocused: boolean;
+  tabWidth: number;
+  colors: any;
+  theme: string;
+  cartItemsCount: number;
+  isAuthenticated: boolean;
+  onPress: () => void;
+}) => {
+  const IconComponent = tabIcons[route.name as keyof typeof tabIcons];
+  const isCartTab = route.name === "cart";
+
+  return (
+    <TouchableOpacity
+      key={route.key}
+      onPress={onPress}
+      style={[styles.tabButton, { width: tabWidth }]}
+      activeOpacity={0.7}
+    >
+      <View
+        style={[
+          styles.iconWrapper,
+          isFocused && { transform: [{ scale: 1.1 }] },
+        ]}
+      >
+        {IconComponent && (
+          <>
+            <IconComponent
+              color={
+                isFocused
+                  ? theme === "dark"
+                    ? "#FFFFFF"
+                    : colors.cardBackground
+                  : colors.text
+              }
+              size={26}
+              strokeWidth={isFocused ? 2.5 : 2}
+            />
+            {isCartTab && isAuthenticated && cartItemsCount > 0 && (
+              <View
+                style={[
+                  styles.badge,
+                  {
+                    backgroundColor: colors.destructive || "#FF3B30",
+                  },
+                ]}
+              >
+                <Text style={styles.badgeText}>
+                  {cartItemsCount > 99 ? "99+" : cartItemsCount.toString()}
+                </Text>
+              </View>
+            )}
+          </>
+        )}
+      </View>
+    </TouchableOpacity>
+  );
+});
+
+TabButton.displayName = "TabButton";
 
 export const CustomTabBar = ({
   state,
@@ -49,159 +123,121 @@ export const CustomTabBar = ({
 }: BottomTabBarProps) => {
   const translateX = useSharedValue(0);
   const insets = useSafeAreaInsets();
-
   const { theme } = useTheme();
-  const colors = theme === "dark" ? darkColors : lightColors;
+  
+  // Memoize colors to prevent recalculation
+  const colors = useMemo(() => 
+    theme === "dark" ? darkColors : lightColors, 
+    [theme]
+  );
 
   // Get authentication status and cart data
   const { isAuthenticated } = useAppSelector((state) => state.auth);
-  const {
-    data: cartData = { data: [] },
-    isLoading,
-    isError,
-  } = useGetCartItemsQuery(undefined, {
+  const { data: cartData = { data: [] } } = useGetCartItemsQuery(undefined, {
     skip: !isAuthenticated,
   });
 
-  // Calculate total cart items count
-  const cartItemsCount =
-    cartData.data?.reduce((total: number, item: any) => {
+  // Memoize cart items count calculation
+  const cartItemsCount = useMemo(() => {
+    if (!cartData.data) return 0;
+    return cartData.data.reduce((total: number, item: any) => {
       return total + (item.quantity || 0);
-    }, 0) || 0;
+    }, 0);
+  }, [cartData.data]);
 
-  useEffect(() => {
-    // Calculate the available width for tabs (excluding horizontal padding)
-    const availableWidth = windowWidth - HORIZONTAL_PADDING * 2;
-    const tabWidth = availableWidth / NUMBER_OF_TABS;
+  // Memoize tab calculations
+  const { availableWidth, tabWidth } = useMemo(() => {
+    const available = windowWidth - HORIZONTAL_PADDING * 2;
+    return {
+      availableWidth: available,
+      tabWidth: available / NUMBER_OF_TABS,
+    };
+  }, []);
 
-    // Center the indicator within each tab
+  // Update indicator position when tab changes
+  React.useEffect(() => {
     const indicatorOffset = (tabWidth - INDICATOR_SIZE) / 2;
     const targetPosition = state.index * tabWidth + indicatorOffset;
-
-    translateX.value = withTiming(targetPosition, {
-      duration: 300,
+    
+    translateX.value = withSpring(targetPosition, {
+      damping: 20,
+      stiffness: 200,
+      mass: 0.8,
     });
-  }, [state.index, translateX]);
+  }, [state.index, tabWidth, translateX]);
 
   const indicatorStyle = useAnimatedStyle(() => {
     return {
       transform: [{ translateX: translateX.value }],
     };
-  });
+  }, []);
 
-  // Calculate tab width based on available space
-  const availableWidth = windowWidth - HORIZONTAL_PADDING * 2;
-  const tabWidth = availableWidth / NUMBER_OF_TABS;
+  // Memoize container styles
+  const containerStyle = useMemo(() => [
+    styles.container,
+    {
+      backgroundColor: colors.cardBackground,
+      paddingBottom: insets.bottom,
+      shadowColor: colors.text,
+      borderTopColor:
+        theme === "dark" ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)",
+    },
+  ], [colors.cardBackground, colors.text, insets.bottom, theme]);
+
+  // Memoize indicator styles
+  const indicatorBaseStyle = useMemo(() => [
+    styles.indicator,
+    {
+      width: INDICATOR_SIZE,
+      height: INDICATOR_SIZE,
+      backgroundColor: colors.accent,
+      borderRadius: INDICATOR_SIZE / 2,
+    },
+  ], [colors.accent]);
+
+  // Optimize navigation with useCallback
+  const createOnPressHandler = useCallback((route: Route<string>, index: number) => {
+    return () => {
+      const isFocused = state.index === index;
+      
+      if (isFocused) return;
+
+      const event = navigation.emit({
+        type: "tabPress",
+        target: route.key,
+        canPreventDefault: true,
+      });
+
+      if (!event.defaultPrevented) {
+        // Use replace instead of push for better performance
+        const path = route.name === "index" ? "/" : `/${route.name}`;
+        router.replace(path as any);
+      }
+    };
+  }, [state.index, navigation]);
 
   return (
-    <View
-      style={[
-        styles.container,
-        {
-          backgroundColor: colors.cardBackground,
-          paddingBottom: insets.bottom,
-          shadowColor: colors.text,
-          borderTopColor:
-            theme === "dark" ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)",
-        },
-      ]}
-    >
+    <View style={containerStyle}>
       <View style={styles.tabBarWrapper}>
-        {/* Circular indicator */}
         <Animated.View
-          style={[
-            styles.indicator,
-            {
-              width: INDICATOR_SIZE,
-              height: INDICATOR_SIZE,
-              backgroundColor: colors.accent,
-              borderRadius: INDICATOR_SIZE / 2, // Perfect circle
-            },
-            indicatorStyle,
-          ]}
+          style={[indicatorBaseStyle, indicatorStyle]}
         />
         {state.routes.map((route: Route<string>, index: number) => {
           const isFocused = state.index === index;
-          const IconComponent = tabIcons[route.name as keyof typeof tabIcons];
-          const isCartTab = route.name === "cart";
-
-          const onPress = () => {
-            const event = navigation.emit({
-              type: "tabPress",
-              target: route.key,
-              canPreventDefault: true,
-            });
-
-            if (!isFocused && !event.defaultPrevented) {
-              let path = route.name;
-              if (route.name === "index") {
-                path = "/";
-              } else {
-                path = `/${route.name}`;
-              }
-              router.push({ pathname: path as any });
-            }
-          };
-
+          
           return (
-            <TouchableOpacity
+            <TabButton
               key={route.key}
-              onPress={onPress}
-              style={[
-                styles.tabButton,
-                {
-                  width: tabWidth,
-                },
-              ]}
-              activeOpacity={0.7}
-            >
-              <View
-                style={[
-                  styles.iconWrapper,
-                  isFocused && { transform: [{ scale: 1.1 }] },
-                ]}
-              >
-                {IconComponent && (
-                  <>
-                    <IconComponent
-                      color={
-                        isFocused
-                          ? theme === "dark"
-                            ? "#FFFFFF"
-                            : colors.cardBackground
-                          : colors.text
-                      }
-                      size={26}
-                      strokeWidth={isFocused ? 2.5 : 2}
-                    />
-                    {/* Cart Badge */}
-                    {isCartTab && isAuthenticated && cartItemsCount > 0 && (
-                      <View
-                        style={[
-                          styles.badge,
-                          {
-                            backgroundColor: colors.destructive || "#FF3B30",
-                          },
-                        ]}
-                      >
-                        <Text
-                          style={[
-                            styles.badgeText,
-                            {
-                              color: "#FFFFFF",
-                            },
-                          ]}
-                        >
-                          {cartItemsCount > 99
-                            ? "99+"
-                            : cartItemsCount.toString()}
-                        </Text>
-                      </View>
-                    )}
-                  </>
-                )}
-              </View>
-            </TouchableOpacity>
+              route={route}
+              index={index}
+              isFocused={isFocused}
+              tabWidth={tabWidth}
+              colors={colors}
+              theme={theme}
+              cartItemsCount={cartItemsCount}
+              isAuthenticated={isAuthenticated}
+              onPress={createOnPressHandler(route, index)}
+            />
           );
         })}
       </View>
@@ -227,12 +263,12 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     height: TAB_BAR_HEIGHT,
     alignItems: "center",
-    position: "relative", // Ensure proper positioning context
+    position: "relative",
   },
   indicator: {
     position: "absolute",
     top: "50%",
-    marginTop: -(INDICATOR_SIZE / 2), // Center vertically
+    marginTop: -(INDICATOR_SIZE / 2),
     zIndex: 0,
   },
   tabButton: {
@@ -245,7 +281,7 @@ const styles = StyleSheet.create({
   iconWrapper: {
     alignItems: "center",
     justifyContent: "center",
-    width: INDICATOR_SIZE, // Match indicator size for perfect alignment
+    width: INDICATOR_SIZE,
     height: INDICATOR_SIZE,
     position: "relative",
   },
@@ -265,5 +301,6 @@ const styles = StyleSheet.create({
     fontSize: 10,
     fontWeight: "600",
     textAlign: "center",
+    color: "#FFFFFF",
   },
 });

@@ -2,8 +2,8 @@ import { Mail, Phone } from "lucide-react-native"; // Assuming lucide-react-nati
 import React from "react";
 import {
   Dimensions,
-  Linking, 
-  Modal, 
+  Linking,
+  Modal,
   Pressable,
   StyleSheet,
   Text,
@@ -26,14 +26,14 @@ const NeedHelpInfoDialog: React.FC<NeedHelpInfoDialogProps> = ({
     Linking.openURL("mailto:support@shubhlabhpoojasamagri.com");
   };
 
-  const handlePhonePress = () => {
-    Linking.openURL("tel:+919000057702");
+  const handlePhonePress = (number: string) => {
+    Linking.openURL(`tel:+91${number}`);
   };
 
   return (
     <Modal
-      transparent={true} 
-      animationType="fade" 
+      transparent={true}
+      animationType="fade"
       visible={isVisible}
       onRequestClose={onClose}
     >
@@ -65,13 +65,26 @@ const NeedHelpInfoDialog: React.FC<NeedHelpInfoDialogProps> = ({
             </TouchableOpacity>
 
             <TouchableOpacity
-              onPress={handlePhonePress}
+              onPress={() => {
+                handlePhonePress("9000057702");
+              }}
               style={styles.contactLink}
             >
               <View style={styles.iconBackground}>
-                <Phone size={20} color="#4f46e5" /> 
+                <Phone size={20} color="#4f46e5" />
               </View>
               <Text style={styles.contactText}>+91 9000057702</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => {
+                handlePhonePress("9000504566");
+              }}
+              style={styles.contactLink}
+            >
+              <View style={styles.iconBackground}>
+                <Phone size={20} color="#4f46e5" />
+              </View>
+              <Text style={styles.contactText}>+91 9000504566</Text>
             </TouchableOpacity>
           </View>
 
@@ -89,7 +102,7 @@ const NeedHelpInfoDialog: React.FC<NeedHelpInfoDialogProps> = ({
 const styles = StyleSheet.create({
   modalOverlay: {
     flex: 1,
-    backgroundColor: "rgba(0, 0, 0, 0.5)", 
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
     justifyContent: "center",
     alignItems: "center",
   },

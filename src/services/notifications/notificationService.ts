@@ -1,426 +1,588 @@
-// // services/notificationService.ts
-// import Constants from "expo-constants";
-// import * as Device from "expo-device";
-// import * as Notifications from "expo-notifications";
-// import { router } from "expo-router";
-// import { Platform } from "react-native";
+// services/notificationService.ts
+import { store } from "@/store/store";
+import * as Device from "expo-device";
+import * as Notifications from "expo-notifications";
+import { router } from "expo-router";
+import { AppState, Platform } from "react-native";
+import { deviceAPI } from "../device/devices";
 
-// // Configure notification handler
-// Notifications.setNotificationHandler({
-//   handleNotification: async () => ({
-//     shouldShowAlert: true,
-//     shouldPlaySound: true,
-//     shouldSetBadge: true,
-//     shouldShowBanner: true,
-//     shouldShowList: true,
-//   }),
-// });
+// Configure notification handler
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldShowAlert: true,
+    shouldPlaySound: true,
+    shouldSetBadge: true,
+    shouldShowBanner: true,
+    shouldShowList: true,
+  }),
+});
 
-// export interface NotificationData {
-//   screen?: string;
-//   userId?: string;
-//   orderId?: string;
-//   type?: string;
-//   title?: string;
-//   body?: string;
-//   message?: string;
-//   [key: string]: string | undefined;
-// }
+export interface NotificationData {
+  screen?: string;
+  userId?: string;
+  orderId?: string;
+  type?: string;
+  title?: string;
+  body?: string;
+  message?: string;
+  custom_title?: string;
+  custom_body?: string;
+  [key: string]: string | undefined;
+}
 
-// class FirebaseDataNotificationService {
-//   private notificationListener: any;
-//   private responseListener: any;
-//   private backgroundListener: any;
-//   private fcmToken: string | null = null;
+class FirebaseDataNotificationService {
+  private notificationListener: any;
+  private responseListener: any;
+  private backgroundListener: any;
+  private fcmToken: string | null = null;
+  private appState: string = AppState.currentState;
+  private appStateSubscription: any = null;
+  private pendingNavigation: NotificationData | null = null;
+  private isRouterReady = false;
+  private processedNotificationId: string | null = null; // Track processed notifications
 
-//   async initialize() {
-//     console.log("Initializing Firebase data notification service...");
+  async initialize() {
+    console.log("Initializing Firebase data notification service...");
 
-//     // Request permissions
-//     const hasPermissions = await this.registerForPushNotificationsAsync();
-//     if (!hasPermissions) {
-//       console.log("Notification permissions not granted");
-//       return;
-//     }
+    // Track app state changes
+    this.appStateSubscription = AppState.addEventListener(
+      "change",
+      this.handleAppStateChange
+    );
 
-//     // Get FCM token
-//     await this.getFCMToken();
+    // Request permissions
+    const hasPermissions = await this.registerForPushNotificationsAsync();
+    if (!hasPermissions) {
+      console.log("Notification permissions not granted");
+      return;
+    }
 
-//     // Setup notification listeners
-//     this.setupNotificationListeners();
+    // Get FCM token
+    await this.getFCMToken();
 
-//     // Setup background data listener
-//     this.setupBackgroundDataListener();
+    // Setup notification listeners
+    this.setupNotificationListeners();
 
-//     // Handle initial notification if app was opened from notification
-//     await this.handleInitialNotification();
-//   }
+    // Handle initial notification if app was opened from notification
+    await this.handleInitialNotification();
 
-//   private async registerForPushNotificationsAsync() {
-//     if (Platform.OS === "android") {
-//       await Notifications.setNotificationChannelAsync("default", {
-//         name: "default",
-//         importance: Notifications.AndroidImportance.MAX,
-//         vibrationPattern: [0, 250, 250, 250],
-//         lightColor: "#FF231F7C",
-//         sound: "default",
-//       });
+    // Mark router as ready after a small delay to ensure router is initialized
+    setTimeout(() => {
+      this.isRouterReady = true;
+      this.processPendingNavigation();
+    }, 1000);
+  }
 
-//       // Create a high priority channel for data notifications
-//       await Notifications.setNotificationChannelAsync("data-notifications", {
-//         name: "Data Notifications",
-//         importance: Notifications.AndroidImportance.HIGH,
-//         vibrationPattern: [0, 250, 250, 250],
-//         sound: "default",
-//         enableVibrate: true,
-//         showBadge: true,
-//       });
-//     }
+  private handleAppStateChange = (nextAppState: string) => {
+    console.log("App state changed from", this.appState, "to", nextAppState);
+    this.appState = nextAppState;
 
-//     if (Device.isDevice) {
-//       const { status: existingStatus } =
-//         await Notifications.getPermissionsAsync();
-//       let finalStatus = existingStatus;
+    // If app becomes active and we have pending navigation, try to process it
+    if (nextAppState === "active" && this.pendingNavigation) {
+      setTimeout(() => this.processPendingNavigation(), 500);
+    }
+  };
 
-//       if (existingStatus !== "granted") {
-//         const { status } = await Notifications.requestPermissionsAsync();
-//         finalStatus = status;
-//       }
+  private processPendingNavigation() {
+    if (this.pendingNavigation && this.isRouterReady) {
+      console.log("Processing pending navigation:", this.pendingNavigation);
+      this.navigateBasedOnData(this.pendingNavigation);
+      this.pendingNavigation = null;
+    }
+  }
 
-//       if (finalStatus !== "granted") {
-//         console.log("Failed to get push token for push notification!");
-//         return false;
-//       }
+  private isAppInForeground(): boolean {
+    return this.appState === "active";
+  }
 
-//       return true;
-//     } else {
-//       console.log("Must use physical device for Push Notifications");
-//       return false;
-//     }
-//   }
+  private async registerForPushNotificationsAsync() {
+    if (Platform.OS === "android") {
+      await Notifications.setNotificationChannelAsync("default", {
+        name: "default",
+        importance: Notifications.AndroidImportance.MAX,
+        vibrationPattern: [0, 250, 250, 250],
+        lightColor: "#FF231F7C",
+        sound: "default",
+      });
 
-//   private async getFCMToken(): Promise<string | null> {
-//     try {
-//       if (!Device.isDevice) {
-//         console.log("Must use physical device for push notifications");
-//         return null;
-//       }
+      // Create a high priority channel for data notifications
+      await Notifications.setNotificationChannelAsync("data-notifications", {
+        name: "Data Notifications",
+        importance: Notifications.AndroidImportance.HIGH,
+        vibrationPattern: [0, 250, 250, 250],
+        sound: "default",
+        enableVibrate: true,
+        showBadge: true,
+      });
+    }
 
-//       // Get the device FCM token
-//       const devicePushToken = await Notifications.getDevicePushTokenAsync();
+    if (Device.isDevice) {
+      const { status: existingStatus } =
+        await Notifications.getPermissionsAsync();
+      let finalStatus = existingStatus;
 
-//       let fcmToken = null;
+      if (existingStatus !== "granted") {
+        const { status } = await Notifications.requestPermissionsAsync();
+        finalStatus = status;
+      }
 
-//       if (Platform.OS === "android") {
-//         fcmToken = devicePushToken.data;
-//       } else if (Platform.OS === "ios") {
-//         fcmToken = devicePushToken.data;
-//       }
+      if (finalStatus !== "granted") {
+        console.log("Failed to get push token for push notification!");
+        return false;
+      }
 
-//       if (fcmToken && fcmToken !== this.fcmToken) {
-//         this.fcmToken = fcmToken;
-//         console.log("FCM Token:", this.fcmToken);
+      return true;
+    } else {
+      console.log("Must use physical device for Push Notifications");
+      return false;
+    }
+  }
 
-//         // Send token to backend
-//         await this.sendTokenToBackend(fcmToken);
-//       }
+  private async getFCMToken(): Promise<string | null> {
+    try {
+      if (!Device.isDevice) {
+        console.log("Must use physical device for push notifications");
+        return null;
+      }
 
-//       return this.fcmToken;
-//     } catch (error) {
-//       console.error("Error getting FCM token:", error);
-//       return null;
-//     }
-//   }
+      // Get the device FCM token
+      const devicePushToken = await Notifications.getDevicePushTokenAsync();
 
-//   private async sendTokenToBackend(token: string) {
-//     try {
-//       // Replace with your backend endpoint
-//       const response = await fetch("https://fcm-test.free.beeceptor.com", {
-//         method: "POST",
-//         headers: {
-//           "Content-Type": "application/json",
-//           // Add authorization headers if needed
-//           // 'Authorization': `Bearer ${userToken}`,
-//         },
-//         body: JSON.stringify({
-//           fcmToken: token,
-//           platform: Platform.OS,
-//           deviceInfo: {
-//             deviceId: Constants.deviceId,
-//             deviceName: Device.deviceName,
-//             deviceType: Device.deviceType,
-//           },
-//           // Add user ID if you have it
-//           // userId: getCurrentUserId(),
-//         }),
-//       });
+      let fcmToken = null;
 
-//       if (response.ok) {
-//         console.log("FCM token registered with backend successfully");
-//       } else {
-//         console.error(
-//           "Failed to register FCM token with backend:",
-//           response.status
-//         );
-//       }
-//     } catch (error) {
-//       console.error("Error sending FCM token to backend:", error);
-//     }
-//   }
+      if (Platform.OS === "android") {
+        fcmToken = devicePushToken.data;
+      } else if (Platform.OS === "ios") {
+        fcmToken = devicePushToken.data;
+      }
 
-//   private setupNotificationListeners() {
-//     // Handle notification when app is in foreground
-//     this.notificationListener = Notifications.addNotificationReceivedListener(
-//       (notification) => {
-//         console.log("Notification received in foreground:", notification);
-//         console.log("Notification data:", notification.request.content.data);
-//         console.log("Notification title:", notification.request.content.title);
-//         console.log("Notification body:", notification.request.content.body);
+      if (fcmToken && fcmToken !== this.fcmToken) {
+        this.fcmToken = fcmToken;
+        console.log("FCM Token:", this.fcmToken);
 
-//         this.handleNotificationData(notification.request.content.data);
-//       }
-//     );
+        // Send token to backend
+        await this.sendTokenToBackend(fcmToken);
+      }
 
-//     // Handle notification response (when user taps on notification)
-//     this.responseListener =
-//       Notifications.addNotificationResponseReceivedListener((response) => {
-//         console.log("Notification tapped:", response);
-//         console.log(
-//           "Notification data:",
-//           response.notification.request.content.data
-//         );
-//         this.handleNotificationInteraction(
-//           response.notification.request.content.data
-//         );
-//       });
-//   }
+      return this.fcmToken;
+    } catch (error) {
+      console.error("Error getting FCM token:", error);
+      return null;
+    }
+  }
 
-//   private setupBackgroundDataListener() {
-//     // This handles data-only messages when app is in background
-//     // Note: This might not work perfectly with Expo Go, works better in production builds
-//     this.backgroundListener = Notifications.addPushTokenListener(
-//       async (tokenData) => {
-//         console.log("Background data received:", tokenData);
-//       }
-//     );
+  private async sendTokenToBackend(token: string) {
+    try {
+      const payload = {
+        device_token: token,
+        device_type: Platform.OS,
+      };
 
-//     // Alternative: Use Notifications.addNotificationReceivedListener for data handling
-//     // This will also catch data-only notifications
-//     Notifications.addNotificationReceivedListener(async (notification) => {
-//       const data = notification.request.content.data;
-//       const notificationTitle = notification.request.content.title;
-//       const notificationBody = notification.request.content.body;
+      // Dispatch the mutation using the store's dispatch function
+      // .initiate() returns a promise that you can await to get the result
+      const result = await store.dispatch(
+        deviceAPI.endpoints.addUserDevice.initiate(payload)
+      );
 
-//       console.log("Processing notification:", {
-//         title: notificationTitle,
-//         body: notificationBody,
-//         data: data,
-//       });
+      // RTK Query results contain either a 'data' or 'error' key
+      if ("data" in result) {
+        console.log(
+          "FCM token registered with backend successfully:",
+          result.data
+        );
+        // You can also access the data property if the backend returns it
+      } else if ("error" in result) {
+        console.error(
+          "Failed to register FCM token with backend:",
+          result.error
+        );
+        // The error object provides more details on the failure
+      }
+    } catch (error) {
+      console.error("Error sending FCM token to backend:", error);
+    }
+  }
 
-//       // Check if this is a data-only notification (no title/body in the notification content)
-//       // OR if we have data with title/body that should override the notification content
-//       const isDataOnlyOrOverride =
-//         (!notificationTitle && !notificationBody) ||
-//         (data && (data.title || data.body));
+  private setupNotificationListeners() {
+    // Handle notifications (FCM messages with notification payload)
+    this.notificationListener = Notifications.addNotificationReceivedListener(
+      async (notification) => {
+        console.log("Notification received:", notification);
+        console.log("Notification content:", notification.request.content);
+        console.log("App state:", this.appState);
 
-//       if (isDataOnlyOrOverride && data) {
-//         console.log("Processing as data notification:", data);
+        const content = notification.request.content;
+        const notificationTitle = content.title;
+        const notificationBody = content.body;
 
-//         // Create local notification from data
-//         await this.createLocalNotificationFromData(data as NotificationData);
-//       }
-//     });
-//   }
+        // Get notification data - could be in data property or directly in content
+        const notificationData = content.data || {};
 
-//   private async createLocalNotificationFromData(data: NotificationData) {
-//     try {
-//       // Prioritize title and body from data payload
-//       const title = data.custom_title || this.getDefaultTitle(data);
-//       const body = data.custom_body || data.body || this.getDefaultBody(data);
+        // Extract orderId from the notification content or data
+        const orderId = notificationData.orderId || (content as any).orderId;
 
-//       console.log("Creating local notification with:", {
-//         title,
-//         body,
-//         originalData: data,
-//       });
+        console.log("Notification title:", notificationTitle);
+        console.log("Notification body:", notificationBody);
+        console.log("OrderId:", orderId);
+        console.log("Is app in foreground:", this.isAppInForeground());
 
-//       // Ensure we have both title and body
-//       if (!title && !body) {
-//         console.warn("No title or body found for notification");
-//         return;
-//       }
+        // Handle notification with title and body (regular FCM notification)
+        if (notificationTitle && notificationBody) {
+          console.log("Processing regular notification with title and body");
 
-//       await Notifications.scheduleNotificationAsync({
-//         content: {
-//           title: title,
-//           body: body || "No message provided",
-//           data: data,
-//           sound: "default",
-//           // Use the data-notifications channel for Android
-//         },
-//         trigger: null, // Show immediately
-//       });
+          // Create notification data object for processing
+          const processedData: NotificationData = {
+            title: notificationTitle,
+            body: notificationBody,
+            orderId: orderId,
+            type: orderId ? "order_update" : "general",
+            ...notificationData,
+          };
 
-//       // Also handle the data for foreground processing
-//       this.handleNotificationData(data);
-//     } catch (error) {
-//       console.error("Error creating local notification from data:", error);
-//     }
-//   }
+          if (this.isAppInForeground()) {
+            // App in foreground - notification is automatically shown by Expo
+            console.log("App in foreground - notification shown automatically");
+            // Just process the data
+            this.handleNotificationData(processedData);
+          } else {
+            // App in background - notification is shown automatically by FCM
+            console.log("App in background - notification shown by FCM");
+            // Process the data
+            this.handleNotificationData(processedData);
+          }
+        } else {
+          // Handle data-only notifications (if any)
+          if (Object.keys(notificationData).length > 0) {
+            console.log("Processing data-only notification:", notificationData);
 
-//   private getDefaultTitle(data: NotificationData): string {
-//     if (data.type) {
-//       switch (data.type) {
-//         case "order_update":
-//           return "Order Update";
-//         case "message":
-//           return "New Message";
-//         case "payment":
-//           return "Payment Update";
-//         case "delivery":
-//           return "Delivery Update";
-//         default:
-//           return "Notification";
-//       }
-//     }
-//     return "New Notification";
-//   }
+            if (!this.isAppInForeground()) {
+              await this.createLocalNotificationFromData(
+                notificationData as NotificationData
+              );
+            } else {
+              this.handleNotificationData(notificationData as NotificationData);
+            }
+          }
+        }
+      }
+    );
 
-//   private getDefaultBody(data: NotificationData): string {
-//     if (data.type) {
-//       switch (data.type) {
-//         case "order_update":
-//           return data.orderId
-//             ? `Order #${data.orderId} has been updated`
-//             : "Your order has been updated";
-//         case "message":
-//           return "You have a new message";
-//         case "payment":
-//           return "Payment status updated";
-//         case "delivery":
-//           return "Delivery status updated";
-//         default:
-//           return "You have a new notification";
-//       }
-//     }
-//     return "You have a new notification";
-//   }
+    // Handle notification response (when user taps on notification)
+    this.responseListener =
+      Notifications.addNotificationResponseReceivedListener((response) => {
+        console.log("Notification tapped:", response);
+        const content = response.notification.request.content;
+        const notificationData = content.data || {};
 
-//   private async handleInitialNotification() {
-//     // Check if app was opened from a notification
-//     const response = await Notifications.getLastNotificationResponseAsync();
-//     if (response) {
-//       console.log("App opened from notification:", response);
-//       this.handleNotificationData(response.notification.request.content.data);
-//     }
-//   }
+        // Extract orderId from the notification content or data
+        const orderId = notificationData.orderId || (content as any).orderId;
 
-//   private handleNotificationData(data: any) {
-//     console.log("Handling notification data:", data);
+        // Create processed data for navigation
+        const processedData: NotificationData = {
+          title: content.title || "New Notification",
+          body: content.body || "You have new notification",
+          orderId: orderId,
+          type: orderId ? "order_update" : "general",
+          ...notificationData,
+        };
 
-//     // Process notification data here
-//     // This is called when notification is received (foreground or background)
+        console.log(
+          "Processing tap interaction for notification:",
+          processedData
+        );
+        this.handleNotificationInteraction(processedData);
+      });
+  }
 
-//     // You can trigger local state updates, refresh data, etc.
-//     // Example: if notification indicates new message, refresh message list
-//     if (data?.type === "order_update") {
-//       console.log("Order update received:", data.orderId);
-//       // Refresh order data, update local state, etc.
-//     }
-//   }
+  private async createLocalNotificationFromData(data: NotificationData) {
+    try {
+      // Prioritize title and body from data payload
+      const title =
+        data.custom_title || data.title || this.getDefaultTitle(data);
+      const body = data.body || data.message || this.getDefaultBody(data);
 
-//   private handleNotificationInteraction(data: any) {
-//     console.log("User interacted with notification:", data);
-//     // Handle navigation when user taps notification
-//     this.navigateBasedOnData(data);
-//   }
+      console.log("Creating local notification with:", {
+        title,
+        body,
+        originalData: data,
+      });
 
-//   private navigateBasedOnData(data: NotificationData) {
-//     try {
-//       if (data?.screen) {
-//         router.push(data.screen as any);
-//         return;
-//       }
+      // Ensure we have both title and body
+      if (!title || !body) {
+        console.warn("Missing title or body for notification:", {
+          title,
+          body,
+        });
+        return;
+      }
 
-//       if (data?.userId) {
-//         router.push(`/profile/${data.userId}` as any);
-//         return;
-//       }
+      // Create the notification with proper channel for Android
+      const notificationContent: any = {
+        title: title,
+        body: body,
+        data: data,
+        sound: "default",
+      };
 
-//       if (data?.orderId) {
-//         router.push(`/orders/${data.orderId}` as any);
-//         return;
-//       }
+      // Set Android-specific properties
+      if (Platform.OS === "android") {
+        notificationContent.android = {
+          channelId: "data-notifications",
+          priority: "high",
+          sticky: false,
+          autoCancel: true,
+        };
+      }
 
-//       if (data?.type) {
-//         switch (data.type) {
-//           case "order_update":
-//             router.push("/orders" as any);
-//             break;
-//           case "message":
-//             router.push("/messages" as any);
-//             break;
-//           case "profile":
-//             router.push("/profile" as any);
-//             break;
-//           case "payment":
-//             router.push("/payments" as any);
-//             break;
-//           case "delivery":
-//             router.push("/orders" as any);
-//             break;
-//           default:
-//             router.push("/notifications" as any);
-//         }
-//         return;
-//       }
+      await Notifications.scheduleNotificationAsync({
+        content: notificationContent,
+        trigger: null, // Show immediately
+      });
 
-//       // Default fallback
-//       console.log("No specific navigation defined, staying on current screen");
-//     } catch (error) {
-//       console.error("Navigation error:", error);
-//     }
-//   }
+      console.log("Local notification created successfully");
 
-//   // Send a local notification (for testing)
-//   async sendLocalNotification(
-//     title: string,
-//     body: string,
-//     data?: NotificationData
-//   ) {
-//     await Notifications.scheduleNotificationAsync({
-//       content: {
-//         title,
-//         body,
-//         data: data || {},
-//       },
-//       trigger: null,
-//     });
-//   }
+      // Also handle the data for processing
+      this.handleNotificationData(data);
+    } catch (error) {
+      console.error("Error creating local notification from data:", error);
+    }
+  }
 
-//   // Test data-only notification handling
-//   async simulateDataOnlyNotification(data: NotificationData) {
-//     console.log("Simulating data-only notification:", data);
-//     await this.createLocalNotificationFromData(data);
-//   }
+  private getDefaultTitle(data: NotificationData): string {
+    if (data.type) {
+      switch (data.type) {
+        case "order_update":
+          return "Order Update";
+        case "message":
+          return "New Message";
+        case "payment":
+          return "Payment Update";
+        case "delivery":
+          return "Delivery Update";
+        default:
+          return "Notification";
+      }
+    }
+    return "New Notification";
+  }
 
-//   // Get the current FCM token
-//   getToken(): string | null {
-//     return this.fcmToken;
-//   }
+  private getDefaultBody(data: NotificationData): string {
+    if (data.type) {
+      switch (data.type) {
+        case "order_update":
+          return data.orderId
+            ? `Order #${data.orderId} has been updated`
+            : "Your order has been updated";
+        case "message":
+          return "You have a new message";
+        case "payment":
+          return "Payment status updated";
+        case "delivery":
+          return "Delivery status updated";
+        default:
+          return "You have a new notification";
+      }
+    }
+    return "You have a new notification";
+  }
 
-//   // Cleanup listeners
-//   cleanup() {
-//     if (this.notificationListener) {
-//       Notifications.removeNotificationSubscription(this.notificationListener);
-//     }
-//     if (this.responseListener) {
-//       Notifications.removeNotificationSubscription(this.responseListener);
-//     }
-//     if (this.backgroundListener) {
-//       Notifications.removeNotificationSubscription(this.backgroundListener);
-//     }
-//   }
-// }
+  private async handleInitialNotification() {
+    // Check if app was opened from a notification
+    const response = await Notifications.getLastNotificationResponseAsync();
+    if (response) {
+      // Create a unique identifier for this notification
+      const notificationId = response.notification.request.identifier;
 
-// export default new FirebaseDataNotificationService();
+      // Check if we've already processed this notification
+      if (this.processedNotificationId === notificationId) {
+        console.log(
+          "Notification already processed, skipping:",
+          notificationId
+        );
+        return;
+      }
+
+      console.log("App opened from notification:", response);
+      const content = response.notification.request.content;
+      const notificationData = content.data || {};
+      const orderId = notificationData.orderId || (content as any).orderId;
+
+      const processedData: NotificationData = {
+        title: content.title || "New Notification",
+        body: content.body || "You have a new Notification",
+        orderId: orderId,
+        type: orderId ? "order_update" : "general",
+        ...notificationData,
+      };
+
+      // Mark this notification as processed
+      this.processedNotificationId = notificationId;
+
+      // Handle as interaction (user tap) instead of just data processing
+      this.handleNotificationInteraction(processedData);
+
+      // Clear the last notification response to prevent re-processing
+      // Note: There's no direct API to clear it, but we track it with processedNotificationId
+      console.log("Marked notification as processed:", notificationId);
+    }
+  }
+
+  private handleNotificationData(data: NotificationData) {
+    console.log("Handling notification data:", data);
+
+    // Process notification data here
+    // This is called when notification is received (foreground or background)
+    // This should NOT trigger navigation - only data processing
+
+    // You can trigger local state updates, refresh data, etc.
+    if (data?.orderId || data?.type === "order_update") {
+      console.log("Order update received:", data.orderId);
+      // Refresh order data, update local state, etc.
+    }
+  }
+
+  private handleNotificationInteraction(data: NotificationData) {
+    console.log("User interacted with notification:", data);
+
+    // If router is not ready, store for later
+    if (!this.isRouterReady) {
+      console.log("Router not ready, storing navigation for later");
+      this.pendingNavigation = data;
+      return;
+    }
+
+    // Handle navigation when user taps notification
+    this.navigateBasedOnData(data);
+  }
+
+  private navigateBasedOnData(data: NotificationData) {
+    try {
+      console.log("Attempting navigation with data:", data);
+
+      // Priority 1: If there's an orderId, navigate to orders screen
+      if (data?.orderId) {
+        console.log("Navigating to order details for orderId:", data.orderId);
+        router.push(`/orders/${data.orderId}` as any);
+        return;
+      }
+
+      // Priority 2: Check for specific screen in data
+      if (data?.screen) {
+        console.log("Navigating to screen:", data.screen);
+        router.push(data.screen as any);
+        return;
+      }
+
+      // Priority 3: Check for userId
+      if (data?.userId) {
+        console.log("Navigating to profile for userId:", data.userId);
+        router.push(`/profile/${data.userId}` as any);
+        return;
+      }
+
+      // Priority 4: Navigate based on type
+      if (data?.type) {
+        console.log("Navigating based on type:", data.type);
+        switch (data.type) {
+          case "order_update":
+            router.push("/orders" as any);
+            break;
+          case "message":
+            router.push("/messages" as any);
+            break;
+          case "profile":
+            router.push("/profile" as any);
+            break;
+          case "payment":
+            router.push("/payments" as any);
+            break;
+          case "delivery":
+            router.push("/orders" as any);
+            break;
+          default:
+            router.push("/notifications" as any);
+        }
+        return;
+      }
+
+      // Default fallback - navigate to orders if we received a notification
+      console.log(
+        "No specific navigation defined, navigating to orders screen"
+      );
+      router.push("/orders" as any);
+    } catch (error) {
+      console.error("Navigation error:", error);
+      // Store for retry if navigation failed
+      this.pendingNavigation = data;
+      // Retry after a delay
+      setTimeout(() => this.processPendingNavigation(), 2000);
+    }
+  }
+
+  // Method to manually mark router as ready (call this from your app's main component)
+  markRouterReady() {
+    console.log("Router marked as ready");
+    this.isRouterReady = true;
+    this.processPendingNavigation();
+  }
+
+  // Reset processed notification (call this when app starts normally)
+  resetProcessedNotification() {
+    console.log("Resetting processed notification tracking");
+    this.processedNotificationId = null;
+  }
+
+  // Send a local notification (for testing)
+  async sendLocalNotification(
+    title: string,
+    body: string,
+    data?: NotificationData
+  ) {
+    await Notifications.scheduleNotificationAsync({
+      content: {
+        title,
+        body,
+        data: data || {},
+      },
+      trigger: null,
+    });
+  }
+
+  // Test notification handling with orderId
+  async simulateOrderNotification(orderId: string) {
+    const data: NotificationData = {
+      title: "Order Update",
+      body: `Order #${orderId} has been updated`,
+      orderId: orderId,
+      type: "order_update",
+    };
+    console.log("Simulating order notification:", data);
+    await this.createLocalNotificationFromData(data);
+  }
+
+  // Get the current FCM token
+  getToken(): string | null {
+    return this.fcmToken;
+  }
+
+  // Cleanup listeners
+  cleanup() {
+    if (this.notificationListener) {
+      Notifications.removeNotificationSubscription(this.notificationListener);
+    }
+    if (this.responseListener) {
+      Notifications.removeNotificationSubscription(this.responseListener);
+    }
+    if (this.backgroundListener) {
+      Notifications.removeNotificationSubscription(this.backgroundListener);
+    }
+
+    // Remove app state listener using the subscription
+    if (this.appStateSubscription) {
+      this.appStateSubscription.remove();
+      this.appStateSubscription = null;
+    }
+  }
+}
+
+export default new FirebaseDataNotificationService();
